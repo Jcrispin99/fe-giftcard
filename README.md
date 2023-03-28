@@ -1,1 +1,1 @@
-# template react admin ui
+# yarn install
