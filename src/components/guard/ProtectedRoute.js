@@ -19,9 +19,9 @@ const ProtectedRoute = (props) => {
           <Component />
         </Container>
       </main>
-      <div className={classes.footer}>
+      {/* <div className={classes.footer}>
         <Footer title={props.name} />
-      </div>
+      </div> */}
     </div>
   ) : (
     <Redirect to={{ pathname: "/login" }} />

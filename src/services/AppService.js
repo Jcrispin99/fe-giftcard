@@ -1,6 +1,7 @@
 import { environment } from '../environments';
 import axios from 'axios';
 import { isEmpty } from 'lodash';
+import store from '../redux/store';
 
 class AppService {
 
@@ -20,6 +21,11 @@ class AppService {
       delete this.http.defaults.headers.common['Authorization'];
     }
   }  
+  getAccessToken() {
+    const state = store.getState();
+    const accessToken = state.user.accessToken;
+    return this.init(accessToken);
+  }
   reset() {
     delete this.http.defaults.headers.common['Authorization'];
     this.http.defaults.params = {};

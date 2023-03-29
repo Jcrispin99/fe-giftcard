@@ -1,10 +1,28 @@
 const Navigation = [
   {
-    id: 'Dashboard',
-    title: 'Dashboard',
+    id: 'Empleados',
+    title: 'Empleados',
     type: 'item',
-    url: 'dashboard'
-  }
+    url: 'employee'
+  },
+  {
+    id: 'Clientes',
+    title: 'Clientes',
+    type: 'item',
+    url: 'customer'
+  },
+  {
+    id: 'Gift cards',
+    title: 'Gift cards',
+    type: 'item',
+    url: 'giftcard'
+  },
+  {
+    id: 'Tickets',
+    title: 'Tickets',
+    type: 'item',
+    url: 'ticket'
+  },
 ];
 
 export default Navigation;

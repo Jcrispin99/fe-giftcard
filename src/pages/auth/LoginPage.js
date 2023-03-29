@@ -28,7 +28,6 @@ import UserService from "../../services/UserService";
 import logo from "../../assets/images/login-logo.png";
 import { LoginStyles } from "../../assets/css/login-style";
 import _ from "lodash";
-import HeaderPublic from "../../components/HeaderPublic";
 
 const LoginPage = (props) => {
   const [hasError, setHasError] = useState({});
@@ -66,7 +65,7 @@ const LoginPage = (props) => {
 
   const LoginSchema = Yup.object().shape({
     email: Yup.string().email("Invalid email").required("Email is required"),
-    password: Yup.string().min(8, "Minimum 8 characters").required("Password is required"),
+    password: Yup.string().min(1, "Minimum 1 character").required("Password is required"),
   });
 
   const onSubmit = async (values) => {
@@ -83,7 +82,7 @@ const LoginPage = (props) => {
       props.dispatch(addUser(payload));
 
       blockUI.current.open(false);
-      history.push("/dashboard");
+      history.push("/employee");
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailed(true);

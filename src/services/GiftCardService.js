@@ -1,9 +1,9 @@
 import AppService from './AppService';
 
-class UserService extends AppService {
+class GiftCardService extends AppService {
   constructor() {
     super();
-    this.path = this.getPath('users');
+    this.path = this.getPath('giftcards');
   }
   create(data) {
     return this.http.post(`${this.path}`, data);
@@ -11,15 +11,9 @@ class UserService extends AppService {
   update(data, id) {
     return this.http.patch(`${this.path}/${id}`, data);
   }
-  delete(id) {
-    return this.http.delete(`${this.path}/${id}`);
-  }
   listSearch(search) {
     return this.http.get(`${this.path}?${search}`);
   }
-  me() {
-    return this.http.get(`${this.path}/me`);
-  }
 }
 
-export default UserService;
+export default GiftCardService;

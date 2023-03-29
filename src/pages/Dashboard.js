@@ -10,7 +10,7 @@ const Dashboard = () => {
   return (
     <Container component="main" maxWidth="lg">
       <Typography variant="h5" component="h5">
-        DASHBOARD
+        
       </Typography>
     </Container>
   );

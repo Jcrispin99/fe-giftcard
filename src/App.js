@@ -3,14 +3,14 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import ProtectedRoute from "./components/guard/ProtectedRoute";
 import Routes from "./navigation/Route";
 import Login from './pages/auth/LoginPage';
-import Contacts from "./pages/dashboardPublic/Contacts";
+import GiftCardCustomer from "./pages/dashboardPublic/GiftCardCustomer";
 
 function App() {
   return (
     <>
       <Router>
         <Switch>
-          <Route exact path="/contacts" component={Contacts} />      
+          <Route exact path="/gift-card-customer/:id" component={GiftCardCustomer} />      
           <Route exact path="/login" component={Login} />
           {Routes.map((layout, i) => {
             return (

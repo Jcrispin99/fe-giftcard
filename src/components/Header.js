@@ -11,7 +11,7 @@ import IconButton from "@mui/material/IconButton";
 import Divider from "@mui/material/Divider";
 import { MainListItems } from "../navigation/listItems";
 import { CssBaseline } from "./shared/MaterialUI";
-import logo from "../assets/images/logoDashboardPublic.svg";
+import logo from "../assets/images/logo-kdosh.png";
 import { Menu, MenuItem } from "@mui/material";
 import { AccountCircleOutlined } from "@mui/icons-material";
 import { ExpandMore } from "@mui/icons-material";
@@ -156,7 +156,7 @@ const useStyles = makeStyles((theme) => ({
     }),
   },
   logo:{
-    width: '288px',
+    width: '20%',
     margin: '13px 0px',
     marginLeft: '89px'
   },
