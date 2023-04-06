@@ -6,7 +6,7 @@ import { Box, TextField, Typography } from '@mui/material';
 import * as Yup from 'yup';
 import _ from 'lodash';
 import { ModalCustomStyles } from '../../assets/css';
-import { GiftCardService } from '../../services';
+import { BuyService, GiftCardService } from '../../services';
 import { useUI } from '../../app/context/ui';
 import { v4 as uuidv4 } from 'uuid';
 import { useHistory } from 'react-router-dom';
@@ -19,27 +19,27 @@ let dlgSettings = {
   onConfirm: () => {},
 };
 
+const buyService = new BuyService();
 const giftCardService = new GiftCardService();
 
-const CreateGiftcard = (props) => {
+const CreateBuy = (props) => {
 
   const { 
-    open, 
-    setOpen, 
+    openBuy, 
+    setOpenBuy, 
     dataCard, 
     dataUser, 
     giftCards, 
-    setGiftCards 
+    setGiftCards,
+    giftCardBuy
   } = props;
   const { blockUI, dialogUI } = useUI();
   const modalStyle = ModalCustomStyles();
   const baseValues = {
-    userId: '',
+    gifcardId: '',
+    product: '',
     amount: '',
-    code: '',
-    dueDate: '',
   };
-  const history = useHistory();
   const [initialValues, setInitialValues] = useState(baseValues);
   const [hasError, setHasError] = useState({});
   const [requestFailed, setRequestFailed] = useState(false);
@@ -48,32 +48,57 @@ const CreateGiftcard = (props) => {
     amount: Yup
       .number()
       .min(1)
-      .required('Obligatorio')
+      .required('Obligatorio'),
+    product: Yup
+      .string()
+      .required('Obligatorio'),
   });
 
   const onSubmit = async (values) => {
     try {
       blockUI.current.open(true);
       setRequestFailed(false);
+      buyService.getAccessToken();
       giftCardService.getAccessToken();
-      let newCode = '';
-      if(values.code === ''){
-        newCode = uuidv4();
+      if(Number(giftCardBuy.amountAvailable) > 0){
+        if(Number(values.amount) > Number(giftCardBuy.amountAvailable)){
+          dialogUI.current.open('', '', dlgSettings, 'No cuenta con saldo suficiente para realizar la compra');
+        }else{
+          let newAmountAvailable = Number(giftCardBuy.amountAvailable) - Number(values.amount);
+          buyService.create({...values, gifcardId: giftCardBuy.id});
+          giftCardService.update({...giftCardBuy, amountAvailable: newAmountAvailable}, giftCardBuy.id);
+          let newGiftcards = giftCards.map((e)=>{
+            if(e.id === giftCardBuy.id){
+                return {
+                  ...e,
+                  amountAvailable: newAmountAvailable
+                }
+              }else{
+                return e;
+              }
+            })
+          setGiftCards(newGiftcards);
+          dialogUI.current.open('', '', dlgSettings, 'Compra realizada con éxito');
+        }
       }else{
-        newCode = values.code;
+        dialogUI.current.open('', '', dlgSettings, 'No cuenta con saldo suficiente para realizar la compra');
       }
-      let r1 = await giftCardService.create({
-        ...values,
-        userId: dataUser.id,
-        status: 1,
-        code: newCode,
-        amountAvailable: values.amount
-      });
-      dialogUI.current.open('', '', dlgSettings, 'Gift card creada correctamente');
-      setGiftCards([
-        r1.data.giftcard,
-        ...giftCards,
-      ]);
+      // if(dataUser.)
+      // buyService.create({...values, gifcardId: idGiftCard});
+
+      // let newCode = '';
+      // if(values.code === ''){
+      //   newCode = uuidv4();
+      // }else{
+      //   newCode = values.code;
+      // }
+      // let r1 = await giftCardService.create({
+      //   ...values,
+      //   userId: dataUser.id,
+      //   status: 1,
+      //   code: newCode
+      // });
+      // dialogUI.current.open('', '', dlgSettings, 'Gift card creada correctamente');
       //   if(dataCard.id){
     //     let newValues = {...values};
     //     values.dni =  `${values.dni}`;
@@ -97,7 +122,7 @@ const CreateGiftcard = (props) => {
     //   const r1 = await userService.listSearch('sort=-id&role=employee&status=3');
     //   setRows(r1.data.data);
       blockUI.current.open(false);
-      setOpen(false);
+      setOpenBuy(false);
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailed(true);
@@ -117,15 +142,15 @@ const CreateGiftcard = (props) => {
 
   return (
     <Modal
-      open={open}
-      onClose={() => setOpen(false)}
+      open={openBuy}
+      onClose={() => setOpenBuy(false)}
       aria-labelledby="simple-modal-title"
       aria-describedby="simple-modal-description"
       disableEscapeKeyDown={true}
       className="animate__animated animate__backInLeft"
     >
       <div className={modalStyle.paperModal}>
-        <Typography className="title">{(!dataCard.id) ? 'CREAR GIFT CARD' : 'EDITAR GIFT CARD'}</Typography>
+        <Typography className="title">CREAR COMPRA</Typography>
         <Typography component="div">
           {requestFailed && (
             <p className={modalStyle.formError} align="center">{hasError.message}</p>
@@ -175,15 +200,15 @@ const CreateGiftcard = (props) => {
                     />
                   </Grid>
                   <Grid item xs={4} className={modalStyle.grdItem}>
-                    <label>CÓDIGO</label>
+                    <label>PRODUCTO</label>
                   </Grid>
                   <Grid item xs={8}>
                     <TextField
                       type="text"
-                      id="code"
-                      name="code"
-                      autoComplete="code"
-                      value={values.code || ''}
+                      id="product"
+                      name="product"
+                      autoComplete="product"
+                      value={values.product || ''}
                       className={modalStyle.texfield}
                       placeholder="Escriba aqui ..."
                       size='small'
@@ -192,34 +217,9 @@ const CreateGiftcard = (props) => {
                       fullWidth
                       variant="outlined"
                       helperText={
-                        errors.code && touched.code ? errors.code : ""
+                        errors.product && touched.product ? errors.product : ""
                       }
-                      error={!!(errors.code && touched.code)}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                    />
-                  </Grid>
-                  <Grid item xs={4} className={modalStyle.grdItem}>
-                    <label>F.VENC.</label>
-                  </Grid>
-                  <Grid item xs={8}>
-                    <TextField
-                      type="date"
-                      id="dueDate"
-                      name="dueDate"
-                      autoComplete="dueDate"
-                      value={values.dueDate || ''}
-                      className={modalStyle.texfield}
-                      placeholder="Escriba aqui ..."
-                      size='small'
-                      margin="normal"
-                      required
-                      fullWidth
-                      variant="outlined"
-                      helperText={
-                        errors.dueDate && touched.dueDate ? errors.dueDate : ""
-                      }
-                      error={!!(errors.dueDate && touched.dueDate)}
+                      error={!!(errors.product && touched.product)}
                       onChange={handleChange}
                       onBlur={handleBlur}
                     />
@@ -231,7 +231,7 @@ const CreateGiftcard = (props) => {
                     variant="contained"
                     size="large"
                     className={modalStyle.button}
-                    onClick={() => { setOpen(false) }}
+                    onClick={() => { setOpenBuy(false) }}
                   >
                     CANCELAR
                   </Button>
@@ -253,4 +253,4 @@ const CreateGiftcard = (props) => {
   )
 }
 
-export default CreateGiftcard;
+export default CreateBuy;

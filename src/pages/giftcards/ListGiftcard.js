@@ -12,6 +12,7 @@ import PaidIcon from '@mui/icons-material/Paid';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import CreateBuy from '../buy/CreateBuy';
 
 const userService = new UserService();
 const giftCardService = new GiftCardService();
@@ -32,6 +33,8 @@ const ListGiftcard = () => {
   const [giftCards, setGiftCards] = useState([]);
   const [open, setOpen] = useState(false);
   const [giftCardReview, setGiftCardReview] = useState({});
+  const [openBuy, setOpenBuy] = useState(false);
+  const [giftCardView, setGiftCardView] = useState({});
 
   const baseValues = {
     type: '',
@@ -92,8 +95,9 @@ const ListGiftcard = () => {
     console.log('ver handleViewBuy de ', gifcard);
   }
 
-  const handleBuy = (idGiftcard) => {
-    console.log('ver compras de ', idGiftcard);
+  const handleBuy = (giftcard) => {
+    setGiftCardView(giftcard);
+    setOpenBuy(true);
   }
 
   const handleEditGiftcard = (giftcard) => {
@@ -227,7 +231,7 @@ const ListGiftcard = () => {
                     </div>
                     <section className="gift-card__content">
                       <div className="gift-card__amount">S/.{e.amount}</div>
-                      <div className="gift-card__amount-remaining">S/___ Disponible</div>    
+                      <div className="gift-card__amount-remaining">S/{(e.amountAvailable) ? e.amountAvailable : e.amount} Disponible</div>    
                       <div className="gift-card__code">{e.code}</div>
                       <div className="gift-card__msg">Identification code</div>
                     </section>
@@ -290,7 +294,7 @@ const ListGiftcard = () => {
                     <IconButton 
                       color="primary" 
                       component="label"
-                      onClick={()=>{handleBuy(e.id)}}
+                      onClick={()=>{handleBuy(e)}}
                       size="large"
                     >
                       <PaidIcon/>
@@ -300,8 +304,16 @@ const ListGiftcard = () => {
               </Grid>
             ))
       }
+      <CreateBuy
+        openBuy={openBuy}
+        setOpenBuy={setOpenBuy}
+        giftCardBuy={giftCardView}
+        dataUser={dataUser}
+        giftCards={giftCards}
+        setGiftCards={setGiftCards}
+      />
     </div>
   )
 }
 
-export default ListGiftcard
+export default ListGiftcard;

@@ -36,7 +36,7 @@ const GiftCardCustomer = () => {
           </div>
           <section className="gift-card__content">
             <div className="gift-card__amount">S/.{card.amount}</div>
-            <div className="gift-card__amount-remaining">S/___ Disponible</div>    
+            <div className="gift-card__amount-remaining">S/{card.amounAvailable} Disponible</div>    
             <div className="gift-card__code">{card.code}</div>
             <div className="gift-card__msg">Identification code</div>
           </section>

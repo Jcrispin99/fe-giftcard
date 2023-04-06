@@ -305,5 +305,25 @@ export const ModalCustomStyles = makeStyles((theme) => ({
   },
   wrapperCustomerGiftCard: {
     textAlign: '-webkit-center'
+  },
+  ticket: {
+    textAlign: 'center',
+    margin: '20px',
+    padding: '20px',
+    borderRadius: '15px',
+    fontSize: '16px',
+    backgroundColor: '#8EC5FC',
+    backgroundImage: 'linear-gradient(62deg, #8EC5FC 0%, #E0C3FC 100%)',
+    color: 'white',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  wrapperNotBuys: {
+    border: 'solid 0.5px gray', 
+    textAlign:'center',
+     marginTop: '20px', 
+    borderRadius: '10px', 
+    padding: '40px', 
+    color: 'gray'
   }
 }));
