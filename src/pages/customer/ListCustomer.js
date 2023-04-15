@@ -187,8 +187,7 @@ const ListCustomer = () => {
   return (
     <div style={{ height: 540, width: '100%', marginTop: '50px' }}>
       <Typography className={classes.title}>CLIENTES</Typography>
-      <Button 
-        // className={classes.btnCreate} 
+      <Button
         onClick={handleCreateEmployee} 
         variant="outlined" 
         startIcon={<AddCircleOutlineIcon />}
