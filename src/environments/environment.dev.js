@@ -1,4 +1,4 @@
 export const environment = {
-  apiMain: 'https://whale-app-6rpf6.ondigitalocean.app/',
+  apiMain: 'https://giftcard-api-kdosh-production.up.railway.app/',
   gateway: false,
 };
