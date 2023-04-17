@@ -74,12 +74,11 @@ const LoginPage = (props) => {
       setRequestFailed(false);
       // authentication
       const r1 = await authService.login(values);
-      console.log('r1',r1);
       const accessToken = r1.data.token;
       let payload = { ...r1.data.user, accessToken };
       props.dispatch(addUser(payload));
       blockUI.current.open(false);
-      history.push("/employee");
+      history.push("/customer");
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailed(true);

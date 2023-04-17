@@ -1,16 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { Button, FormControl, FormHelperText, Grid, MenuItem, Modal, Select } from '@mui/material';
+import { 
+  Avatar, 
+  Button, 
+  Checkbox, 
+  FormControl, 
+  FormControlLabel, 
+  FormHelperText, 
+  Grid, 
+  MenuItem, 
+  Modal, 
+  Select 
+} from '@mui/material';
 import 'animate.css';
 import { Formik } from 'formik';
-import { Box, TextField, Typography } from '@mui/material';
+import { 
+  Box, 
+  TextField, 
+  Typography 
+} from '@mui/material';
 import * as Yup from 'yup';
 import _ from 'lodash';
-import { UserService, CategorieService } from '../../../services';
+import { 
+  UserService, 
+  CategorieService, 
+  PartnerService,
+  GiftCardService
+} from '../../../services';
 import { useUI } from '../../../app/context/ui';
 import { ModalCustomStyles } from '../../../assets/css';
-
-const userService = new UserService();
-const categorieService = new CategorieService();
+import { CustomerStyles } from './customer-style';
 
 let dlgSettings = {
   confirm: true,
@@ -21,6 +39,11 @@ let dlgSettings = {
   onConfirm: () => {},
 };
 
+const userService = new UserService();
+const categorieService = new CategorieService();
+const partnerService = new PartnerService();
+const giftCardService = new GiftCardService();
+
 const CustomerManager = (props) => {
 
   const { open, setOpen, setRows, rows, dataEmployee } = props;
@@ -28,13 +51,16 @@ const CustomerManager = (props) => {
   const [ openNewGiftCard, setOpenNewGiftCard ] = useState(false);
   const [ customerCreated, setCustomerCreated] = useState({});
   const modalStyle = ModalCustomStyles();
+  const customerStyle = CustomerStyles();
+  const [checked, setChecked] = useState([]);
+
   const baseValues = {
-    categorie: '',
-    dni: '',
-    name: '',
-    email: '',
-    birthdate: '',
-    phone: ''
+    categorie: '643a79938e9540b6ef3c3c51',
+    dni: '72962178',
+    name: 'Mika',
+    email: 'fcarrillotucto@gmail.com',
+    birthdate: '2023-04-18',
+    phone: '991711915'
   };
 
   const initialValuesGiftcard = {
@@ -48,7 +74,10 @@ const CustomerManager = (props) => {
   const [initialValues, setInitialValues] = useState(baseValues);
   const [hasError, setHasError] = useState({});
   const [requestFailed, setRequestFailed] = useState(false);
+  const [requestFailedGiftcard, setRequestFailedGiftcard] = useState(false);
+  const [hasErrorGiftcard, setHasErrorGiftcard] = useState({});
   const [categoriesAvailable, setCategoriesAvailable] = useState([]);
+  const [partnersAvailable, setPartnersAvailable] = useState([]);
 
   const validationSchema = Yup.object({
     categorie: Yup
@@ -91,6 +120,19 @@ const CustomerManager = (props) => {
     dueDate: Yup
       .date()
   });
+
+  const handleChangePartner = (event) => {
+    const value = event.target.value;
+    const status = event.target.checked;
+    let newChecked = checked.map((e)=>{
+      if(e.id === value){
+        return { ...e, status};
+      }else{
+        return e;
+      }
+    });
+    setChecked(newChecked);
+  };
 
   const onSubmit = async (values) => {
     try {
@@ -144,14 +186,35 @@ const CustomerManager = (props) => {
     }
   };
 
-  const onSubmitGiftcard = (values) => {
+  const onSubmitGiftcard = async (values) => {
     try {
-      console.log('data save', {
+      blockUI.current.open(true);
+      setRequestFailedGiftcard(false);
+      giftCardService.getAccessToken();
+      let permissions = [];
+      checked.map((e)=>{
+        if(e.status){
+          permissions.push(e.id);
+        }
+      });
+
+      if(values.code === ''){
+        delete values.code;
+      }
+
+      await giftCardService.create({
         ...values,
         user: customerCreated.uid,
+        permissions
       });
-    } catch (error) {
-      
+      blockUI.current.open(false);
+      setOpenNewGiftCard(false)
+    } catch (e) {
+      blockUI.current.open(false);
+      setRequestFailedGiftcard(true);
+      if (!_.isUndefined(e.response.data)) {
+        setHasErrorGiftcard({ message: e.response.data.msg });
+      }
     }
   }
 
@@ -159,6 +222,14 @@ const CustomerManager = (props) => {
     try {
       setCustomerCreated(customer);
       setOpenNewGiftCard(true);
+      dlgSettings = {
+        ...dlgSettings,
+        confirm: false,
+        btn: {
+          close: 'CERRAR',
+        },
+      };
+      dialogUI.current.open('', '', dlgSettings, 'Cliente registrado');
     } catch (e) {
       blockUI.current.open(false);
     }
@@ -170,6 +241,20 @@ const CustomerManager = (props) => {
       categorieService.getAccessToken();
       const r1 = await categorieService.listSearch('');
       setCategoriesAvailable(r1.data.categories);
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  };
+
+  const getListPartner = async () => {
+    try {
+      blockUI.current.open(true);
+      partnerService.getAccessToken();
+      const r1 = await partnerService.listSearch('');
+      setPartnersAvailable(r1.data.partners);
+      const checkedPartners = r1.data.partners.map((e)=>({id: e.uid, status: false}));
+      setChecked(checkedPartners);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -191,10 +276,10 @@ const CustomerManager = (props) => {
   useEffect(() => {
     (async function init() {
       await getListCategorie();
+      await getListPartner();
     })();
   }, []);
   
-
   return (
     <>
       <Modal
@@ -424,9 +509,9 @@ const CustomerManager = (props) => {
         <div className={modalStyle.paperModal}>
           <Typography className="title">NUEVA GIFT CARD</Typography>
           <Typography component="div">
-            {/* {requestFailed && (
-              <p className={modalStyle.formError} align="center">{hasError.message}</p>
-            )} */}
+            {requestFailedGiftcard && (
+              <p className={modalStyle.formError} align="center">{hasErrorGiftcard.message}</p>
+            )}
           </Typography>
           <Formik
             initialValues={initialValuesGiftcard}
@@ -549,6 +634,40 @@ const CustomerManager = (props) => {
                         onBlur={handleBlur}
                       />
                     </Grid>
+
+                    <Grid item xs={12} className={customerStyle.titlePartner}>
+                      PARTNERS
+                    </Grid>
+
+                    <Grid item xs={12} className={customerStyle.wrapperPartner}>
+                    {
+                      partnersAvailable.map((partner, index)=>(
+                        <Grid key={`partner${index}`} container>
+                          <Grid item xs={5}>
+                            <Avatar
+                              alt={partner.name}
+                              src={partner.logo}
+                              sx={{ width: 56, height: 56 }}
+                            />
+                          </Grid>
+                          <Grid item xs={7}>
+                            <FormControlLabel
+                              className={customerStyle.wrapperCheckbox}
+                              control={
+                                <Checkbox
+                                  checked={checked.filter((e)=>e.id === partner.uid)[0].status}
+                                  onChange={handleChangePartner}
+                                  value={partner.uid}
+                                />
+                              }
+                              label={partner.name}
+                            />
+                          </Grid>
+                        </Grid>
+                      ))
+                    }
+                    </Grid>
+
                   </Grid>
                   <Box pb={5}/>
                   <Grid container justifyContent="center">
@@ -556,7 +675,7 @@ const CustomerManager = (props) => {
                       variant="contained"
                       size="large"
                       className={modalStyle.button}
-                      onClick={() => { setOpen(false) }}
+                      onClick={() => { setOpenNewGiftCard(false) }}
                       style={{
                         marginRight: '24px',
                         backgroundColor: '#808080ba'

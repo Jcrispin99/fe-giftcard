@@ -3,7 +3,7 @@ import AppService from './AppService';
 class GiftCardService extends AppService {
   constructor() {
     super();
-    this.path = this.getPath('giftcards');
+    this.path = this.getPath('api/giftcards');
   }
   create(data) {
     return this.http.post(`${this.path}`, data);

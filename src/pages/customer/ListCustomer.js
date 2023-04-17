@@ -183,7 +183,7 @@ const ListCustomer = () => {
 
   return (
     <div style={{ height: 540, width: '100%', marginTop: '50px' }}>
-      <Typography className={classes.title}>EMPLEADOS</Typography>
+      <Typography className={classes.title}>CLIENTES</Typography>
       <Button
         onClick={handleCreateEmployee} 
         variant="outlined" 

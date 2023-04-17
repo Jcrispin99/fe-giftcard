@@ -232,6 +232,8 @@ export const ModalCustomStyles = makeStyles((theme) => ({
   },
   wrapperViewGiftcard:{
     marginTop: '23px !important',
+    width: '321px',
+    overflow: 'auto',
     '& .card6': {
       textAlign: '-webkit-right !important',
     },

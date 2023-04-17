@@ -31,10 +31,8 @@ const ListTicket = () => {
   const onSubmit = async(values) => {
     try {
       blockUI.current.open(true);
-      console.log('values',values)
       buyService.getAccessToken();
       const {data:buys} = await buyService.listSearch(`created_at=${values.date}`);
-      console.log('buys',buys);
       setBuys(buys.data);
       blockUI.current.open(false);
     } catch (e) {
