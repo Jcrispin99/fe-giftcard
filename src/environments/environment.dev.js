@@ -1,4 +1,4 @@
 export const environment = {
-  apiMain: 'https://dolphin-app-rr9sc.ondigitalocean.app/',
+  apiMain: 'https://whale-app-6rpf6.ondigitalocean.app/',
   gateway: false,
 };
