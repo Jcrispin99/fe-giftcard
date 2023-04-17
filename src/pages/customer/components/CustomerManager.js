@@ -55,12 +55,12 @@ const CustomerManager = (props) => {
   const [checked, setChecked] = useState([]);
 
   const baseValues = {
-    categorie: '643a79938e9540b6ef3c3c51',
-    dni: '72962178',
-    name: 'Mika',
-    email: 'fcarrillotucto@gmail.com',
-    birthdate: '2023-04-18',
-    phone: '991711915'
+    categorie: '',
+    dni: '',
+    name: '',
+    email: '',
+    birthdate: '',
+    phone: ''
   };
 
   const initialValuesGiftcard = {
