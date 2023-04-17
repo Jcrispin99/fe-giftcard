@@ -205,7 +205,11 @@ export const ModalCustomStyles = makeStyles((theme) => ({
     marginRight: '19px'
   },
   grdItem: {
-    paddingTop: '19px !important'
+    paddingTop: '32px !important',
+    '& .optional': {
+      fontSize: '8px',
+      color: '#1a76d2'
+    }
   },
   texfield: {
     margin: '0px !important'

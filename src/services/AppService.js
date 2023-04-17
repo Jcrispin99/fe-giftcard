@@ -16,9 +16,9 @@ class AppService {
   }  
   setAccessToken(accessToken) {
     if (!isEmpty(accessToken)) {
-      this.http.defaults.headers.common['Authorization'] = 'bearer ' + accessToken;
+      this.http.defaults.headers.common['x-token'] = accessToken;
     } else {
-      delete this.http.defaults.headers.common['Authorization'];
+      delete this.http.defaults.headers.common['x-token'];
     }
   }  
   getAccessToken() {
@@ -27,7 +27,7 @@ class AppService {
     return this.init(accessToken);
   }
   reset() {
-    delete this.http.defaults.headers.common['Authorization'];
+    delete this.http.defaults.headers.common['x-token'];
     this.http.defaults.params = {};
   }  
   getOptions() {

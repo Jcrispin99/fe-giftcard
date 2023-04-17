@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Grid, Modal } from '@mui/material';
+import { Button, FormControl, FormHelperText, Grid, MenuItem, Modal, Select } from '@mui/material';
 import 'animate.css';
 import { Formik } from 'formik';
 import { Box, TextField, Typography } from '@mui/material';
 import * as Yup from 'yup';
 import _ from 'lodash';
-import { UserService } from '../../../services';
+import { UserService, CategorieService } from '../../../services';
 import { useUI } from '../../../app/context/ui';
 import { ModalCustomStyles } from '../../../assets/css';
 
 const userService = new UserService();
+const categorieService = new CategorieService();
 
 const EmployeeManager = (props) => {
 
@@ -17,9 +18,9 @@ const EmployeeManager = (props) => {
   const { blockUI } = useUI();
   const modalStyle = ModalCustomStyles();
   const baseValues = {
+    categorie: '',
     dni: '',
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
     password: '',
     birthdate: '',
@@ -28,17 +29,18 @@ const EmployeeManager = (props) => {
   const [initialValues, setInitialValues] = useState(baseValues);
   const [hasError, setHasError] = useState({});
   const [requestFailed, setRequestFailed] = useState(false);
+  const [categoriesAvailable, setCategoriesAvailable] = useState([]);
 
   const validationSchema = Yup.object({
+    categorie: Yup
+      .string()
+      .required('Obligatorio'),
     dni: Yup
       .string()
       .min(8,'8 dígitos')
       .max(8,'8 dígitos')
       .required('Obligatorio'),
-    firstName: Yup
-      .string()
-      .required('Obligatorio'),
-    lastName: Yup
+    name: Yup
       .string()
       .required('Obligatorio'),
     email: Yup
@@ -47,7 +49,13 @@ const EmployeeManager = (props) => {
       .required('Obligatorio'),
     birthdate: Yup
       .date()
-      .required('Obligatorio'),
+      .test('birthdate', 'La fecha de nacimiento es obligatoria', function(value) {
+        if (!value || !(value instanceof Date) || isNaN(value)) {
+          return false;
+        }
+        return true;
+      })
+      .required('La fecha de nacimiento es obligatoria'),
     phone: Yup
       .string()
       .required('Obligatorio'),
@@ -66,27 +74,20 @@ const EmployeeManager = (props) => {
       userService.getAccessToken();
 
       if(dataEmployee.id){
-        let newValues = {...values};
-        values.dni =  `${values.dni}`;
-        (newValues.dni === dataEmployee.dni) && delete newValues.dni;
-        (newValues.email === dataEmployee.email) && delete newValues.email;
         await userService.update({
-            ...newValues,
-            fullName: `${newValues.firstName} ${newValues.lastName}`,
+            ...values,
           }, dataEmployee.id);
       }else{
         await userService.create(
           {
             ...values, 
-            dni: `${values.dni}`,
-            fullName: `${values.firstName} ${values.lastName}`,
             status: 1,
-            role: 'employee',
-            categoryId: 3
+            role: 'EMPLOYEE_ROLE'
           });
       }
-      const r1 = await userService.listSearch('sort=-id&role=employee&status=3');
-      setRows(r1.data.data);
+      const r1 = await userService.listSearch();
+      const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
+      setRows(newData);
       blockUI.current.open(false);
       setOpen(false);
     } catch (e) {
@@ -95,24 +96,28 @@ const EmployeeManager = (props) => {
       if(dataEmployee.id){
         setInitialValues(dataEmployee);
       }
-      if (!e.response.data.errors) {
-        setHasError({ message: e.response.data.message });
+      if (!_.isUndefined(e.response.data.errors[0])) {
+        setHasError({ message: e.response.data.errors[0].msg });
       }
-      if (!_.isUndefined(e.response.data.errors.email)) {
-        setHasError({ message: 'Ingrese otro correo' });
-      }
-      if (!_.isUndefined(e.response.data.errors.dni)) {
-        setHasError({ message: 'Ingrese otro DNI' });
-      }
-      if (!_.isUndefined(e.response.data.errors.categoryId)) {
-        setHasError({ message: 'Ingrese una categoría' });
-      }
+    }
+  };
+
+  const getListCategorie = async () => {
+    try {
+      blockUI.current.open(true);
+      categorieService.getAccessToken();
+      const r1 = await categorieService.listSearch('');
+      setCategoriesAvailable(r1.data.categories);
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
     }
   };
 
   useEffect(() => {
     if(dataEmployee.id){
-      setInitialValues(dataEmployee);
+      const birthdate = new Date(dataEmployee.birthdate).toISOString().split("T")[0];
+      setInitialValues({...dataEmployee, categorie: dataEmployee.categorie._id, birthdate});
     }
   }, [dataEmployee]);
 
@@ -120,6 +125,13 @@ const EmployeeManager = (props) => {
     setRequestFailed(false);
     setHasError({message: ''});
   }, []);
+
+  useEffect(() => {
+    (async function init() {
+      await getListCategorie();
+    })();
+  }, []);
+  
 
   return (
     <Modal
@@ -156,6 +168,33 @@ const EmployeeManager = (props) => {
               <div>
                 <Grid container spacing={3} className='wrapperForm'>
                   <Grid item xs={4} className={modalStyle.grdItem}>
+                    <label>CATEGORÍA</label>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <FormControl variant="outlined" fullWidth className={modalStyle.inputCustom}>
+                      <Select
+                        displayEmpty
+                        id="categorie"
+                        name="categorie"
+                        value={values.categorie}
+                        onChange={handleChange}
+                        size='small'
+                        error={touched.categorie && Boolean(errors.categorie)}
+                        helpertext={
+                          errors.categorie && touched.categorie ? errors.categorie : ""
+                        }
+                      >
+                        <MenuItem value="">Selecciona una opción</MenuItem>
+                        {
+                          categoriesAvailable.map((e, index)=>(
+                            <MenuItem key={`categorie${index}`} value={e._id}>{e.name}</MenuItem>
+                          ))
+                        }
+                      </Select>
+                      <FormHelperText className={modalStyle.formError}>{errors.categorie}</FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={4} className={modalStyle.grdItem}>
                     <label>DNI</label>
                   </Grid>
                   <Grid item xs={8}>
@@ -186,10 +225,10 @@ const EmployeeManager = (props) => {
                   <Grid item xs={8}>
                     <TextField
                       type="text"
-                      id="firstName"
-                      name="firstName"
-                      autoComplete="firstName"
-                      value={values.firstName || ''}
+                      id="name"
+                      name="name"
+                      autoComplete="name"
+                      value={values.name || ''}
                       className={modalStyle.texfield}
                       placeholder="Escriba aqui ..."
                       size='small'
@@ -198,34 +237,9 @@ const EmployeeManager = (props) => {
                       fullWidth
                       variant="outlined"
                       helperText={
-                        errors.firstName && touched.firstName ? errors.firstName : ""
+                        errors.name && touched.name ? errors.name : ""
                       }
-                      error={!!(errors.firstName && touched.firstName)}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                    />
-                  </Grid>
-                  <Grid item xs={4} className={modalStyle.grdItem}>
-                    <label>APELLIDOS</label>
-                  </Grid>
-                  <Grid item xs={8}>
-                    <TextField
-                      type="text"
-                      id="lastName"
-                      name="lastName"
-                      autoComplete="lastName"
-                      value={values.lastName || ''}
-                      className={modalStyle.texfield}
-                      placeholder="Escriba aqui ..."
-                      size='small'
-                      margin="normal"
-                      required
-                      fullWidth
-                      variant="outlined"
-                      helperText={
-                        errors.lastName && touched.lastName ? errors.lastName : ""
-                      }
-                      error={!!(errors.lastName && touched.lastName)}
+                      error={!!(errors.name && touched.name)}
                       onChange={handleChange}
                       onBlur={handleBlur}
                     />
@@ -338,6 +352,10 @@ const EmployeeManager = (props) => {
                     size="large"
                     className={modalStyle.button}
                     onClick={() => { setOpen(false) }}
+                    style={{
+                      marginRight: '24px',
+                      backgroundColor: '#808080ba'
+                    }}
                   >
                     CANCELAR
                   </Button>

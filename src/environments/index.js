@@ -1,2 +1,2 @@
-import { environment } from './environment.dev';
+import { environment } from './environment.local';
 export { environment };

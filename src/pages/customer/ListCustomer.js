@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useUI } from '../../app/context/ui';
 import { ListStyles } from '../../assets/css';
 import { UserService } from '../../services';
-import { CustomersStyles } from './components/customers-style';
+import { EmployeeStyles } from './components/employees-style';
 import { Button, IconButton, Tooltip, Typography, Switch } from '@mui/material';
-import dateFormat from "dateformat";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { DataGrid } from '@mui/x-data-grid';
@@ -26,27 +25,26 @@ const userService = new UserService();
 const ListCustomer = () => {
 
   const listStyle = ListStyles();
-  const classes = CustomersStyles();
+  const classes = EmployeeStyles();
   const { blockUI, dialogUI } = useUI();
   const [rows, setRows] = useState([]);
   const [openModalEmployee, setOpenModalEmployee] = useState(false);
   const [dataEmployee, setDataEmployee] = useState({});
 
-
-  const handleChangeStatus = async (e,customer) => {
+  const handleChangeStatus = async (e,employee) => {
     try {
       blockUI.current.open(true);
       userService.getAccessToken();
       let checked = (e.target.checked) ? 1 : 2;
-      await userService.update({status: checked}, customer.id);
-      let newRows = rows.map((employee)=>{
-        if(employee.id === customer.id){
+      await userService.update({...employee.row, status: checked}, employee.id);
+      let newRows = rows.map((emp)=>{
+        if(emp.id === employee.id){
           return {
-            ...employee,
+            ...emp,
             status: checked
           }
         }else{
-          return employee;
+          return emp;
         }
       });
       setRows(newRows);
@@ -58,7 +56,7 @@ const ListCustomer = () => {
 
   const columns = [
     { 
-      field: 'fullName', 
+      field: 'name', 
       headerName: 'NOMBRE COMPLETO', 
       flex: 0.4,
       minWidth: 200,
@@ -74,12 +72,9 @@ const ListCustomer = () => {
       width: 250
     },
     { 
-      field: 'createdAt', 
-      headerName: 'F.CREACIÓN', 
-      width: 150,
-      valueGetter: (params) => {
-        return dateFormat(new Date(params.value), "dd/mm/yyyy");
-      }
+      field: 'phone', 
+      headerName: 'CELULAR', 
+      width: 250
     },
     {
       field: 'status',
@@ -97,7 +92,7 @@ const ListCustomer = () => {
       }
     },
     {
-      field: 'firstName',
+      field: 'uid',
       headerName: 'ACCIONES',
       minWidth: 100,
       renderCell: (params) => {
@@ -129,7 +124,7 @@ const ListCustomer = () => {
       ...dlgSettings,
       confirm: true,
       onConfirm: () => {
-        onDeleteEmployee(employee.id);
+        onDeleteEmployee(employee);
       },
     };
     dialogUI.current.open(
@@ -143,29 +138,31 @@ const ListCustomer = () => {
     try {
       blockUI.current.open(true);
       userService.getAccessToken();
-      const r1 = await userService.listSearch('sort=-id&role=customer&status=3');
-      setRows(r1.data.data);
+      const r1 = await userService.listCustomers('');
+      const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
+      setRows(newData);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
     }
   };
 
-  const onDeleteEmployee = async(id) => {
+  const onDeleteEmployee = async(employee) => {
     try {
       blockUI.current.open(true);
       userService.getAccessToken();
       await userService.update({
+        ...employee.row,
         status: 3
-      },id);
-      let newRows = rows.filter((e)=>(e.id !== id));
+      },employee.id);
+      let newRows = rows.filter((e)=>(e.id !== employee.id));
       setRows(newRows);
       blockUI.current.open(false);
       dlgSettings = {
         ...dlgSettings,
         confirm: false,
         btn: {
-          close: 'Close',
+          close: 'Cerrar',
         },
       };
       dialogUI.current.open('', '', dlgSettings, 'Eliminado correctamente');
@@ -186,11 +183,12 @@ const ListCustomer = () => {
 
   return (
     <div style={{ height: 540, width: '100%', marginTop: '50px' }}>
-      <Typography className={classes.title}>CLIENTES</Typography>
+      <Typography className={classes.title}>EMPLEADOS</Typography>
       <Button
         onClick={handleCreateEmployee} 
         variant="outlined" 
         startIcon={<AddCircleOutlineIcon />}
+        style={{marginBottom: '16px'}}
       >
         CREAR
       </Button>
@@ -212,4 +210,4 @@ const ListCustomer = () => {
   )
 }
 
-export default ListCustomer
+export default ListCustomer;

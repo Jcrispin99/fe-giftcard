@@ -1,6 +1,6 @@
 import { makeStyles } from "@mui/styles";
 
-export const CustomersStyles = makeStyles((theme) => ({
+export const CategorieStyles = makeStyles((theme) => ({
   button: {
     margin: theme.spacing(1),
     textTransform: 'none'

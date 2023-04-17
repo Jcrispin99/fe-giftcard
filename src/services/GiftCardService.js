@@ -11,7 +11,7 @@ class GiftCardService extends AppService {
   update(data, id) {
     return this.http.patch(`${this.path}/${id}`, data);
   }
-  listSearch(search) {
+  listSearch(search = '') {
     return this.http.get(`${this.path}?${search}`);
   }
 }

@@ -4,6 +4,7 @@ import ListEmployee from "../pages/employee/ListEmployee";
 import ListCustomer from "../pages/customer/ListCustomer";
 import ListGiftcard from "../pages/giftcards/ListGiftcard";
 import ListTicket from "../pages/tickets/ListTicket";
+import ListCategories from "../pages/categories/ListCategories";
 
 const Routes = [
   {
@@ -47,6 +48,13 @@ const Routes = [
     exact: true,
     pageTitle: "",
     component: ListTicket,
+  },
+  {
+    path: "/categories",
+    name: "",
+    exact: true,
+    pageTitle: "",
+    component: ListCategories,
   },
 ];
 

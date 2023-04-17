@@ -74,13 +74,10 @@ const LoginPage = (props) => {
       setRequestFailed(false);
       // authentication
       const r1 = await authService.login(values);
-      const accessToken = r1.data.accessToken;
-      userService.setAccessToken(accessToken);
-      // get current user
-      const r2 = await userService.me();
-      let payload = { ...r2.data, accessToken };
+      console.log('r1',r1);
+      const accessToken = r1.data.token;
+      let payload = { ...r1.data.user, accessToken };
       props.dispatch(addUser(payload));
-
       blockUI.current.open(false);
       history.push("/employee");
     } catch (e) {
