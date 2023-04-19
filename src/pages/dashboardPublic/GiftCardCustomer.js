@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useUI } from '../../app/context/ui';
 import { ModalCustomStyles } from '../../assets/css';
-import { AuthService } from '../../services';
+import { AuthService, PartnerService } from '../../services';
 import * as Yup from 'yup';
-import { Box, Grid, TextField, Button } from '@mui/material';
+import { Box, Grid, TextField, Button, Avatar } from '@mui/material';
 import { Formik } from 'formik';
 import { GiftCardCustomerPublicStyles } from './styles/giftcard-public-style';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 
 let dlgSettings = {
   confirm: false,
@@ -18,6 +19,8 @@ let dlgSettings = {
 };
 
 const authService = new AuthService();
+const partnerService = new PartnerService();
+
 
 const GiftCardCustomer = () => {
 
@@ -28,6 +31,10 @@ const GiftCardCustomer = () => {
   const location = useLocation();
   const [giftcardValidate, setGiftcardValidate] = useState(false);
   const [requestFailed, setRequestFailed] = useState('');
+  const [statusGenerateBtn, setStatusGenerateBtn] = useState();
+  const [timeAvailable, setTimeAvailable] = useState();
+  const [partnersAvailable, setPartnersAvailable] = useState([]);
+
 
   const baseValues = {
     code: ''
@@ -37,8 +44,8 @@ const GiftCardCustomer = () => {
   const validationSchema = Yup.object({
     code: Yup
       .string()
-      .min(36,'36 dígitos')
-      .max(36,'36 dígitos')
+      .min(6,'6 dígitos')
+      .max(6,'6 dígitos')
       .required('Código obligatorio para generar tickets de consumo')
   });
 
@@ -49,6 +56,7 @@ const GiftCardCustomer = () => {
       const { data } = await authService.loguinMyCard(values);
       setGiftcardValidate(true);
       setCard(data.giftcard);
+      await getListPartner();
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -56,11 +64,28 @@ const GiftCardCustomer = () => {
     }
   };
 
+  const handleStatusBtnVerify = (timeLeft) => {
+    let time = timeLeft + 1;
+    if(!timeLeft){
+      localStorage.setItem("timeLeft", 30);
+      time = 31;
+    }
+    const timer = setTimeout(() => {
+      setStatusGenerateBtn(false);
+      localStorage.setItem("statusGenerateBtn", false);
+    }, time * 1000);
+    return () => clearTimeout(timer);
+  }
+
   const handleGenerateCodeTicket = async () => {
     try {
       blockUI.current.open(true);
       const id = location.pathname.split('/gift-card-customer/')[1];
       await authService.mycard({id});
+      setStatusGenerateBtn(true);
+      localStorage.setItem("statusGenerateBtn", true);
+      handleStatusBtnVerify();
+      intervalTimeAvailable();
       blockUI.current.open(false);
       dialogUI.current.open(
         'SOLICITUD ENVIADA',
@@ -81,6 +106,48 @@ const GiftCardCustomer = () => {
       );
     }
   }
+
+  const intervalTimeAvailable = () => {
+    let contador = localStorage.getItem("timeLeft");
+    const intervalo = setInterval(() => {
+      let num = contador--;
+      setTimeAvailable(num);
+      localStorage.setItem("timeLeft", num);
+      if(num === 0){
+        setTimeAvailable('');
+        clearInterval(intervalo);
+      }
+    }, 1000);
+  }
+
+  const getListPartner = async () => {
+    try {
+      blockUI.current.open(true);
+      partnerService.getAccessToken();
+      const r1 = await partnerService.listSearch('');
+      setPartnersAvailable(r1.data.partners);
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  };
+
+  useEffect(() => {
+    let statusGenerateBtn = localStorage.getItem('statusGenerateBtn');
+    const timeLeft = Number(localStorage.getItem('timeLeft'));
+
+    if(statusGenerateBtn === "true"){
+      statusGenerateBtn = true;
+    }else{
+      statusGenerateBtn = false;
+    }
+
+    if(statusGenerateBtn){
+      setStatusGenerateBtn(statusGenerateBtn);
+      handleStatusBtnVerify(timeLeft);
+      intervalTimeAvailable();
+    }
+  }, []);
 
   return (
     <Grid container className={giftStyle.wrapperGiftCard}>
@@ -146,8 +213,9 @@ const GiftCardCustomer = () => {
                             marginRight: '24px',
                             backgroundColor: '#808080ba'
                           }}
+                          disabled={statusGenerateBtn}
                         >
-                          GENERAR CÓDIGO
+                          GENERAR CÓDIGO {timeAvailable}
                         </Button>
                         <Button
                           variant="contained"
@@ -165,20 +233,71 @@ const GiftCardCustomer = () => {
             </Grid>
           :
             <Grid item xs={12}>
-              <div className={modalStyle.wrapperCustomerGiftCard}>
-                <div className={modalStyle.wrapperViewGiftcard}>
-                  <article className="gift-card animate__animated animate__rotateInDownLeft">
-                    <div className="gift-card__image">
+              <Grid container>
+                <Grid item xs={12} style={{textAlign:'center'}}>
+                  BIENVENIDO/A {card.user.name} !
+                </Grid>
+                <Grid item xs={12}>
+                  <div className={modalStyle.wrapperCustomerGiftCard}>
+                    <div className={modalStyle.wrapperViewGiftcard}>
+                      <article className="gift-card animate__animated animate__rotateInDownLeft">
+                        <div className="gift-card__image">
+                        </div>
+                        <section className="gift-card__content">
+                          <div className="gift-card__amount">S/.{card.amount}</div>
+                          <div className="gift-card__amount-remaining">S/{card.amountAvailable} Disponible</div>    
+                          <div className="gift-card__code">{card.code}</div>
+                          <div className="gift-card__msg">Identification code</div>
+                        </section>
+                      </article>
                     </div>
-                    <section className="gift-card__content">
-                      <div className="gift-card__amount">S/.{card.amount}</div>
-                      <div className="gift-card__amount-remaining">S/{card.amountAvailable} Disponible</div>    
-                      <div className="gift-card__code">{card.code}</div>
-                      <div className="gift-card__msg">Identification code</div>
-                    </section>
-                  </article>
-                </div>
-              </div>
+                  </div>
+                </Grid>
+              </Grid>
+              <Grid item xs={12} style={{textAlign:'center', marginTop: '30px'}}>
+                GENERAR QR DE CONSUMO
+              </Grid>
+              <Grid item xs={12} style={{textAlign: 'center', marginTop: '32px', paddingLeft: '36px'}}>
+                <Grid container>
+                  <Grid item xs={12}>
+                    {
+                      partnersAvailable.map((partner, index)=>(
+                        <Grid key={`partner${index}`} container>
+                          <Grid item xs={5}>
+                            <Avatar
+                              alt={partner.name}
+                              src={partner.logo}
+                              sx={{ width: 56, height: 56 }}
+                            />
+                          </Grid>
+                          <Grid item xs={7}>
+                            <Button
+                              variant="contained"
+                              size="large"
+                              color="primary"
+                              onClick={()=>{}}
+                              startIcon={<QrCodeScannerIcon />}
+                            >
+                              CLIC AQUÍ 
+                            </Button>
+                          </Grid>
+                        </Grid>
+                      ))
+                    }
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item xs={12} style={{textAlign:'center', paddingTop:'20px'}}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={()=>{}}
+                  startIcon={<QrCodeScannerIcon />}
+                  style={{backgroundColor:'#82C9ED', color: 'black'}}
+                >
+                  QR's GENERADOS
+                </Button>
+              </Grid>
             </Grid>
       }      
     </Grid>

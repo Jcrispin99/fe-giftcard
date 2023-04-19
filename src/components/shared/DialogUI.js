@@ -95,7 +95,7 @@ const DialogUI = forwardRef((props, ref) => {
     <Dialog open={open} onClose={onClose}>
       <DialogTitle className={classes.title}>{settings.main.title}</DialogTitle>
         <DialogContent>
-          <DialogContentText>{settings.main.content}</DialogContentText>
+          <DialogContentText style={{textAlign: 'center'}}>{settings.main.content}</DialogContentText>
           <DialogContentText className={classes.importantMessage}>{settings.main.important}</DialogContentText>
         </DialogContent>
         <DialogActions>
