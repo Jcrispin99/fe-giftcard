@@ -13,6 +13,9 @@ class AuthService extends AppService {
   loguinMyCard(formData = {}) {
     return this.http.post('api/giftcards/verify-code', formData)
   }
+  generateQr(formData = {}) {
+    return this.http.post('api/giftcards/create-ticket', formData)
+  }
 }
 
 export default AuthService;

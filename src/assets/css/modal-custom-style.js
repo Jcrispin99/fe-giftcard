@@ -212,7 +212,14 @@ export const ModalCustomStyles = makeStyles((theme) => ({
     }
   },
   texfield: {
-    margin: '0px !important'
+    margin: '0px !important',
+    '& #amount, #code': {
+      textAlign: 'center'
+    },
+    '& #amount-helper-text':{
+      textAlign: 'center',
+      paddingTop: '4px'
+    }
   },
   formError: {
     fontSize: '15px',
