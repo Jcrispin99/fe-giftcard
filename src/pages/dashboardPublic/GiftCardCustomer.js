@@ -53,7 +53,7 @@ const GiftCardCustomer = () => {
   //
 
   const baseValues = {
-    code: '737406'
+    code: ''
   };
 
   const baseValuesTicket = {
