@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useUI } from '../../app/context/ui';
 import { ModalCustomStyles } from '../../assets/css';
-import { AuthService, PartnerService } from '../../services';
+import { AuthService } from '../../services';
 import * as Yup from 'yup';
 import { 
   Box, 
@@ -28,7 +28,6 @@ let dlgSettings = {
 };
 
 const authService = new AuthService();
-const partnerService = new PartnerService();
 
 const GiftCardCustomer = () => {
 
@@ -46,14 +45,11 @@ const GiftCardCustomer = () => {
   const [qrBuy, setQrBuy] = useState();
   const [partnerSelected, setPartnerSelected] = useState({});
   const [amountMax, setAmountMax] = useState(100);
-
-  //qr generado
   const [viewAllQr, setViewAllQr] = useState(false);
   const [tickets, setTickets] = useState([]);
-  //
 
   const baseValues = {
-    code: ''
+    code: '553195'
   };
 
   const baseValuesTicket = {
@@ -86,7 +82,7 @@ const GiftCardCustomer = () => {
       setCard(data.giftcard);
       setTickets(data.tickets);
       setAmountMax(data.giftcard.amountAvailable)
-      await getListPartner();
+      setPartnersAvailable(data.partners);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -117,19 +113,15 @@ const GiftCardCustomer = () => {
         amountTicket: values.amount
       });
 
-      // const newTicket = {
-      //   amount: values.amount,
-      //   qrImage: r1.data.url,
-      //   partner: {
-      //     name: partnerSelected.name
-      //   }
-      // };
-
-      // let newTicketsAvailable = tickets;
-      // newTicketsAvailable.push(newTicket);
-      // console.log('newTicketsAvailable',newTicketsAvailable);
-      // setTickets([newTicketsAvailable]);
-
+      let newTickets = [{
+        amount: values.amount,
+        qrImage: r1.data.url,
+        partner: {
+          name: partnerSelected.name
+        },
+        status: true
+      }, ...tickets];
+      setTickets(newTickets);
       blockUI.current.open(false);
     } catch (e) {
       setQrBuy({});
@@ -198,18 +190,6 @@ const GiftCardCustomer = () => {
     }, 1000);
   };
 
-  const getListPartner = async () => {
-    try {
-      blockUI.current.open(true);
-      partnerService.getAccessToken();
-      const r1 = await partnerService.listSearch('');
-      setPartnersAvailable(r1.data.partners);
-      blockUI.current.open(false);
-    } catch (e) {
-      blockUI.current.open(false);
-    }
-  };
-
   const downloadQr = () => {
     const img = imagenRef.current;
     const urlImagen = img.src;
@@ -263,6 +243,9 @@ const GiftCardCustomer = () => {
                   return(
                     <div>
                       <Grid container spacing={3} className='wrapperForm'>
+                        <Grid item xs={12} className={giftStyle.titleGc}>
+                          GIFT CARD
+                        </Grid>
                         <Grid item xs={4} className={modalStyle.grdItem}>
                           <label>CÓDIGO</label>
                         </Grid>
@@ -321,6 +304,9 @@ const GiftCardCustomer = () => {
           :
             <Grid item xs={12}>
               <Grid container>
+                <Grid item xs={12} className={giftStyle.titleGc}>
+                  GIFT CARD
+                </Grid>
                 <Grid item xs={12} style={{textAlign:'center'}}>
                   BIENVENIDO/A {card.user?.name} !
                 </Grid>
@@ -432,49 +418,62 @@ const GiftCardCustomer = () => {
                       }}
                     </Formik>
                   </Grid>
-                  <Grid item xs={12} style={{textAlign:'center', paddingTop:'20px'}}>
+                  <Grid item xs={12} style={{textAlign:'center', paddingTop:'33px'}}>
                     <Button
                       variant="contained"
                       size="large"
-                      onClick={()=>{setViewAllQr(true)}}
+                      onClick={()=>{
+                        setViewAllQr(true);
+                        window.scrollBy(0, 10);
+                      }}
                       startIcon={<QrCodeScannerIcon />}
                       className={giftStyle.btnViewQR}
                     >
-                      QR's GENERADOS
+                      VER QR's
                     </Button>
                   </Grid>
                   {
-                    (qrBuy)
+                    (!viewAllQr)
                       &&
-                        <Grid item xs={12} style={{textAlign:'center', marginTop: '43px'}}>
-                          <div className={giftStyle.wrapperQr}>
-                            <img src={qrBuy.img} alt="QR code" ref={imagenRef} style={{width: '100%'}}/>
-                            <div>
-                              {qrBuy.namePartner}
-                            </div>
-                            <div>
-                              S/{qrBuy.amountTicket}
-                            </div>
-                          </div>
-                          <Tooltip title="Descargar" placement="bottom">
-                            <IconButton aria-label="upload qr" component="span" size="large" onClick={downloadQr}>
-                              <DownloadingIcon style={{color: '#05204A'}} />
-                            </IconButton>
-                          </Tooltip>
-                        </Grid>
+                        (qrBuy?.img)
+                          &&
+                            <Grid item xs={12} style={{textAlign:'center', marginTop: '18px'}}>
+                              <div className={giftStyle.wrapperQr}>
+                                <img src={qrBuy.img} alt="QR code" ref={imagenRef} style={{width: '100%'}}/>
+                                <div>
+                                  {qrBuy.namePartner}
+                                </div>
+                                <div>
+                                  S/{qrBuy.amountTicket}
+                                </div>
+                              </div>
+                              <Tooltip title="Descargar" placement="bottom">
+                                <IconButton aria-label="upload qr" component="span" size="large" onClick={downloadQr}>
+                                  <DownloadingIcon style={{color: '#05204A'}} />
+                                </IconButton>
+                              </Tooltip>
+                            </Grid>
                   }
                   {
                     (viewAllQr)
                       &&
                         tickets.map((ticket, index)=>(
-                          <Grid key={`ticket${index}`} item xs={6} style={{textAlign:'center', marginTop: '43px'}}>
-                            <div className={giftStyle.wrapperQr}>
-                              <img src={ticket.qrImage} alt="QR code" style={{width: '100%'}}/>
-                              <div>
+                          <Grid key={`ticket${index}`} item xs={6} style={{textAlign:'center', marginTop: '20px'}}>
+                            <div className={giftStyle.wrapperQr} style={(ticket.status) ? {borderColor:'green'} : {borderColor:'red'}}>
+                              <img src={ticket.qrImage} style={{width: '100%'}}/>
+                              <div className='partner'>
                                 {ticket.partner?.name}
                               </div>
-                              <div>
+                              <div className='amount'>
                                 S/{ticket.amount}
+                              </div>
+                              <div 
+                                className='status'
+                                style={(ticket.status) ? {color:'green'} : {color:'red'}}
+                              >
+                                {
+                                  (ticket.status) ? 'DISPONIBLE' : 'ESCANEADO'
+                                }
                               </div>
                             </div>
                           </Grid>

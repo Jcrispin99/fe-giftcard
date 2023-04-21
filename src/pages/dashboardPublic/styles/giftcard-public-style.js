@@ -17,7 +17,18 @@ export const GiftCardCustomerPublicStyles = makeStyles((theme) => ({
     borderRadius: '4px',
     padding: '0px',
     marginBottom: '5px',
-    paddingBottom: '18px'
+    paddingBottom: '18px',
+    '& .partner': {
+      fontFamily: "'Economica', sans-serif !important",
+      fontSize: "18px"
+    },
+    '& .amount': {
+      fontFamily: "'Economica', sans-serif !important"
+    },
+    '& .status': {
+      fontFamily: "'Economica', sans-serif !important",
+      paddingTop: '9px'
+    }
   },
   btnGenerateQr: {
     backgroundColor: '#73937E !important'
@@ -39,6 +50,12 @@ export const GiftCardCustomerPublicStyles = makeStyles((theme) => ({
   },
   wrapperPartners: {
     paddingLeft: '32px'
+  },
+  titleGc: {
+    textAlign: 'center',
+    fontSize: '24px',
+    marginBottom: '18px !important',
+    fontFamily: "'Press Start 2P', cursive !important",
   }
   
 }));
