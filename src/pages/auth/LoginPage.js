@@ -78,7 +78,8 @@ const LoginPage = (props) => {
       let payload = { ...r1.data.user, accessToken };
       props.dispatch(addUser(payload));
       blockUI.current.open(false);
-      history.push("/customer");
+      history.push("/dashboard");
+      
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailed(true);

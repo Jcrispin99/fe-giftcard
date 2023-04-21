@@ -5,6 +5,7 @@ import ListCustomer from "../pages/customer/ListCustomer";
 import ListGiftcard from "../pages/giftcards/ListGiftcard";
 import ListTicket from "../pages/tickets/ListTicket";
 import ListCategories from "../pages/categories/ListCategories";
+import ManagerTickets from "../pages/tickets/ManagerTickets";
 
 const Routes = [
   {
@@ -56,6 +57,13 @@ const Routes = [
     pageTitle: "",
     component: ListCategories,
   },
+  {
+    path: '/tickets/:id',
+    name: "",
+    exact: true,
+    pageTitle: "",
+    component: ManagerTickets,
+  }
 ];
 
 export default Routes;

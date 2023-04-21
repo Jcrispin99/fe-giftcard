@@ -92,8 +92,8 @@ const Header = (props) => {
           </div>
 
           <div className={wizardStyle.wrapperLogout}>
-            <span>Hi </span>
-            <span className={wizardStyle.title}>{firstName}!</span>
+            <span></span>
+            <span className={wizardStyle.title}>{firstName}</span>
             <IconButton
               edge="end"
               aria-label="account of current user"

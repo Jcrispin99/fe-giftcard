@@ -28,7 +28,7 @@ const Navigation = [
     title: 'Tickets',
     type: 'item',
     url: 'ticket'
-  },
+  }
 ];
 
 export default Navigation;
