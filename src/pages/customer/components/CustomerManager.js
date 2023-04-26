@@ -95,15 +95,6 @@ const CustomerManager = (props) => {
       .string()
       .email('Ingrese un correo válido')
       .required('Obligatorio'),
-    birthdate: Yup
-      .date()
-      .test('birthdate', 'La fecha de nacimiento es obligatoria', function(value) {
-        if (!value || !(value instanceof Date) || isNaN(value)) {
-          return false;
-        }
-        return true;
-      })
-      .required('La fecha de nacimiento es obligatoria'),
     phone: Yup
       .string()
       .required('Obligatorio')
@@ -177,11 +168,12 @@ const CustomerManager = (props) => {
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailed(true);
-      if(dataEmployee.id){
-        setInitialValues(dataEmployee);
+
+      if (e.response.data.error.keyPattern?.dni) {
+        setHasError({ message: 'El DNI ingresado ya está registrado' });
       }
-      if (!_.isUndefined(e.response.data.errors[0])) {
-        setHasError({ message: e.response.data.errors[0].msg });
+      if (e.response.data.error.keyPattern?.email) {
+        setHasError({ message: 'El correo ingresado ya está registrado' });
       }
     }
   };

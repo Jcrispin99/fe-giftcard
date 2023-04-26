@@ -14,6 +14,9 @@ class GiftCardService extends AppService {
   listSearch(search = '') {
     return this.http.get(`${this.path}?${search}`);
   }
+  mygiftcards(search = '') {
+    return this.http.get(`${this.path}/mygiftcards?${search}`);
+  }
 }
 
 export default GiftCardService;

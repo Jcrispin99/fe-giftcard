@@ -200,7 +200,7 @@ const CreateBuy = (props) => {
                     />
                   </Grid>
                   <Grid item xs={4} className={modalStyle.grdItem}>
-                    <label>PRODUCTO</label>
+                    <label>PARTNER</label>
                   </Grid>
                   <Grid item xs={8}>
                     <TextField

@@ -22,7 +22,7 @@ let dlgSettings = {
 
 const userService = new UserService();
 
-const ListEmployee = () => {
+const OtherBussinessList = () => {
 
   const listStyle = ListStyles();
   const classes = EmployeeStyles();
@@ -91,33 +91,34 @@ const ListEmployee = () => {
         return (
           <Switch
             checked={(params.value===1) ? true : false }
+            disabled={true}
             onChange={(e)=>{handleChangeStatus(e,params)}}
             inputProps={{ 'aria-label': 'controlled' }}
           />
         )
       }
     },
-    {
-      field: 'uid',
-      headerName: 'ACCIONES',
-      minWidth: 100,
-      renderCell: (params) => {
-        return (
-          <div>
-            <Tooltip title="Editar" placement="top">
-              <IconButton aria-label="edit" color="success" onClick={()=>{handleEditEmployee(params)}}>
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Eliminar" placement="top">
-              <IconButton aria-label="delete" color="primary" onClick={()=>{handleDeleteEmployee(params)}}>
-                <DeleteForeverIcon />
-              </IconButton>
-            </Tooltip>
-          </div>
-        )
-      }
-    },
+    // {
+    //   field: 'uid',
+    //   headerName: 'ACCIONES',
+    //   minWidth: 100,
+    //   renderCell: (params) => {
+    //     return (
+    //       <div>
+    //         <Tooltip title="Editar" placement="top">
+    //           <IconButton aria-label="edit" color="success" onClick={()=>{handleEditEmployee(params)}}>
+    //             <EditIcon />
+    //           </IconButton>
+    //         </Tooltip>
+    //         <Tooltip title="Eliminar" placement="top">
+    //           <IconButton aria-label="delete" color="primary" onClick={()=>{handleDeleteEmployee(params)}}>
+    //             <DeleteForeverIcon />
+    //           </IconButton>
+    //         </Tooltip>
+    //       </div>
+    //     )
+    //   }
+    // },
   ];
 
   const handleEditEmployee = (employee) => {
@@ -144,7 +145,7 @@ const ListEmployee = () => {
     try {
       blockUI.current.open(true);
       userService.getAccessToken();
-      const r1 = await userService.listSearch('');
+      const r1 = await userService.listAccountPartner('');
       const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
       setRows(newData);
       blockUI.current.open(false);
@@ -216,4 +217,4 @@ const ListEmployee = () => {
   )
 }
 
-export default ListEmployee;
+export default OtherBussinessList;

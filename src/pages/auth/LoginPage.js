@@ -24,7 +24,6 @@ import { useHistory, Link } from "react-router-dom";
 import Collapse from "@mui/material/Collapse";
 import { useUI } from "../../app/context/ui";
 import AuthService from "../../services/AuthService";
-import UserService from "../../services/UserService";
 import logo from "../../assets/images/login-logo.png";
 import { LoginStyles } from "../../assets/css/login-style";
 import _ from "lodash";
@@ -55,7 +54,6 @@ const LoginPage = (props) => {
   }
 
   const authService = new AuthService();
-  const userService = new UserService();
 
   useEffect(() => {
     if (!setRequestFailed) {
@@ -83,7 +81,7 @@ const LoginPage = (props) => {
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailed(true);
-      setHasError({ message: e.response.data.message });
+      setHasError({ message: e.response.data.msg });
     }
   };
 

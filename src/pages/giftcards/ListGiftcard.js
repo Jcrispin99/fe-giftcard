@@ -59,15 +59,21 @@ const ListGiftcard = () => {
       userService.getAccessToken();
       giftCardService.getAccessToken();
       if(values.type === 1){
-        const r1 = await userService.listSearch(`sort=-id&dni=${values.dato}`);
-        if(r1.data.data.length > 0){
-          setDataUser(r1.data.data[0]);
-          const r2 = await giftCardService.listSearch(`user_id=${r1.data.data[0].id}&status=3&sort=-id`);
-          if(r2.data.data.length > 0){
-            setGiftCards(r2.data.data);
+        const r1 = await userService.listSearch(`limit=100&dni=${values.dato}`);
+        console.log('r1',r1);
+
+        if(r1.data.total > 0){
+          setDataUser(r1.data.users[0]);
+          
+          
+          const r2 = await giftCardService.mygiftcards(`user_id=${r1.data.users[0].uid}`);
+          console.log('r2',r2);
+          if(r2.data.total > 0){
+            setGiftCards(r2.data.giftcard);
           }else{
             dialogUI.current.open('', '', dlgSettings, 'El usuario no tiene gift cards');
           }
+
         }else{
           dialogUI.current.open('', '', dlgSettings, 'No hay un registro con ese DNI');
         }
@@ -107,6 +113,8 @@ const ListGiftcard = () => {
   const handleDeleteGiftcard = (giftcard) => {
     console.log('handleDeleteGiftcard ', giftcard);
   }
+
+  console.log('giftCards',giftCards);
 
   return (
     <div style={{marginTop: '40px'}}>
@@ -191,12 +199,12 @@ const ListGiftcard = () => {
       <Grid container>
         <Grid item xs={3}></Grid>
           {
-            (dataUser.id)
+            (dataUser.uid)
               &&
                 <Grid item xs={6} className={modalStyle.wrapperInfoGiftcard}>
                   <Grid container>
-                    <Grid item xs={4}>{dataUser?.fullName}</Grid>
-                    <Grid item xs={4}>{dateFormat(new Date(dataUser?.createdAt), "dd/mm/yyyy")}</Grid>
+                    <Grid item xs={4}>{dataUser?.name}</Grid>
+                    {/* <Grid item xs={4}>{dateFormat(new Date(dataUser?.createdAt), "dd/mm/yyyy")}</Grid> */}
                     <Grid item xs={4}>{`Total: ${giftCards?.length}`}</Grid>
                   </Grid>
                 </Grid>
@@ -230,21 +238,21 @@ const ListGiftcard = () => {
                     <div className="gift-card__image">
                     </div>
                     <section className="gift-card__content">
-                      <div className="gift-card__amount">S/.{e.amount}</div>
-                      <div className="gift-card__amount-remaining">S/{(e.amountAvailable) ? e.amountAvailable : e.amount} Disponible</div>    
+                      <div className="gift-card__amount">S/.{e.amountAvailable}</div>
+                      <div className="gift-card__amount-remaining">Monto Inicial: S/{e.amount}</div>    
                       <div className="gift-card__code">{e.code}</div>
-                      <div className="gift-card__msg">Identification code</div>
+                      <div className="gift-card__msg">Código de Identificación</div>
                     </section>
                   </article>
                 </Grid>
                 <Grid item xs={4} className='card3 gift-card animate__animated animate__rotateInDownRight'>
                   <Grid container>
                     <Grid item xs={12} className='infoCard'>
-                      <div>Fecha de creación: {dateFormat(new Date(e.createdAt), "dd/mm/yyyy")}</div>
+                      {/* <div>Fecha de creación: {dateFormat(new Date(e.createdAt), "dd/mm/yyyy")}</div> */}
                       <div>Fecha de vencimiento: {(e.dueDate) ? dateFormat(new Date(e.dueDate), "dd/mm/yyyy") : '__/__/____'}</div>
                     </Grid>
                     <Grid item xs={6} className='btnViewBuys'>
-                      <Button variant="outlined" color="error" onClick={()=>{handleViewBuy(e.id)}}>
+                      <Button variant="outlined" color="error" onClick={()=>{handleViewBuy(e.uid)}}>
                         VER COMPRAS
                       </Button>
                     </Grid>

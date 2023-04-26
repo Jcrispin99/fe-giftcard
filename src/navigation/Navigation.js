@@ -6,6 +6,12 @@ const Navigation = [
     url: 'categories'
   },
   {
+    id: 'Socios',
+    title: 'Socios',
+    type: 'item',
+    url: 'other-bussiness'
+  },
+  {
     id: 'Empleados',
     title: 'Empleados',
     type: 'item',

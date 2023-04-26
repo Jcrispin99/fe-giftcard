@@ -20,6 +20,9 @@ class UserService extends AppService {
   listCustomers(search='') {
     return this.http.get(`${this.path}/customers`);
   }
+  listAccountPartner(search='') {
+    return this.http.get(`${this.path}/account-partner`);
+  }
   me() {
     return this.http.get(`${this.path}/me`);
   }

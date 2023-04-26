@@ -6,6 +6,7 @@ import ListGiftcard from "../pages/giftcards/ListGiftcard";
 import ListTicket from "../pages/tickets/ListTicket";
 import ListCategories from "../pages/categories/ListCategories";
 import ManagerTickets from "../pages/tickets/ManagerTickets";
+import OtherBussinessList from "../pages/otherBussiness/OtherBussinessList";
 
 const Routes = [
   {
@@ -63,7 +64,14 @@ const Routes = [
     exact: true,
     pageTitle: "",
     component: ManagerTickets,
-  }
+  },
+  {
+    path: "/other-bussiness",
+    name: "",
+    exact: true,
+    pageTitle: "",
+    component: OtherBussinessList,
+  },
 ];
 
 export default Routes;
