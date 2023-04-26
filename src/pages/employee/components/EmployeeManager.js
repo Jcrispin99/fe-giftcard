@@ -18,7 +18,6 @@ const EmployeeManager = (props) => {
   const { blockUI } = useUI();
   const modalStyle = ModalCustomStyles();
   const baseValues = {
-    categorie: '',
     dni: '',
     name: '',
     email: '',
@@ -32,9 +31,6 @@ const EmployeeManager = (props) => {
   const [categoriesAvailable, setCategoriesAvailable] = useState([]);
 
   const validationSchema = Yup.object({
-    categorie: Yup
-      .string()
-      .required('Obligatorio'),
     dni: Yup
       .string()
       .min(8,'8 dígitos')
@@ -47,15 +43,6 @@ const EmployeeManager = (props) => {
       .string()
       .email('Ingrese un correo válido')
       .required('Obligatorio'),
-    birthdate: Yup
-      .date()
-      .test('birthdate', 'La fecha de nacimiento es obligatoria', function(value) {
-        if (!value || !(value instanceof Date) || isNaN(value)) {
-          return false;
-        }
-        return true;
-      })
-      .required('La fecha de nacimiento es obligatoria'),
     phone: Yup
       .string()
       .required('Obligatorio'),
@@ -167,7 +154,7 @@ const EmployeeManager = (props) => {
             return(
               <div>
                 <Grid container spacing={3} className='wrapperForm'>
-                  <Grid item xs={4} className={modalStyle.grdItem}>
+                  {/* <Grid item xs={4} className={modalStyle.grdItem}>
                     <label>CATEGORÍA</label>
                   </Grid>
                   <Grid item xs={8}>
@@ -193,7 +180,7 @@ const EmployeeManager = (props) => {
                       </Select>
                       <FormHelperText className={modalStyle.formError}>{errors.categorie}</FormHelperText>
                     </FormControl>
-                  </Grid>
+                  </Grid> */}
                   <Grid item xs={4} className={modalStyle.grdItem}>
                     <label>DNI</label>
                   </Grid>

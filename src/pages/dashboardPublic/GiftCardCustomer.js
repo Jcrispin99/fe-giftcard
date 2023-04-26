@@ -22,7 +22,7 @@ let dlgSettings = {
   confirm: false,
   btn: {
     close: 'CERRAR',
-    confirm: '',
+    confirm: 'ACEPTAR',
   },
   onConfirm: () => {},
 };
@@ -49,7 +49,7 @@ const GiftCardCustomer = () => {
   const [tickets, setTickets] = useState([]);
 
   const baseValues = {
-    code: '553195'
+    code: ''
   };
 
   const baseValuesTicket = {
@@ -57,6 +57,8 @@ const GiftCardCustomer = () => {
   }
   
   const [initialValues, setInitialValues] = useState(baseValues);
+  const [initialValuesTicket, setInitialValuesTicket] = useState(baseValuesTicket);
+
   const validationSchema = Yup.object({
     code: Yup
       .string()
@@ -77,7 +79,8 @@ const GiftCardCustomer = () => {
     try {
       blockUI.current.open(true);
       setRequestFailed('');
-      const { data } = await authService.loguinMyCard(values);
+      const id = location.pathname.split('/gift-card-customer/')[1];
+      const { data } = await authService.loguinMyCard({...values, id});
       setGiftcardValidate(true);
       setCard(data.giftcard);
       setTickets(data.tickets);
@@ -90,16 +93,19 @@ const GiftCardCustomer = () => {
     }
   };
 
-  const onSubmitTicket = async (values) => {
+  const handleConfirmGenerateTicket = async (values) => {
     try {
       setQrBuy({});
       blockUI.current.open(true);
+      const id = location.pathname.split('/gift-card-customer/')[1];
       const body = {
+        id,
         partner: partnerSelected.uid,
         code: card.securityCodeGenerated,
         securitySecretBase64: card.securitySecretBase64,
         amount: values.amount
       }
+
       const r1 = await authService.generateQr(body);
       setViewAllQr(false);
       setCard({
@@ -122,6 +128,17 @@ const GiftCardCustomer = () => {
         status: true
       }, ...tickets];
       setTickets(newTickets);
+      dlgSettings = {
+        ...dlgSettings,
+        confirm: false,
+        onConfirm: () => {},
+      };
+      dialogUI.current.open(
+        '',
+        'Ticket generado',
+        dlgSettings
+      );
+      setInitialValuesTicket({amount:''});
       blockUI.current.open(false);
     } catch (e) {
       setQrBuy({});
@@ -131,6 +148,27 @@ const GiftCardCustomer = () => {
         e.response.data.message,
         dlgSettings
       );
+    }
+  }
+
+  const onSubmitTicket = async (values) => {
+    try {
+      setQrBuy({});
+      dlgSettings = {
+        ...dlgSettings,
+        confirm: true,
+        onConfirm: () => {
+          handleConfirmGenerateTicket(values);
+        },
+      };
+      dialogUI.current.open(
+        'ALERTA',
+        '¿Está seguro?',
+        dlgSettings
+      );
+    } catch (e) {
+      setQrBuy({});
+      blockUI.current.open(false);
     }
   }
 
@@ -317,10 +355,10 @@ const GiftCardCustomer = () => {
                         <div className="gift-card__image">
                         </div>
                         <section className="gift-card__content">
-                          <div className="gift-card__amount">S/.{card.amount}</div>
-                          <div className="gift-card__amount-remaining">S/{card.amountAvailable} Disponible</div>    
+                          <div className="gift-card__amount">S/.{card.amountAvailable}</div>
+                          <div className="gift-card__amount-remaining">Monto Inicial: S/{card.amount}</div>    
                           <div className="gift-card__code">{card.code}</div>
-                          <div className="gift-card__msg">Identification code</div>
+                          <div className="gift-card__msg">Código de identificación</div>
                         </section>
                       </article>
                     </div>
@@ -334,7 +372,7 @@ const GiftCardCustomer = () => {
                   </Grid>
                   <Grid item xs={12} style={{textAlign: 'center', marginTop: '32px'}}>
                     <Formik
-                      initialValues={baseValuesTicket}
+                      initialValues={initialValuesTicket}
                       validationSchema={validationSchemaTicket}
                       onSubmit={onSubmitTicket}
                       enableReinitialize={true}
@@ -438,12 +476,12 @@ const GiftCardCustomer = () => {
                         (qrBuy?.img)
                           &&
                             <Grid item xs={12} style={{textAlign:'center', marginTop: '18px'}}>
-                              <div className={giftStyle.wrapperQr}>
+                              <div className={giftStyle.wrapperQr} style={{borderColor:'green'}}>
                                 <img src={qrBuy.img} alt="QR code" ref={imagenRef} style={{width: '100%'}}/>
-                                <div>
+                                <div className='partner'>
                                   {qrBuy.namePartner}
                                 </div>
-                                <div>
+                                <div className='amount'>
                                   S/{qrBuy.amountTicket}
                                 </div>
                               </div>

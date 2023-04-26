@@ -4,7 +4,7 @@ import {AppStyle} from '../../assets/css/app/AppStyle';
 
 const AppButton = props => {
   const appStyle = AppStyle();
-  const {onPress, label, type, color, disabled} =  props;
+  const {onPress, label, type, color, disabled, background} =  props;
 
   return (
     <Button
@@ -14,6 +14,7 @@ const AppButton = props => {
       fullWidth={type === 'main'}
       disabled={disabled}
       onClick={onPress}
+      style={background === 'blue' ? {backgroundColor: '#01019d'} : {backgroundColor: '#c90000'}}
     >
       {label}
     </Button>

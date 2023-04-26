@@ -29,7 +29,7 @@ function App() {
           <Switch>
             <Route exact path="/gift-card-customer/:id" component={GiftCardCustomer} />      
             <Route exact path="/login" component={Login} />
-            {routes.map((layout, i) => {
+            {Routes.map((layout, i) => {
               return (
                 <ProtectedRoute
                   key={i}

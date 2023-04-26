@@ -286,6 +286,10 @@ export const ModalCustomStyles = makeStyles((theme) => ({
       marginTop: '20px',
       fontSize: '12px',
       border: '1px solid #e3e3e3',
+      width: '105px',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     },
     '& .gift-card__amount': {
       fontSize: '45px',

@@ -109,12 +109,12 @@ const DialogUI = forwardRef((props, ref) => {
                 :
                   <Grid item xs={settings.confirm ? 6 : 12} className="test">
                     {settings.confirm && (
-                      <AppButton onPress={onConfirm} label={settings.btn.confirm} type={'main'} color={'primary'} />
+                      <AppButton onPress={onConfirm} label={settings.btn.confirm} type={'main'} color={'primary'} background='blue'/>
                     )}
                   </Grid>
             }
             <Grid item xs={settings.confirm ? 6 : 12}>
-              <AppButton onPress={onClose} label={settings.btn.close} type={'main'} color={'primary'} />
+              <AppButton onPress={onClose} label={settings.btn.close} type={'main'} color={'primary'} background='red'/>
             </Grid>
           </Grid>
         </DialogActions>
