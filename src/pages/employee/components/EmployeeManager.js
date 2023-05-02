@@ -33,6 +33,7 @@ const EmployeeManager = (props) => {
   const validationSchema = Yup.object({
     dni: Yup
       .string()
+      .matches(/^[0-9]+$/, 'Debe contener solo números')
       .min(8,'8 dígitos')
       .max(8,'8 dígitos')
       .required('Obligatorio'),

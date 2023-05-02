@@ -58,7 +58,6 @@ const CustomerManager = (props) => {
     categorie: '',
     dni: '',
     name: '',
-    email: '',
     birthdate: '',
     phone: ''
   };
@@ -66,7 +65,6 @@ const CustomerManager = (props) => {
   const initialValuesGiftcard = {
     giftphone: '',
     amount: '',
-    dueDate: '',
     code: '',
     permissions: []
   };
@@ -85,15 +83,12 @@ const CustomerManager = (props) => {
       .required('Obligatorio'),
     dni: Yup
       .string()
+      .matches(/^[0-9]+$/, 'Debe contener solo números')
       .min(8,'8 dígitos')
       .max(8,'8 dígitos')
       .required('Obligatorio'),
     name: Yup
       .string()
-      .required('Obligatorio'),
-    email: Yup
-      .string()
-      .email('Ingrese un correo válido')
       .required('Obligatorio'),
     phone: Yup
       .string()
@@ -105,11 +100,10 @@ const CustomerManager = (props) => {
       .number()
       .required('Obligatorio'),
     code: Yup
-      .string(),
+      .string()
+      .required('Obligatorio'),
     giftphone: Yup
-      .number(),
-    dueDate: Yup
-      .date()
+      .number()
   });
 
   const handleChangePartner = (event) => {
@@ -132,6 +126,9 @@ const CustomerManager = (props) => {
       userService.getAccessToken();
 
       let resultUser;
+
+      console.log('dataEmployee',dataEmployee);
+      console.log('values',values);
 
       if(dataEmployee.id){
         resultUser = await userService.update({
@@ -245,7 +242,7 @@ const CustomerManager = (props) => {
       partnerService.getAccessToken();
       const r1 = await partnerService.listSearch('');
       setPartnersAvailable(r1.data.partners);
-      const checkedPartners = r1.data.partners.map((e)=>({id: e.uid, status: false}));
+      const checkedPartners = r1.data.partners.map((e)=>({id: e.uid, status: true}));
       setChecked(checkedPartners);
       blockUI.current.open(false);
     } catch (e) {
@@ -434,7 +431,7 @@ const CustomerManager = (props) => {
                         onBlur={handleBlur}
                       />
                     </Grid>
-                    <Grid item xs={4} className={modalStyle.grdItem}>
+                    {/* <Grid item xs={4} className={modalStyle.grdItem}>
                       <label>CORREO</label>
                     </Grid>
                     <Grid item xs={8}>
@@ -458,7 +455,7 @@ const CustomerManager = (props) => {
                         onChange={handleChange}
                         onBlur={handleBlur}
                       />
-                    </Grid>
+                    </Grid> */}
                   </Grid>
                   <Box pb={5}/>
                   <Grid container justifyContent="center">
@@ -550,7 +547,6 @@ const CustomerManager = (props) => {
                     </Grid>
                     <Grid item xs={4} className={modalStyle.grdItem}>
                       <label>CÓDIGO</label>
-                      <div className='optional'>(Opcional)</div>
                     </Grid>
                     <Grid item xs={8}>
                       <TextField
@@ -600,33 +596,6 @@ const CustomerManager = (props) => {
                         onBlur={handleBlur}
                       />
                     </Grid>
-                    <Grid item xs={4} className={modalStyle.grdItem}>
-                      <label>F.VENC</label>
-                      <div className='optional'>(Opcional)</div>
-                    </Grid>
-                    <Grid item xs={8}>
-                      <TextField
-                        type="date"
-                        id="dueDate"
-                        name="dueDate"
-                        autoComplete="dueDate"
-                        value={values.dueDate || ''}
-                        className={modalStyle.texfield}
-                        placeholder="Escriba aqui ..."
-                        size='small'
-                        margin="normal"
-                        required
-                        fullWidth
-                        variant="outlined"
-                        helperText={
-                          errors.dueDate && touched.dueDate ? errors.dueDate : ""
-                        }
-                        error={!!(errors.dueDate && touched.dueDate)}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid>
-
                     <Grid item xs={12} className={customerStyle.titlePartner}>
                       PARTNERS
                     </Grid>

@@ -47,7 +47,7 @@ const template = {
     important: '',
   },
   btn: {
-    confirm: 'Yes',
+    confirm: 'SI',
     close: 'Ok',
   },
   confirm: false,

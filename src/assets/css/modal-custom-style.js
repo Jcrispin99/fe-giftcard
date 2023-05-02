@@ -242,7 +242,7 @@ export const ModalCustomStyles = makeStyles((theme) => ({
     width: '321px',
     overflow: 'auto',
     '& .card6': {
-      textAlign: '-webkit-right !important',
+      textAlign: '-webkit-center !important',
     },
     '& .gift-card': {
       borderRadius: '10px',
@@ -299,9 +299,11 @@ export const ModalCustomStyles = makeStyles((theme) => ({
       marginTop: '7px',
     },
     '& .card3': {
-      border: 'solid 0.5px gray',
       borderRadius: '10px',
       margin: '0px 13px',
+      marginLeft: '43px',
+      marginBottom: '9px',
+      padding: '2px',
       '& .infoCard': {
         padding: '24px',
         lineHeight: '35px',
@@ -316,8 +318,8 @@ export const ModalCustomStyles = makeStyles((theme) => ({
     '& .card2': {
       borderRadius: '10px',
       textAlign: 'center',
-      lineHeight: '231px',
-      backgroundColor: '#1a76d233'
+      backgroundColor: '#1a76d233',
+      height: '52px'
     }
   },
   wrapperCustomerGiftCard: {

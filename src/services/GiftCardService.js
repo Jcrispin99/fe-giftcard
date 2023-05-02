@@ -9,13 +9,19 @@ class GiftCardService extends AppService {
     return this.http.post(`${this.path}`, data);
   }
   update(data, id) {
-    return this.http.patch(`${this.path}/${id}`, data);
+    return this.http.put(`${this.path}/${id}`, data);
   }
   listSearch(search = '') {
     return this.http.get(`${this.path}?${search}`);
   }
   mygiftcards(search = '') {
     return this.http.get(`${this.path}/mygiftcards?${search}`);
+  }
+  sendUrlToMessage(data) {
+    return this.http.post(`${this.path}/send-url-to-message`, data);
+  }
+  mytickets(search = '') {
+    return this.http.get(`${this.path}/mytickets?${search}`);
   }
 }
 

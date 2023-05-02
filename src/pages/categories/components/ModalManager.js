@@ -14,6 +14,9 @@ const categorieService = new CategorieService();
 const ModalManager = (props) => {
 
   const { open, setOpen, setRows, dataCategorie } = props;
+
+  console.log('dataCategorie',dataCategorie);
+
   const { blockUI } = useUI();
   const modalStyle = ModalCustomStyles();
 
@@ -68,7 +71,11 @@ const ModalManager = (props) => {
 
   useEffect(() => {
     if(dataCategorie.id){
+      setRequestFailed(false);
       setInitialValues({...dataCategorie});
+    }else{
+      setInitialValues(baseValues);
+      setRequestFailed(false);
     }
   }, [dataCategorie]);
 

@@ -17,6 +17,7 @@ import { Formik } from 'formik';
 import { GiftCardCustomerPublicStyles } from './styles/giftcard-public-style';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import DownloadingIcon from '@mui/icons-material/Downloading';
+import dateFormat from 'dateformat';
 
 let dlgSettings = {
   confirm: false,
@@ -511,6 +512,17 @@ const GiftCardCustomer = () => {
                               >
                                 {
                                   (ticket.status) ? 'DISPONIBLE' : 'ESCANEADO'
+                                }
+                              </div>
+                              <div style={{
+                                fontSize: '11px',
+                                backgroundColor: '#7a7a7a',
+                                color: 'white',
+                                marginTop: '7px',
+                                padding: '2px',
+                              }}>
+                                {
+                                  dateFormat(new Date(ticket.createdAt), "dd-mm-yy HH:MM")
                                 }
                               </div>
                             </div>

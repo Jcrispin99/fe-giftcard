@@ -2,7 +2,8 @@ import { makeStyles } from "@mui/styles";
 
 export const CustomerStyles = makeStyles((theme) => ({
   titlePartner: {
-    textAlign: 'center'
+    textAlign: 'right',
+    paddingTop: '38px !important',
   },
   wrapperPartner: {
     border: 'solid 0.2px #1a76d240',

@@ -120,6 +120,7 @@ const ListCategories = () => {
   };
 
   const handleCreate = () => {
+    setDataCategorie({});
     setOpenModalCategorie(true);
   };
 

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Grid, Modal } from '@mui/material';
+import { Button, FormHelperText, Grid, MenuItem, Modal, Select } from '@mui/material';
 import 'animate.css';
 import { Formik } from 'formik';
 import { Box, TextField, Typography } from '@mui/material';
 import * as Yup from 'yup';
 import _ from 'lodash';
 import { ModalCustomStyles } from '../../assets/css';
-import { BuyService, GiftCardService } from '../../services';
+import { GiftCardService, PartnerService } from '../../services';
 import { useUI } from '../../app/context/ui';
 import { v4 as uuidv4 } from 'uuid';
 import { useHistory } from 'react-router-dom';
@@ -19,7 +19,7 @@ let dlgSettings = {
   onConfirm: () => {},
 };
 
-const buyService = new BuyService();
+const partnerService = new PartnerService();
 const giftCardService = new GiftCardService();
 
 const CreateBuy = (props) => {
@@ -27,29 +27,27 @@ const CreateBuy = (props) => {
   const { 
     openBuy, 
     setOpenBuy, 
-    dataCard, 
-    dataUser, 
-    giftCards, 
-    setGiftCards,
     giftCardBuy
   } = props;
   const { blockUI, dialogUI } = useUI();
   const modalStyle = ModalCustomStyles();
   const baseValues = {
-    gifcardId: '',
-    product: '',
     amount: '',
+    partner: '',
   };
   const [initialValues, setInitialValues] = useState(baseValues);
   const [hasError, setHasError] = useState({});
   const [requestFailed, setRequestFailed] = useState(false);
+  const [amountMax, setAmountMax] = useState(100);
+  const [partnerAvailable, setPartnersAvailable] = useState([]);
 
   const validationSchema = Yup.object({
     amount: Yup
       .number()
-      .min(1)
+      .min(1, 'Debe ser al menos S/1')
+      .max(amountMax, `No debe superar los S/${amountMax}`)
       .required('Obligatorio'),
-    product: Yup
+    partner: Yup
       .string()
       .required('Obligatorio'),
   });
@@ -58,69 +56,17 @@ const CreateBuy = (props) => {
     try {
       blockUI.current.open(true);
       setRequestFailed(false);
-      buyService.getAccessToken();
-      giftCardService.getAccessToken();
-      if(Number(giftCardBuy.amountAvailable) > 0){
-        if(Number(values.amount) > Number(giftCardBuy.amountAvailable)){
-          dialogUI.current.open('', '', dlgSettings, 'No cuenta con saldo suficiente para realizar la compra');
-        }else{
-          let newAmountAvailable = Number(giftCardBuy.amountAvailable) - Number(values.amount);
-          buyService.create({...values, gifcardId: giftCardBuy.id});
-          giftCardService.update({...giftCardBuy, amountAvailable: newAmountAvailable}, giftCardBuy.id);
-          let newGiftcards = giftCards.map((e)=>{
-            if(e.id === giftCardBuy.id){
-                return {
-                  ...e,
-                  amountAvailable: newAmountAvailable
-                }
-              }else{
-                return e;
-              }
-            })
-          setGiftCards(newGiftcards);
-          dialogUI.current.open('', '', dlgSettings, 'Compra realizada con éxito');
-        }
-      }else{
-        dialogUI.current.open('', '', dlgSettings, 'No cuenta con saldo suficiente para realizar la compra');
-      }
-      // if(dataUser.)
-      // buyService.create({...values, gifcardId: idGiftCard});
 
-      // let newCode = '';
-      // if(values.code === ''){
-      //   newCode = uuidv4();
-      // }else{
-      //   newCode = values.code;
-      // }
-      // let r1 = await giftCardService.create({
-      //   ...values,
-      //   userId: dataUser.id,
-      //   status: 1,
-      //   code: newCode
-      // });
-      // dialogUI.current.open('', '', dlgSettings, 'Gift card creada correctamente');
-      //   if(dataCard.id){
-    //     let newValues = {...values};
-    //     values.dni =  `${values.dni}`;
-    //     (newValues.dni === dataCard.dni) && delete newValues.dni;
-    //     (newValues.email === dataCard.email) && delete newValues.email;
-    //     await userService.update({
-    //         ...newValues,
-    //         fullName: `${newValues.firstName} ${newValues.lastName}`,
-    //       }, dataCard.id);
-    //   }else{
-    //     await userService.create(
-    //       {
-    //         ...values, 
-    //         dni: `${values.dni}`,
-    //         fullName: `${values.firstName} ${values.lastName}`,
-    //         status: 1,
-    //         role: 'employee',
-    //         categoryId: 3
-    //       });
-    //   }
-    //   const r1 = await userService.listSearch('sort=-id&role=employee&status=3');
-    //   setRows(r1.data.data);
+      const body = {
+        gifcard: giftCardBuy.uid,
+        partner: values.partner,
+        amount: values.amount
+      }
+
+      console.log('body',body);
+
+      // const r1 = await authService.generateQr(body);
+
       blockUI.current.open(false);
       setOpenBuy(false);
     } catch (e) {
@@ -129,15 +75,28 @@ const CreateBuy = (props) => {
     }
   };
 
-  // useEffect(() => {
-  //   if(dataCard.id){
-  //     setInitialValues(dataCard);
-  //   }
-  // }, [dataCard]);
+  const getListPartner = async () => {
+    try {
+      blockUI.current.open(true);
+      partnerService.getAccessToken();
+      const r1 = await partnerService.listSearch('');
+      setPartnersAvailable(r1.data.partners);
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  };
 
   useEffect(() => {
     setRequestFailed(false);
     setHasError({message: ''});
+    setAmountMax(giftCardBuy.amountAvailable);
+  }, []);
+
+  useEffect(() => {
+    (async function init() {
+      await getListPartner();
+    })();
   }, []);
 
   return (
@@ -203,26 +162,30 @@ const CreateBuy = (props) => {
                     <label>PARTNER</label>
                   </Grid>
                   <Grid item xs={8}>
-                    <TextField
-                      type="text"
-                      id="product"
-                      name="product"
-                      autoComplete="product"
-                      value={values.product || ''}
-                      className={modalStyle.texfield}
-                      placeholder="Escriba aqui ..."
-                      size='small'
-                      margin="normal"
-                      required
-                      fullWidth
-                      variant="outlined"
-                      helperText={
-                        errors.product && touched.product ? errors.product : ""
-                      }
-                      error={!!(errors.product && touched.product)}
+                    <Select
+                      displayEmpty
+                      id="partner"
+                      name="partner"
+                      value={values.partner}
                       onChange={handleChange}
-                      onBlur={handleBlur}
-                    />
+                      size='small'
+                      error={touched.partner && Boolean(errors.partner)}
+                      helpertext={
+                        errors.partner && touched.partner ? errors.partner : ""
+                      }
+                      fullWidth
+                    >
+                      {
+                        partnerAvailable.map((e, index)=>(
+                          <MenuItem key={`partner${index}`} value={e.uid}>{e.name}</MenuItem>
+                        ))
+                      }
+                    </Select>
+                    <FormHelperText 
+                      className={modalStyle.formError} 
+                      style={{textAlign: 'center', color: '#df686a'}}>
+                        {errors.partner}
+                    </FormHelperText>
                   </Grid>
                 </Grid>
                 <Box pb={5}/>
@@ -232,16 +195,18 @@ const CreateBuy = (props) => {
                     size="large"
                     className={modalStyle.button}
                     onClick={() => { setOpenBuy(false) }}
+                    style={{backgroundColor:'red', color:'white'}}
                   >
-                    CANCELAR
+                    CERRAR
                   </Button>
                   <Button
                     variant="contained"
                     size="large"
                     color="primary"
                     onClick={()=>{handleSubmit()}}
+                    style={{marginLeft:'20px'}}
                   >
-                    GUARDAR
+                    CREAR
                   </Button>
                 </Grid>
               </div>

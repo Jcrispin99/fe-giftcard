@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useUI } from '../../app/context/ui';
 import { ListStyles } from '../../assets/css';
 import { UserService } from '../../services';
-import { EmployeeStyles } from './components/employees-style';
+import { OtherBussinessStyles } from './components/otherBussiness-style';
 import { Button, IconButton, Tooltip, Typography, Switch } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { DataGrid } from '@mui/x-data-grid';
 import clsx from 'clsx';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import EmployeeManager from './components/EmployeeManager';
+import OtherBussinessManager from './components/OtherBussinessManager';
 
 let dlgSettings = {
   confirm: true,
@@ -25,7 +25,7 @@ const userService = new UserService();
 const OtherBussinessList = () => {
 
   const listStyle = ListStyles();
-  const classes = EmployeeStyles();
+  const classes = OtherBussinessStyles();
   const { blockUI, dialogUI } = useUI();
   const [rows, setRows] = useState([]);
   const [openModalEmployee, setOpenModalEmployee] = useState(false);
@@ -34,11 +34,11 @@ const OtherBussinessList = () => {
   const handleChangeStatus = async (e,employee) => {
     try {
       blockUI.current.open(true);
+      console.log({employee});
       userService.getAccessToken();
       let checked = (e.target.checked) ? 1 : 2;
       await userService.update({
-        id: employee.row.id, 
-        dni: employee.row.dni, 
+        id: employee.row.id,
         status: checked,
         role: employee.row.role
       }, employee.id);
@@ -91,37 +91,37 @@ const OtherBussinessList = () => {
         return (
           <Switch
             checked={(params.value===1) ? true : false }
-            disabled={true}
             onChange={(e)=>{handleChangeStatus(e,params)}}
             inputProps={{ 'aria-label': 'controlled' }}
           />
         )
       }
     },
-    // {
-    //   field: 'uid',
-    //   headerName: 'ACCIONES',
-    //   minWidth: 100,
-    //   renderCell: (params) => {
-    //     return (
-    //       <div>
-    //         <Tooltip title="Editar" placement="top">
-    //           <IconButton aria-label="edit" color="success" onClick={()=>{handleEditEmployee(params)}}>
-    //             <EditIcon />
-    //           </IconButton>
-    //         </Tooltip>
-    //         <Tooltip title="Eliminar" placement="top">
-    //           <IconButton aria-label="delete" color="primary" onClick={()=>{handleDeleteEmployee(params)}}>
-    //             <DeleteForeverIcon />
-    //           </IconButton>
-    //         </Tooltip>
-    //       </div>
-    //     )
-    //   }
-    // },
+    {
+      field: 'uid',
+      headerName: 'ACCIONES',
+      minWidth: 100,
+      renderCell: (params) => {
+        return (
+          <div>
+            <Tooltip title="Editar" placement="top">
+              <IconButton aria-label="edit" color="success" onClick={()=>{handleEditEmployee(params)}}>
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Eliminar" placement="top">
+              <IconButton aria-label="delete" color="primary" onClick={()=>{handleDeleteEmployee(params)}}>
+                <DeleteForeverIcon />
+              </IconButton>
+            </Tooltip>
+          </div>
+        )
+      }
+    },
   ];
 
   const handleEditEmployee = (employee) => {
+    console.log('employee',employee);
     setDataEmployee(employee.row);
     setOpenModalEmployee(true);
   }
@@ -146,6 +146,7 @@ const OtherBussinessList = () => {
       blockUI.current.open(true);
       userService.getAccessToken();
       const r1 = await userService.listAccountPartner('');
+      console.log('r1',r1);
       const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
       setRows(newData);
       blockUI.current.open(false);
@@ -179,6 +180,7 @@ const OtherBussinessList = () => {
   };
 
   const handleCreateEmployee = () => {
+    setDataEmployee({});
     setOpenModalEmployee(true);
   };
 
@@ -190,7 +192,7 @@ const OtherBussinessList = () => {
 
   return (
     <div style={{ height: 540, width: '100%', marginTop: '50px' }}>
-      <Typography className={classes.title}>EMPLEADOS</Typography>
+      <Typography className={classes.title}>SOCIOS</Typography>
       <Button
         onClick={handleCreateEmployee} 
         variant="outlined" 
@@ -206,7 +208,7 @@ const OtherBussinessList = () => {
         pageSize={20}
         pageSizeOptions={[20,50,100]}
       />
-      <EmployeeManager
+      <OtherBussinessManager
         open={openModalEmployee}
         setOpen={setOpenModalEmployee}
         setRows={setRows}

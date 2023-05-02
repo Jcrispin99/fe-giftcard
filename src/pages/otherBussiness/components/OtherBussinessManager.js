@@ -13,9 +13,12 @@ const userService = new UserService();
 const categorieService = new CategorieService();
 const partnerService = new PartnerService();
 
-const EmployeeManager = (props) => {
+const OtherBussinessManager = (props) => {
 
   const { open, setOpen, setRows, rows, dataEmployee } = props;
+
+  console.log('dataEmployee',dataEmployee);
+
   const { blockUI } = useUI();
   const modalStyle = ModalCustomStyles();
   const baseValues = {
@@ -38,6 +41,7 @@ const EmployeeManager = (props) => {
       .required('Obligatorio'),
     dni: Yup
       .string()
+      .matches(/^[0-9]+$/, 'Debe contener solo números')
       .min(8,'8 dígitos')
       .max(8,'8 dígitos')
       .required('Obligatorio'),
@@ -70,6 +74,13 @@ const EmployeeManager = (props) => {
             ...values,
           }, dataEmployee.id);
       }else{
+        console.log({
+            ...values, 
+            status: 1,
+            role: 'PARTNER_ROLE'
+          });
+
+
         await userService.create(
           {
             ...values, 
@@ -102,7 +113,7 @@ const EmployeeManager = (props) => {
       blockUI.current.open(true);
       partnerService.getAccessToken();
       const r1 = await partnerService.listSearch('');
-      console.log('r1',r1);
+      console.log('r partner',r1);
       setPartnersAvailable(r1.data.partners);
       blockUI.current.open(false);
     } catch (e) {
@@ -111,9 +122,13 @@ const EmployeeManager = (props) => {
   };
 
   useEffect(() => {
+    setRequestFailed(false);
     if(dataEmployee.id){
       const birthdate = new Date(dataEmployee.birthdate).toISOString().split("T")[0];
       setInitialValues({...dataEmployee, birthdate});
+    }else{
+      setInitialValues(baseValues);
+      
     }
   }, [dataEmployee]);
 
@@ -139,7 +154,7 @@ const EmployeeManager = (props) => {
       className="animate__animated animate__backInLeft"
     >
       <div className={modalStyle.paperModal}>
-        <Typography className="title">{(!dataEmployee.id) ? 'CREAR CUENTA DE EMPLEADO' : 'EDITAR CUENTA DE EMPLEADO'}</Typography>
+        <Typography className="title">{(!dataEmployee.id) ? 'CREAR CUENTA DE SOCIO' : 'EDITAR CUENTA DE SOCIO'}</Typography>
         <Typography component="div">
           {requestFailed && (
             <p className={modalStyle.formError} align="center">{hasError.message}</p>
@@ -373,4 +388,4 @@ const EmployeeManager = (props) => {
   )
 }
 
-export default EmployeeManager;
+export default OtherBussinessManager;

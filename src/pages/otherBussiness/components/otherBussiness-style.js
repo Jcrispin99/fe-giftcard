@@ -1,6 +1,6 @@
 import { makeStyles } from "@mui/styles";
 
-export const EmployeeStyles = makeStyles((theme) => ({
+export const OtherBussinessStyles = makeStyles((theme) => ({
   button: {
     margin: theme.spacing(1),
     textTransform: 'none'

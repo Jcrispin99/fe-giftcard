@@ -1,15 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Grid, Modal } from '@mui/material';
+import { 
+  Avatar,
+  Button, 
+  Checkbox, 
+  FormControlLabel, 
+  Grid, 
+  IconButton, 
+  Modal, 
+  Tooltip
+} from '@mui/material';
 import 'animate.css';
 import { Formik } from 'formik';
 import { Box, TextField, Typography } from '@mui/material';
 import * as Yup from 'yup';
 import _ from 'lodash';
 import { ModalCustomStyles } from '../../assets/css';
-import { GiftCardService } from '../../services';
+import { 
+  GiftCardService, 
+  PartnerService 
+} from '../../services';
 import { useUI } from '../../app/context/ui';
-import { v4 as uuidv4 } from 'uuid';
-import { useHistory } from 'react-router-dom';
+import { CustomerStyles } from '../customer/components/customer-style';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
 
 let dlgSettings = {
   confirm: false,
@@ -20,100 +32,163 @@ let dlgSettings = {
 };
 
 const giftCardService = new GiftCardService();
+const partnerService = new PartnerService();
+
 
 const CreateGiftcard = (props) => {
 
   const { 
     open, 
-    setOpen, 
-    dataCard, 
-    dataUser, 
-    giftCards, 
-    setGiftCards 
+    setOpen,
+    dataUser,
+    dataCard
   } = props;
+
   const { blockUI, dialogUI } = useUI();
   const modalStyle = ModalCustomStyles();
-  const baseValues = {
-    userId: '',
+  const customerStyle = CustomerStyles();
+
+  const [requestFailedGiftcard, setRequestFailedGiftcard] = useState(false);
+  const [hasErrorGiftcard, setHasErrorGiftcard] = useState({});
+  const [partnersAvailable, setPartnersAvailable] = useState([]);
+  const [checked, setChecked] = useState([]);
+
+  const initialValuesGiftcard = {
+    giftphone: '',
     amount: '',
     code: '',
-    dueDate: '',
+    permissions: []
   };
-  const history = useHistory();
-  const [initialValues, setInitialValues] = useState(baseValues);
-  const [hasError, setHasError] = useState({});
-  const [requestFailed, setRequestFailed] = useState(false);
 
-  const validationSchema = Yup.object({
+  const [initialValues, setInitialValues] = useState(initialValuesGiftcard);
+
+  const validationSchemaGiftcard = Yup.object({
     amount: Yup
       .number()
-      .min(1)
+      .required('Obligatorio'),
+    code: Yup
+      .string()
       .required('Obligatorio')
   });
 
-  const onSubmit = async (values) => {
+  const onSubmitGiftcard = async (values) => {
     try {
       blockUI.current.open(true);
-      setRequestFailed(false);
+      setRequestFailedGiftcard(false);
       giftCardService.getAccessToken();
-      let newCode = '';
-      if(values.code === ''){
-        newCode = uuidv4();
-      }else{
-        newCode = values.code;
-      }
-      let r1 = await giftCardService.create({
-        ...values,
-        userId: dataUser.id,
-        status: 1,
-        code: newCode,
-        amountAvailable: values.amount
+      let permissions = [];
+      checked.map((e)=>{
+        if(e.status){
+          permissions.push(e.id);
+        }
       });
-      dialogUI.current.open('', '', dlgSettings, 'Gift card creada correctamente');
-      setGiftCards([
-        r1.data.giftcard,
-        ...giftCards,
-      ]);
-      //   if(dataCard.id){
-    //     let newValues = {...values};
-    //     values.dni =  `${values.dni}`;
-    //     (newValues.dni === dataCard.dni) && delete newValues.dni;
-    //     (newValues.email === dataCard.email) && delete newValues.email;
-    //     await userService.update({
-    //         ...newValues,
-    //         fullName: `${newValues.firstName} ${newValues.lastName}`,
-    //       }, dataCard.id);
-    //   }else{
-    //     await userService.create(
-    //       {
-    //         ...values, 
-    //         dni: `${values.dni}`,
-    //         fullName: `${values.firstName} ${values.lastName}`,
-    //         status: 1,
-    //         role: 'employee',
-    //         categoryId: 3
-    //       });
-    //   }
-    //   const r1 = await userService.listSearch('sort=-id&role=employee&status=3');
-    //   setRows(r1.data.data);
+
+      if(values.code === ''){
+        delete values.code;
+      }
+
+      if(dataCard.uid){
+
+        if(dataCard.amount !== values.amount){
+          const mytickets = await giftCardService.mytickets(`giftcard=${dataCard.uid}`);
+          if(mytickets.data.total > 0){
+            dialogUI.current.open('ERROR', '', dlgSettings, 'La giftcard está siendo utilizada');
+          }else{
+            await giftCardService.update({
+              ...values,
+              amountAvailable: values.amount,
+              user: dataUser.uid,
+              permissions
+            }, dataCard.uid);
+            dialogUI.current.open('', '', dlgSettings, 'Gifcard actualizada');
+          }
+        }else{
+          await giftCardService.update({
+            ...values,
+            user: dataUser.uid,
+            permissions
+          }, dataCard.uid);
+          dialogUI.current.open('', '', dlgSettings, 'Gifcard actualizada');
+        }
+      }else{
+        await giftCardService.create({
+          ...values,
+          user: dataUser.uid,
+          permissions
+        });
+        dialogUI.current.open('', '', dlgSettings, 'Gifcard creada');
+      }
       blockUI.current.open(false);
-      setOpen(false);
+      setOpen(false)
     } catch (e) {
       blockUI.current.open(false);
-      setRequestFailed(true);
+      setRequestFailedGiftcard(true);
+      if (!_.isUndefined(e.response.data)) {
+        setHasErrorGiftcard({ message: e.response.data.msg });
+      }
     }
   };
 
-  // useEffect(() => {
-  //   if(dataCard.id){
-  //     setInitialValues(dataCard);
-  //   }
-  // }, [dataCard]);
+  const handleChangePartner = (event) => {
+    const value = event.target.value;
+    const status = event.target.checked;
+    let newChecked = checked.map((e)=>{
+      if(e.id === value){
+        return { ...e, status};
+      }else{
+        return e;
+      }
+    });
+    setChecked(newChecked);
+  };
+
+  const getListPartner = async () => {
+    try {
+      blockUI.current.open(true);
+      partnerService.getAccessToken();
+      const r1 = await partnerService.listSearch('');
+      setPartnersAvailable(r1.data.partners);
+      const checkedPartners = r1.data.partners.map((e)=>({id: e.uid, status: true}));
+      setChecked(checkedPartners);
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  };
+
+  const handleSelectAllPartner = () => {
+    try {
+      blockUI.current.open(true);
+      const checkedPartners = partnersAvailable.map((e)=>({id: e.uid, status: true}));
+      setChecked(checkedPartners);
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  }
 
   useEffect(() => {
-    setRequestFailed(false);
-    setHasError({message: ''});
+    (async function init() {
+      await getListPartner();
+    })();
   }, []);
+
+  useEffect(() => {
+    setRequestFailedGiftcard(false);
+    if(dataCard.uid){
+      setInitialValues({...dataCard});
+      const newCheckedPartners = partnersAvailable.map((e)=>{
+        if(dataCard.permissions.includes(e.uid)){
+          return {id: e.uid, status: true}
+        }else{
+          return {id: e.uid, status: false}
+        }
+      });
+      setChecked(newCheckedPartners);
+    }else{
+      setInitialValues(initialValuesGiftcard);
+    }
+  }, [dataCard]);  
 
   return (
     <Modal
@@ -125,16 +200,16 @@ const CreateGiftcard = (props) => {
       className="animate__animated animate__backInLeft"
     >
       <div className={modalStyle.paperModal}>
-        <Typography className="title">{(!dataCard.id) ? 'CREAR GIFT CARD' : 'EDITAR GIFT CARD'}</Typography>
+        <Typography className="title">{ (dataCard.uid) ? 'EDITAR' : 'CREAR' } GIFT CARD</Typography>
         <Typography component="div">
-          {requestFailed && (
-            <p className={modalStyle.formError} align="center">{hasError.message}</p>
+          {requestFailedGiftcard && (
+            <p className={modalStyle.formError} align="center">{hasErrorGiftcard.message}</p>
           )}
         </Typography>
         <Formik
           initialValues={initialValues}
-          validationSchema={validationSchema}
-          onSubmit={onSubmit}
+          validationSchema={validationSchemaGiftcard}
+          onSubmit={onSubmitGiftcard}
           enableReinitialize={true}
         >
           {(props) => {
@@ -200,15 +275,16 @@ const CreateGiftcard = (props) => {
                     />
                   </Grid>
                   <Grid item xs={4} className={modalStyle.grdItem}>
-                    <label>F.VENC.</label>
+                    <label>CELULAR</label>
+                    <div className='optional'>(Nuevo receptor)</div>
                   </Grid>
                   <Grid item xs={8}>
                     <TextField
-                      type="date"
-                      id="dueDate"
-                      name="dueDate"
-                      autoComplete="dueDate"
-                      value={values.dueDate || ''}
+                      type="number"
+                      id="giftphone"
+                      name="giftphone"
+                      autoComplete="giftphone"
+                      value={values.giftphone || ''}
                       className={modalStyle.texfield}
                       placeholder="Escriba aqui ..."
                       size='small'
@@ -217,13 +293,58 @@ const CreateGiftcard = (props) => {
                       fullWidth
                       variant="outlined"
                       helperText={
-                        errors.dueDate && touched.dueDate ? errors.dueDate : ""
+                        errors.giftphone && touched.giftphone ? errors.giftphone : ""
                       }
-                      error={!!(errors.dueDate && touched.dueDate)}
+                      error={!!(errors.giftphone && touched.giftphone)}
                       onChange={handleChange}
                       onBlur={handleBlur}
                     />
                   </Grid>
+                  <Grid item xs={7} className={customerStyle.titlePartner}>
+                    PARTNERS
+                  </Grid>
+                  <Grid item xs={5}>
+                    <Tooltip title="SELECCIONAR TODO" placement="top">
+                      <IconButton
+                        color="primary" 
+                        component="label"
+                        onClick={handleSelectAllPartner}
+                        size="large"
+                      >
+                        <DoneAllIcon/>
+                      </IconButton>
+                    </Tooltip>
+                  </Grid>
+
+                  <Grid item xs={12} className={customerStyle.wrapperPartner}>
+                  {
+                    partnersAvailable.map((partner, index)=>(
+                      <Grid key={`partner${index}`} container>
+                        <Grid item xs={5}>
+                          <Avatar
+                            alt={partner.name}
+                            src={partner.logo}
+                            sx={{ width: 56, height: 56 }}
+                          />
+                        </Grid>
+                        <Grid item xs={7}>
+                          <FormControlLabel
+                            className={customerStyle.wrapperCheckbox}
+                            control={
+                              <Checkbox
+                                checked={checked.filter((e)=>e.id === partner.uid)[0].status}
+                                onChange={handleChangePartner}
+                                value={partner.uid}
+                              />
+                            }
+                            label={partner.name}
+                          />
+                        </Grid>
+                      </Grid>
+                    ))
+                  }
+                  </Grid>
+
                 </Grid>
                 <Box pb={5}/>
                 <Grid container justifyContent="center">
@@ -232,6 +353,10 @@ const CreateGiftcard = (props) => {
                     size="large"
                     className={modalStyle.button}
                     onClick={() => { setOpen(false) }}
+                    style={{
+                      marginRight: '24px',
+                      backgroundColor: '#808080ba'
+                    }}
                   >
                     CANCELAR
                   </Button>

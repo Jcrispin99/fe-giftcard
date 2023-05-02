@@ -56,6 +56,13 @@ export const GiftCardCustomerPublicStyles = makeStyles((theme) => ({
     fontSize: '24px',
     marginBottom: '18px !important',
     fontFamily: "'Press Start 2P', cursive !important",
+  },
+  wrapperNotTickets: {
+    textAlign: 'center',
+    backgroundColor: '#8080802b',
+    padding: '26px',
+    borderRadius: '14px',
+    fontSize: '14px',
+    textTransform: 'uppercase',
   }
-  
 }));

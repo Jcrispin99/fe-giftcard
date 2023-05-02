@@ -173,6 +173,7 @@ const ListCustomer = () => {
 
   const handleCreateEmployee = () => {
     setOpenModalEmployee(true);
+    setDataEmployee({});
   };
 
   useEffect(() => {
