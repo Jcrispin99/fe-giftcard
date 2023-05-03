@@ -60,7 +60,7 @@ const MyShopping = (props) => {
       disableEscapeKeyDown={true}
       className="animate__animated animate__backInLeft"
     >
-      <div className={modalStyle.paperModal} style={{width: '700px'}}>
+      <div className={modalStyle.paperModal} style={{width: '700px',height: '707px',overflowY: 'scroll'}}>
         <Grid container>
           {
             (tickets.length>0)

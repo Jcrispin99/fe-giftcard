@@ -1,14 +1,15 @@
-import { Grid, IconButton, TextField } from '@mui/material';
+import React, { useState, useEffect } from 'react'
+import { FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { Formik } from 'formik';
-import React, { useState} from 'react'
 import { useUI } from '../../app/context/ui';
 import { ModalCustomStyles } from '../../assets/css';
 import SearchIcon from '@mui/icons-material/Search';
 import * as Yup from 'yup';
-import { BuyService } from '../../services';
+import { BuyService, PartnerService } from '../../services';
 
 
 const buyService = new BuyService();
+const partnerService = new PartnerService();
 
 const ListTicket = () => {
 
@@ -17,16 +18,14 @@ const ListTicket = () => {
 
   const baseValues = {
     date: '',
+    partner: '',
+    authorizer: ''
   };
 
-  const [initialValues, setInitialValues] = useState(baseValues);  
+  const [initialValues, setInitialValues] = useState(baseValues); 
+  const [partnerAvailable, setPartnersAvailable] = useState([]);
+ 
   const [buys, setBuys] = useState([]);  
-
-  const validationSchema = Yup.object({
-    date: Yup
-      .date()
-      .required('Obligatorio'),
-  });
 
   const onSubmit = async(values) => {
     try {
@@ -40,13 +39,28 @@ const ListTicket = () => {
     }
   };
 
+  const getListPartner = async () => {
+    try {
+      blockUI.current.open(true);
+      partnerService.getAccessToken();
+      const r1 = await partnerService.listSearch('');
+      setPartnersAvailable(r1.data.partners);
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  };
+
+  useEffect(() => {
+    (async function init() {
+      await getListPartner();
+    })();
+  }, []);
+
   return (
     <div style={{marginTop: '40px'}}>
-      <Grid container>
-        <Grid item xs={4}></Grid>
           <Formik
             initialValues={initialValues}
-            validationSchema={validationSchema}
             onSubmit={onSubmit}
             enableReinitialize={true}
           >
@@ -60,45 +74,82 @@ const ListTicket = () => {
                 handleSubmit,
               } = props;
               return(
-                <Grid item xs={4}>
-                  <Grid container>
-                    <Grid item xs={11}>
-                      <TextField
-                        type="date"
-                        id="date"
-                        name="date"
-                        autoComplete="date"
-                        value={values.date || ''}
-                        className={modalStyle.texfield}
-                        placeholder="Escriba aqui ..."
-                        margin="normal"
-                        required
-                        fullWidth
-                        variant="outlined"
-                        helpertext={
-                          errors.date && touched.date ? errors.date : ""
-                        }
-                        error={!!(errors.date && touched.date)}
+                <Grid container>
+                  <Grid item xs={4}>
+                    <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                      <InputLabel id="partnerLabel">Partner</InputLabel>
+                      <Select
+                        labelId="partnerLabel"
+                        id="partner"
+                        label="Partner"
+                        name="partner"
                         onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid>
-                    <Grid item xs={1}>
-                      <IconButton
-                        color="primary" 
-                        component="label"
-                        onClick={()=>{handleSubmit()}}
+                        fullWidth
                       >
-                        <SearchIcon />
-                      </IconButton>
-                    </Grid>
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        <MenuItem value={10}>Ten</MenuItem>
+                        <MenuItem value={20}>Twenty</MenuItem>
+                        <MenuItem value={30}>Thirty</MenuItem>
+                      </Select>
+                    </FormControl>
+                    {/* <Select
+                      displayEmpty
+                      id="partner"
+                      name="partner"
+                      value={values.partner}
+                      onChange={handleChange}
+                      size='small'
+                      label='asdf'
+                      error={touched.partner && Boolean(errors.partner)}
+                      helpertext={
+                        errors.partner && touched.partner ? errors.partner : ""
+                      }
+                      fullWidth
+                    >
+                      {
+                        partnerAvailable.map((e, index)=>(
+                          <MenuItem key={`partner${index}`} value={e.uid}>{e.name}</MenuItem>
+                        ))
+                      }
+                    </Select> */}
+                  </Grid>
+                  <Grid item xs={4}>
+                    <TextField
+                      type="date"
+                      id="date"
+                      name="date"
+                      autoComplete="date"
+                      value={values.date || ''}
+                      className={modalStyle.texfield}
+                      placeholder="Escriba aqui ..."
+                      margin="normal"
+                      required
+                      fullWidth
+                      variant="outlined"
+                      helpertext={
+                        errors.date && touched.date ? errors.date : ""
+                      }
+                      error={!!(errors.date && touched.date)}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <IconButton
+                      color="primary" 
+                      component="label"
+                      onClick={()=>{handleSubmit()}}
+                    >
+                      <SearchIcon />
+                    </IconButton>
                   </Grid>
                 </Grid>
               );
             }}
           </Formik>
-        <Grid item xs={4}></Grid>
-      </Grid>
+        
       <Grid container>
         {
           (buys.length > 0)

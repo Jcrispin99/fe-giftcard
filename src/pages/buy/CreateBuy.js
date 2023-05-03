@@ -10,6 +10,7 @@ import { GiftCardService, PartnerService } from '../../services';
 import { useUI } from '../../app/context/ui';
 import { v4 as uuidv4 } from 'uuid';
 import { useHistory } from 'react-router-dom';
+import { GiftCardCustomerPublicStyles } from '../dashboardPublic/styles/giftcard-public-style';
 
 let dlgSettings = {
   confirm: false,
@@ -31,6 +32,7 @@ const CreateBuy = (props) => {
   } = props;
   const { blockUI, dialogUI } = useUI();
   const modalStyle = ModalCustomStyles();
+  const giftStyle = GiftCardCustomerPublicStyles();
   const baseValues = {
     amount: '',
     partner: '',
@@ -40,6 +42,7 @@ const CreateBuy = (props) => {
   const [requestFailed, setRequestFailed] = useState(false);
   const [amountMax, setAmountMax] = useState(100);
   const [partnerAvailable, setPartnersAvailable] = useState([]);
+  const [qrBuy, setQrBuy] = useState({});
 
   const validationSchema = Yup.object({
     amount: Yup
@@ -56,22 +59,26 @@ const CreateBuy = (props) => {
     try {
       blockUI.current.open(true);
       setRequestFailed(false);
+      giftCardService.getAccessToken();
 
-      const body = {
+      const res = await giftCardService.createTicketEmployee({
         gifcard: giftCardBuy.uid,
         partner: values.partner,
         amount: values.amount
-      }
-
-      console.log('body',body);
-
-      // const r1 = await authService.generateQr(body);
+      });
 
       blockUI.current.open(false);
-      setOpenBuy(false);
+
+      setQrBuy({
+        img: res.data.img,
+        namePartner: res.data.namePartner,
+        amountTicket: res.data.amountTicket,
+      });
+
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailed(true);
+      setHasError({message: e.response.data.message});
     }
   };
 
@@ -208,6 +215,21 @@ const CreateBuy = (props) => {
                   >
                     CREAR
                   </Button>
+                </Grid>
+                <Grid container justifyContent={"center"}>
+                  {
+                    (qrBuy.img)
+                      &&
+                        <div className={giftStyle.wrapperQr} style={{borderColor:'green', textAlign: 'center'}}>
+                          <img src={qrBuy.img} alt="QR code" style={{width: '100%'}}/>
+                          <div className='partner'>
+                            {qrBuy.namePartner}
+                          </div>
+                          <div className='amount'>
+                            S/{qrBuy.amountTicket}
+                          </div>
+                        </div>
+                  }
                 </Grid>
               </div>
             );
