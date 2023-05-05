@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { ModalCustomStyles } from '../../assets/css';
 import { useUI } from '../../app/context/ui';
 import { UserService, GiftCardService } from '../../services';
-import dateFormat from "dateformat";
+import { v4 as uuidv4 } from 'uuid';
 import CreateGiftcard from './CreateGiftcard';
 import PaidIcon from '@mui/icons-material/Paid';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
@@ -38,9 +38,10 @@ const ListGiftcard = () => {
   const [openShopping, setOpenShopping] = useState(false);
   const [giftCardView, setGiftCardView] = useState({});
   const [idGiftcardShopping, setIdGiftcardShopping] = useState('');
+  const [newRequest, setNewRequest] = useState('');
 
   const baseValues = {
-    type: '',
+    type: 2,
     dato: ''
   };
 
@@ -107,12 +108,11 @@ const ListGiftcard = () => {
 
   const handleViewShopping = (gifcard) => {
     setIdGiftcardShopping(gifcard);
-    console.log('gifcard',gifcard);
+    setNewRequest(uuidv4());
     setOpenShopping(true);
   }
 
   const handleBuy = (giftcard) => {
-    console.log('giftcard',giftcard);
     setGiftCardView(giftcard);
     setOpenBuy(true);
   }
@@ -198,7 +198,7 @@ const ListGiftcard = () => {
                           error={!!(errors.type && touched.type)}
                         >
                           <MenuItem value={1}>DNI</MenuItem>
-                          <MenuItem value={2}># GIFT CARD</MenuItem>
+                          <MenuItem value={2} ># GIFT CARD</MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>
@@ -208,6 +208,7 @@ const ListGiftcard = () => {
                         id="dato"
                         name="dato"
                         autoComplete="dato"
+                        autoFocus={(!open) ? true : false}
                         value={values.dato || ''}
                         className={modalStyle.texfield}
                         placeholder="Escriba aqui ..."
@@ -220,6 +221,12 @@ const ListGiftcard = () => {
                         }
                         error={!!(errors.dato && touched.dato)}
                         onChange={handleChange}
+                        onInput={(event)=>{
+                          const scannedText = event.target.value;
+                          if (scannedText.length >= 7) {
+                            handleSubmit();
+                          }
+                        }}
                         onBlur={handleBlur}
                       />
                     </Grid>
@@ -340,7 +347,9 @@ const ListGiftcard = () => {
                         <IconButton 
                           color="primary" 
                           component="label"
-                          onClick={()=>{handleBuy(e)}}
+                          onClick={()=>{
+                            handleBuy(e)
+                          }}
                           size="large"
                         >
                           <PaidIcon/>
@@ -381,6 +390,7 @@ const ListGiftcard = () => {
               openShopping={openShopping}
               setOpenShopping={setOpenShopping}
               idGiftcardShopping={idGiftcardShopping}
+              newRequest={newRequest}
             />
       }
     </div>

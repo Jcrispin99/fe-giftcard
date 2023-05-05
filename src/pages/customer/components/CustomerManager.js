@@ -127,9 +127,6 @@ const CustomerManager = (props) => {
 
       let resultUser;
 
-      console.log('dataEmployee',dataEmployee);
-      console.log('values',values);
-
       if(dataEmployee.id){
         resultUser = await userService.update({
             ...values,

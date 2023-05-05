@@ -24,4 +24,18 @@ export const ListStyles = makeStyles(() => ({
       lineHeight: '16px',
     },
   },
+  containerNotPay: {
+    color: 'white',
+    padding: '10px 50px',
+    borderRadius: '12px',
+    fontWeight: 'bold',
+    backgroundColor: 'red'
+  },
+  containerPay: {
+    color: 'white',
+    padding: '10px 50px',
+    borderRadius: '12px',
+    fontWeight: 'bold',
+    backgroundColor: 'green'
+  }
 }));

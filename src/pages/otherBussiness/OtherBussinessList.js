@@ -34,7 +34,6 @@ const OtherBussinessList = () => {
   const handleChangeStatus = async (e,employee) => {
     try {
       blockUI.current.open(true);
-      console.log({employee});
       userService.getAccessToken();
       let checked = (e.target.checked) ? 1 : 2;
       await userService.update({
@@ -121,7 +120,6 @@ const OtherBussinessList = () => {
   ];
 
   const handleEditEmployee = (employee) => {
-    console.log('employee',employee);
     setDataEmployee(employee.row);
     setOpenModalEmployee(true);
   }
@@ -146,7 +144,6 @@ const OtherBussinessList = () => {
       blockUI.current.open(true);
       userService.getAccessToken();
       const r1 = await userService.listAccountPartner('');
-      console.log('r1',r1);
       const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
       setRows(newData);
       blockUI.current.open(false);

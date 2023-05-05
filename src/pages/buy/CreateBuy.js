@@ -73,6 +73,7 @@ const CreateBuy = (props) => {
         img: res.data.img,
         namePartner: res.data.namePartner,
         amountTicket: res.data.amountTicket,
+        status: res.data.status
       });
 
     } catch (e) {
@@ -98,7 +99,8 @@ const CreateBuy = (props) => {
     setRequestFailed(false);
     setHasError({message: ''});
     setAmountMax(giftCardBuy.amountAvailable);
-  }, []);
+    setQrBuy({});
+  }, [giftCardBuy.uid]);
 
   useEffect(() => {
     (async function init() {
@@ -168,7 +170,7 @@ const CreateBuy = (props) => {
                   <Grid item xs={4} className={modalStyle.grdItem}>
                     <label>PARTNER</label>
                   </Grid>
-                  <Grid item xs={8}>
+                  <Grid item xs={8} style={{textAlign: 'center'}}>
                     <Select
                       displayEmpty
                       id="partner"
@@ -220,13 +222,24 @@ const CreateBuy = (props) => {
                   {
                     (qrBuy.img)
                       &&
-                        <div className={giftStyle.wrapperQr} style={{borderColor:'green', textAlign: 'center'}}>
+                        <div className={giftStyle.wrapperQr} style={{borderColor:'gray', textAlign: 'center'}}>
                           <img src={qrBuy.img} alt="QR code" style={{width: '100%'}}/>
                           <div className='partner'>
                             {qrBuy.namePartner}
                           </div>
                           <div className='amount'>
                             S/{qrBuy.amountTicket}
+                          </div>
+                          <div style={{
+                            fontSize: '11px',
+                            backgroundColor: '#7a7a7a',
+                            color: 'white',
+                            marginTop: '7px',
+                            padding: '2px',
+                          }}>
+                            {
+                              (qrBuy.status) ? 'DISPONIBLE' : 'ESCANEADO'
+                            }
                           </div>
                         </div>
                   }

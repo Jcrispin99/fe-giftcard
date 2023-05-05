@@ -126,6 +126,7 @@ const GiftCardCustomer = () => {
         partner: {
           name: partnerSelected.name
         },
+        createdAt: r1.data.date,
         status: true
       }, ...tickets];
       setTickets(newTickets);

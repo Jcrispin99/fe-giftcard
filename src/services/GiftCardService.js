@@ -26,6 +26,9 @@ class GiftCardService extends AppService {
   createTicketEmployee(data) {
     return this.http.post(`${this.path}/create-ticket-employee`, data);
   }
+  getTickets(search = '') {
+    return this.http.get(`${this.path}/tickets?${search}`);
+  }
 }
 
 export default GiftCardService;

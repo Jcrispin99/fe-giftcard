@@ -23,7 +23,8 @@ const MyShopping = (props) => {
   const { 
     openShopping, 
     setOpenShopping, 
-    idGiftcardShopping
+    idGiftcardShopping,
+    newRequest,
   } = props;
 
   const { blockUI, dialogUI } = useUI();
@@ -49,7 +50,7 @@ const MyShopping = (props) => {
         await getListQrs();
       })();
     }
-  }, [idGiftcardShopping]);
+  }, [newRequest]);
 
   return (
     <Modal

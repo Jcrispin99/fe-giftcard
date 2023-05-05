@@ -15,8 +15,6 @@ const ModalManager = (props) => {
 
   const { open, setOpen, setRows, dataCategorie } = props;
 
-  console.log('dataCategorie',dataCategorie);
-
   const { blockUI } = useUI();
   const modalStyle = ModalCustomStyles();
 

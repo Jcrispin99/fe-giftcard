@@ -23,6 +23,9 @@ class UserService extends AppService {
   listAccountPartner(search='') {
     return this.http.get(`${this.path}/account-partner`);
   }
+  listAuthorizers(search='') {
+    return this.http.get(`${this.path}/authorizers`);
+  }
   me() {
     return this.http.get(`${this.path}/me`);
   }

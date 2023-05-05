@@ -16,9 +16,6 @@ const partnerService = new PartnerService();
 const OtherBussinessManager = (props) => {
 
   const { open, setOpen, setRows, rows, dataEmployee } = props;
-
-  console.log('dataEmployee',dataEmployee);
-
   const { blockUI } = useUI();
   const modalStyle = ModalCustomStyles();
   const baseValues = {
@@ -74,13 +71,6 @@ const OtherBussinessManager = (props) => {
             ...values,
           }, dataEmployee.id);
       }else{
-        console.log({
-            ...values, 
-            status: 1,
-            role: 'PARTNER_ROLE'
-          });
-
-
         await userService.create(
           {
             ...values, 
@@ -113,7 +103,6 @@ const OtherBussinessManager = (props) => {
       blockUI.current.open(true);
       partnerService.getAccessToken();
       const r1 = await partnerService.listSearch('');
-      console.log('r partner',r1);
       setPartnersAvailable(r1.data.partners);
       blockUI.current.open(false);
     } catch (e) {

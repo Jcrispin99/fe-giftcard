@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from 'react'
-import { FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField, Tooltip } from '@mui/material';
 import { Formik } from 'formik';
 import { useUI } from '../../app/context/ui';
-import { ModalCustomStyles } from '../../assets/css';
+import { ListStyles, ModalCustomStyles } from '../../assets/css';
 import SearchIcon from '@mui/icons-material/Search';
 import * as Yup from 'yup';
-import { BuyService, PartnerService } from '../../services';
+import { GiftCardService, PartnerService, UserService } from '../../services';
+import { EmployeeStyles } from '../employee/components/employees-style';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import { DataGrid } from '@mui/x-data-grid';
+import clsx from 'clsx';
+import dateFormat from 'dateformat';
 
-
-const buyService = new BuyService();
 const partnerService = new PartnerService();
+const userService = new UserService();
+const giftcardService = new GiftCardService();
 
 const ListTicket = () => {
 
   const modalStyle = ModalCustomStyles();
+  const listStyle = ListStyles();
+  const classes = EmployeeStyles();
+
+
   const { blockUI, dialogUI } = useUI();
 
   const baseValues = {
@@ -24,15 +33,102 @@ const ListTicket = () => {
 
   const [initialValues, setInitialValues] = useState(baseValues); 
   const [partnerAvailable, setPartnersAvailable] = useState([]);
+  const [authorizerAvailable, setAuthorizerAvailable] = useState([]);
+  const [rows, setRows] = useState([]);
  
   const [buys, setBuys] = useState([]);  
+
+  const columns = [
+    { 
+      field: '_id', 
+      headerName: 'PARTNER', 
+      flex: 0.4,
+      minWidth: 200,
+      renderCell: (params) => {
+        return (
+          <div>
+            {params.row.partner.name}
+          </div>
+        )
+      }
+    },
+    { 
+      field: 'status', 
+      headerName: 'ESTADO VERIFICACIÓN', 
+      width: 250,
+      renderCell: (params) => {
+        return (
+          <div className={params.value ? listStyle.containerNotPay : listStyle.containerPay}>
+            {(params.value) ? 'DISPONIBLE' : 'ESCANEADO'}
+          </div>
+        )
+      }
+    },
+    { 
+      field: 'qrImage', 
+      headerName: 'AUTORIZADOR', 
+      width: 250,
+      renderCell: (params) => {
+        return (
+          <div>
+            {(params.row.authorizer) ? params.row.authorizer.name : '____'}
+          </div>
+        )
+      }
+    },
+    { 
+      field: 'createdAt', 
+      headerName: 'FECHA CREACIÓN', 
+      width: 250,
+      renderCell: (params) => {
+        return (
+          <div>
+            {dateFormat(new Date(params.value), "dd-mm-yy HH:MM")}
+          </div>
+        )
+      }
+    },
+    { 
+      field: 'statusPaid', 
+      headerName: 'ESTADO DE PAGO', 
+      width: 250,
+      renderCell: (params) => {
+        return (
+          <div className={params.value ? listStyle.containerPay : listStyle.containerNotPay}>
+            {(params.value) ? 'PAGADO' : 'FALTA PAGAR'}
+          </div>
+        )
+      }
+    },
+    { 
+      field: 'createdAtD', 
+      headerName: 'ACCIONES', 
+      width: 250,
+      renderCell: (params) => {
+        return (
+          <div>
+            <Tooltip title="APROBAR PAGO" placement="top">
+              <IconButton aria-label="delete" color="primary" onClick={()=>{}}>
+                <ThumbUpIcon />
+              </IconButton>
+            </Tooltip>
+          </div>
+        )
+      }
+    }
+  ];
 
   const onSubmit = async(values) => {
     try {
       blockUI.current.open(true);
-      buyService.getAccessToken();
-      const {data:buys} = await buyService.listSearch(`created_at=${values.date}`);
-      setBuys(buys.data);
+      const queryString = Object.entries(values)
+        .map(([key, value]) => `${key}=${value}`)
+        .join("&");
+      giftcardService.getAccessToken();
+      const r1 = await giftcardService.getTickets(queryString);
+      setRows(r1.data.tickets);
+      // const {data:buys} = await buyService.listSearch(`created_at=${values.date}`);
+      // setBuys(buys.data);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -51,9 +147,22 @@ const ListTicket = () => {
     }
   };
 
+  const getListAuthorizers = async () => {
+    try {
+      blockUI.current.open(true);
+      userService.getAccessToken();
+      const r1 = await userService.listAuthorizers('');
+      setAuthorizerAvailable(r1.data.users);
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  };
+
   useEffect(() => {
     (async function init() {
       await getListPartner();
+      await getListAuthorizers();
     })();
   }, []);
 
@@ -76,44 +185,25 @@ const ListTicket = () => {
               return(
                 <Grid container>
                   <Grid item xs={4}>
-                    <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                    <FormControl style={{width: '100%', paddingRight: '7px'}}>
                       <InputLabel id="partnerLabel">Partner</InputLabel>
                       <Select
                         labelId="partnerLabel"
                         id="partner"
-                        label="Partner"
+                        label="Socio"
                         name="partner"
                         onChange={handleChange}
+                        value={values.partner}
                         fullWidth
                       >
-                        <MenuItem value="">
-                          <em>None</em>
-                        </MenuItem>
-                        <MenuItem value={10}>Ten</MenuItem>
-                        <MenuItem value={20}>Twenty</MenuItem>
-                        <MenuItem value={30}>Thirty</MenuItem>
+                        <MenuItem value={''} key={`partner${0}`}>LIMPIAR</MenuItem>
+                        {
+                          partnerAvailable.map((partner, index)=>(
+                            <MenuItem value={partner.uid} key={`partner${index}`}>{partner.name}</MenuItem>
+                          ))
+                        }
                       </Select>
                     </FormControl>
-                    {/* <Select
-                      displayEmpty
-                      id="partner"
-                      name="partner"
-                      value={values.partner}
-                      onChange={handleChange}
-                      size='small'
-                      label='asdf'
-                      error={touched.partner && Boolean(errors.partner)}
-                      helpertext={
-                        errors.partner && touched.partner ? errors.partner : ""
-                      }
-                      fullWidth
-                    >
-                      {
-                        partnerAvailable.map((e, index)=>(
-                          <MenuItem key={`partner${index}`} value={e.uid}>{e.name}</MenuItem>
-                        ))
-                      }
-                    </Select> */}
                   </Grid>
                   <Grid item xs={4}>
                     <TextField
@@ -134,38 +224,54 @@ const ListTicket = () => {
                       error={!!(errors.date && touched.date)}
                       onChange={handleChange}
                       onBlur={handleBlur}
+                      style={{paddingRight: '7px'}}
                     />
                   </Grid>
                   <Grid item xs={4}>
-                    <IconButton
-                      color="primary" 
-                      component="label"
-                      onClick={()=>{handleSubmit()}}
-                    >
-                      <SearchIcon />
-                    </IconButton>
+                    <FormControl style={{width: '100%', paddingRight: '7px'}}>
+                      <InputLabel id="authorizerLabel">Autorizador</InputLabel>
+                      <Select
+                        labelId="authorizerLabel"
+                        id="authorizer"
+                        label="Autorizador"
+                        name="authorizer"
+                        value={values.authorizer}
+                        onChange={handleChange}
+                        fullWidth
+                      >
+                         <MenuItem value={''} key={`authorizer${0}`}>LIMPIAR</MenuItem>
+                        {
+                          authorizerAvailable.map((authorizer, index)=>(
+                            <MenuItem value={authorizer.uid} key={`authorizer${index}`}>{authorizer.name}</MenuItem>
+                          ))
+                        }
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} style={{textAlign: 'center', paddingTop: '17px'}}>
+                    <Tooltip title='BUSCAR' placement="bottom">
+                      <IconButton
+                        component="label"
+                        onClick={()=>{handleSubmit()}}
+                        style={{backgroundColor: '#00beff2b'}}
+                      >
+                        <SearchIcon />
+                      </IconButton>
+                    </Tooltip>
                   </Grid>
                 </Grid>
               );
             }}
           </Formik>
         
-      <Grid container>
-        {
-          (buys.length > 0)
-            ?
-              buys.map((buy, index)=>(
-                <div key={`buy${index}`} className={modalStyle.ticket}>
-                  <div>{buy.product}</div>
-                  <div>{buy.amount} PEN</div>
-                  <div>{buy.createdAt}</div>
-                </div>
-              ))
-            :
-              <Grid item xs={12} className={modalStyle.wrapperNotBuys}>
-                No hay registros
-              </Grid>
-        }
+      <Grid container style={{ height: 540, width: '100%', marginTop: '50px' }}>
+          <DataGrid
+            className={clsx(listStyle.dataGrid, classes.root)} 
+            rows={rows}
+            columns={columns}
+            pageSize={20}
+            pageSizeOptions={[20,50,100]}
+          />
       </Grid>
     </div>
   )
