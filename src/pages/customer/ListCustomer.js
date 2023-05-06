@@ -10,6 +10,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import clsx from 'clsx';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CustomerManager from './components/CustomerManager';
+import store from '../../redux/store';
 
 let dlgSettings = {
   confirm: true,
@@ -30,6 +31,7 @@ const ListCustomer = () => {
   const [rows, setRows] = useState([]);
   const [openModalEmployee, setOpenModalEmployee] = useState(false);
   const [dataEmployee, setDataEmployee] = useState({});
+  const state = store.getState();
 
   const handleChangeStatus = async (e,employee) => {
     try {
@@ -87,6 +89,7 @@ const ListCustomer = () => {
             checked={(params.value===1) ? true : false }
             onChange={(e)=>{handleChangeStatus(e,params)}}
             inputProps={{ 'aria-label': 'controlled' }}
+            disabled={state.user.role === 'EMPLOYEE_ROLE'}
           />
         )
       }
@@ -99,12 +102,22 @@ const ListCustomer = () => {
         return (
           <div>
             <Tooltip title="Editar" placement="top">
-              <IconButton aria-label="edit" color="success" onClick={()=>{handleEditEmployee(params)}}>
+              <IconButton 
+                aria-label="edit" 
+                color="success" 
+                onClick={()=>{handleEditEmployee(params)}}
+                disabled={state.user.role === 'EMPLOYEE_ROLE'}
+              >
                 <EditIcon />
               </IconButton>
             </Tooltip>
             <Tooltip title="Eliminar" placement="top">
-              <IconButton aria-label="delete" color="primary" onClick={()=>{handleDeleteEmployee(params)}}>
+              <IconButton 
+                aria-label="delete" 
+                color="primary" 
+                onClick={()=>{handleDeleteEmployee(params)}}
+                disabled={state.user.role === 'EMPLOYEE_ROLE'}
+              >
                 <DeleteForeverIcon />
               </IconButton>
             </Tooltip>
@@ -190,6 +203,7 @@ const ListCustomer = () => {
         variant="outlined" 
         startIcon={<AddCircleOutlineIcon />}
         style={{marginBottom: '16px'}}
+        // disabled={state.user.role === 'EMPLOYEE_ROLE'}
       >
         CREAR
       </Button>

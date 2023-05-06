@@ -127,7 +127,7 @@ const CreateGiftcard = (props) => {
       blockUI.current.open(false);
       setRequestFailedGiftcard(true);
       if (!_.isUndefined(e.response.data)) {
-        setHasErrorGiftcard({ message: e.response.data.msg });
+        setHasErrorGiftcard({ message: e.response.data.message });
       }
     }
   };
@@ -200,10 +200,14 @@ const CreateGiftcard = (props) => {
   };
 
   useEffect(() => {
-    if(codeScaned.length>=7){
+    if(codeScaned.length===10){
       setFieldValueFromExternalFunction(codeScaned);
     }
   }, [codeScaned]);
+
+  useEffect(() => {
+    setCodeScaned('');
+  }, []);
 
   return (
     <Modal

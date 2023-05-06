@@ -1,28 +1,55 @@
 import React from "react";
-import { Redirect } from "react-router-dom";
+import { Redirect, useHistory } from "react-router-dom";
 import { connect } from "react-redux";
 import Header from "../Header";
 import Footer from "../Footer";
 import { makeStyles } from "@mui/styles";
 import { Container } from "../shared/MaterialUI";
+import store from "../../redux/store";
+import { AppService } from "../../services";
 
 const ProtectedRoute = (props) => {
   const Component = props.component;
   const authToken = props.user.accessToken;  
   const classes = useStyles();  
+  const state = store.getState();
+  const appService = new AppService();
+  const history = useHistory();
+  const isMobile = /mobile|android/i.test(navigator.userAgent);
+
+  const logout = async () => {
+    try {
+      appService.setAccessToken(authToken);
+      props.dispatch({ type: 'LOGOUT' });
+      history.push('/login');
+    } catch (e) {
+      
+    }
+  };
+
   return authToken ? (
-    <div className={classes.root}>
-      <Header title={props.name} />
-      <main className={classes.content}>
-        <div className={classes.appBarSpacer} />
-        <Container maxWidth="lg" className={classes.container}>
-          <Component />
-        </Container>
-      </main>
-      {/* <div className={classes.footer}>
-        <Footer title={props.name} />
-      </div> */}
-    </div>
+    <>
+      <div className={classes.root}>
+        <Header title={props.name} />
+        <main className={classes.content}>
+          <div className={classes.appBarSpacer} />
+          <Container maxWidth="lg" className={classes.container}>
+            <Component />
+          </Container>
+        </main>
+
+        {
+          ((state.user.role === 'PARTNER_ROLE' && isMobile) || 
+           (state.user.role === 'EMPLOYEE_ROLE' && isMobile)
+          )
+            &&
+              <div className={classes.footer}>
+                <Footer logout={logout}/>
+              </div>
+        }
+
+      </div>
+    </>
   ) : (
     <Redirect to={{ pathname: "/login" }} />
   );
@@ -50,10 +77,10 @@ const useStyles = makeStyles((theme) => ({
     paddingBottom: theme.spacing(4),
   },
   footer: {
-    position: 'absolute',
-    bottom: '0',
     width: '100%',
-    height: '70px'
+    height: '70px',
+    position: 'absolute',
+    marginTop: '110px'
   }
 }));
 

@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import store from '../../redux/store';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useUI } from '../../app/context/ui';
+import { GiftCardService } from '../../services';
+import { Typography } from '@mui/material';
+
+const giftCardService = new GiftCardService();
 
 const ManagerTickets = (props) => {
   
@@ -9,7 +13,11 @@ const ManagerTickets = (props) => {
   const { blockUI } = useUI();
   const state = store.getState();
   const history = useHistory();
-  const [openAlert, setOpenAlert] = useState(false);
+  const [approvedQr, setApprovedQr] = useState(false);
+  const isMobile = /mobile|android/i.test(navigator.userAgent);
+  const [requestFailedGiftcard, setRequestFailedGiftcard] = useState(false);
+  const [hasError, setHasError] = useState({});
+
 
   const accessToken = state.user.accessToken;
   if (!accessToken) {
@@ -21,9 +29,13 @@ const ManagerTickets = (props) => {
   const getVerifyQr = async () => {
     try {
       blockUI.current.open(true);
-      setOpenAlert(true);
+      giftCardService.getAccessToken();
+      await giftCardService.verifyQr({id});
+      setApprovedQr(true);
       blockUI.current.open(false);
     } catch (e) {
+      setRequestFailedGiftcard(true);
+      setHasError({message: e.response.data.message})
       blockUI.current.open(false);
     }
   };
@@ -36,14 +48,25 @@ const ManagerTickets = (props) => {
 
   return (
     <div>
-      <div style={{textAlign:'center', paddingTop: '30px'}}>
-        Manager Tickets
-      </div>
       {
-        (openAlert)
+        (isMobile)
           &&
-            <div style={{textAlign: 'center', padding: '30px', backgroundColor:'black', color:'white', borderRadius:'15px', marginTop:'20px'}}>
-              APROBADO
+            <div style={{marginTop: '73px'}}>
+              <div style={{textAlign:'center', paddingTop: '30px'}}>
+                VERIFICADOR DE QR
+              </div>
+              <Typography component="div">
+                {requestFailedGiftcard && (
+                  <p style={{textAlign: 'center', padding: '30px', backgroundColor:'#bd1515', color:'white', borderRadius:'15px', marginTop:'20px'}} align="center">{hasError.message}</p>
+                )}
+              </Typography>
+              {
+                (approvedQr)
+                  &&
+                    <div style={{textAlign: 'center', padding: '30px', backgroundColor:'#0b612e', color:'white', borderRadius:'15px', marginTop:'16px'}}>
+                      QR verificado correctamente, puede generar su recibo
+                    </div>
+              }
             </div>
       }
     </div>

@@ -6,12 +6,17 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Navigation from "../navigation/Navigation";
 import Button from '@mui/material/Button';
-
+import LogoutIcon from '@mui/icons-material/Logout';
+import { IconButton } from '@mui/material';
+import QrCode2Icon from '@mui/icons-material/QrCode2';
 import { CssBaseline } from "./shared/MaterialUI";
-const Footer = () => {
+
+const Footer = (props) => {
+
     const [, setHasError] = useState({});
     const [requestFailed, setRequestFailed] = useState(false);
     const classes = useStyles();
+    const history = useHistory();
     
     useEffect(() => {
         if (!setRequestFailed) {
@@ -24,27 +29,25 @@ const Footer = () => {
           <CssBaseline />
           <AppBar position="absolute">
             <Toolbar className={classes.toolbar}>
-              <div className={classes.opciones}>
-                {Navigation.map((nav, i) => {
-                    return (
-                        <ChildrenItems key={i} menu={nav} />
-                    );
-                })}
+              <div>
+                <IconButton
+                  component="label"
+                  onClick={()=>{props.logout()}}
+                  style={{backgroundColor: 'rgb(255 0 0 / 60%)'}}
+                >
+                  <LogoutIcon />
+                </IconButton>
+                <IconButton
+                  component="label"
+                  onClick={()=>{history.push('/ticket')}}
+                  style={{backgroundColor: '#00beff2b', marginLeft: '15px'}}
+                >
+                  <QrCode2Icon />
+                </IconButton>
               </div>
             </Toolbar>
           </AppBar>
         </>
-    )
-}
-
-const ChildrenItems = props => {
-    const classes = useStyles();
-    const history = useHistory();
-    const { menu } = props;
-    return (
-        <div className={classes.opcion}>
-            <Button key={menu.id} onClick={() => { history.push(menu.url) }} className={classes.button}>{menu.title}</Button>
-        </div>
     )
 }
 

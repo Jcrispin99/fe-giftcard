@@ -5,15 +5,16 @@ import NavigationEmployee from './NavigationEmployee';
 import { NavLink } from 'react-router-dom'
 import store from '../redux/store';
 
-const MainListItems = (props) => {
+const MainListItems = () => {
 
   const state = store.getState();
   let nav = [];
 
   if(state && state.user.role !== ''){
-    console.log('state.user.role',state.user.role);
     if(state.user.role === 'PARTNER_ROLE'){
-      nav = NavigationPartner;
+      if(!/mobile|android/i.test(navigator.userAgent)){
+        nav = NavigationPartner;
+      }
     }
     if(state.user.role === 'ADMIN_ROLE')
     {
@@ -21,7 +22,9 @@ const MainListItems = (props) => {
     }
     if(state.user.role === 'EMPLOYEE_ROLE')
     {
-      nav = NavigationEmployee;
+      if(!/mobile|android/i.test(navigator.userAgent)){
+        nav = NavigationEmployee;
+      }
     }
   }
 

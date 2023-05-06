@@ -14,6 +14,7 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import CreateBuy from '../buy/CreateBuy';
 import YoutubeSearchedForIcon from '@mui/icons-material/YoutubeSearchedFor';
 import MyShopping from '../buy/MyShopping';
+import store from '../../redux/store';
 
 const userService = new UserService();
 const giftCardService = new GiftCardService();
@@ -39,6 +40,7 @@ const ListGiftcard = () => {
   const [giftCardView, setGiftCardView] = useState({});
   const [idGiftcardShopping, setIdGiftcardShopping] = useState('');
   const [newRequest, setNewRequest] = useState('');
+  const state = store.getState();
 
   const baseValues = {
     type: 2,
@@ -223,7 +225,7 @@ const ListGiftcard = () => {
                         onChange={handleChange}
                         onInput={(event)=>{
                           const scannedText = event.target.value;
-                          if (scannedText.length >= 7) {
+                          if (scannedText.length >= 10) {
                             handleSubmit();
                           }
                         }}
@@ -322,6 +324,7 @@ const ListGiftcard = () => {
                               onClick={()=>{handleEditGiftcard(e)}}
                               size="large"
                               style={{color:'orange'}}
+                              disabled={state.user.role === 'EMPLOYEE_ROLE'}
                             >
                               <EditIcon/>
                             </IconButton>
@@ -335,6 +338,7 @@ const ListGiftcard = () => {
                               onClick={()=>{handleDeleteGiftcard(e)}}
                               size="large"
                               style={{color:'red'}}
+                              disabled={state.user.role === 'EMPLOYEE_ROLE'}
                             >
                               <DeleteForeverIcon/>
                             </IconButton>

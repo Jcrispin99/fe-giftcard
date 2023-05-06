@@ -16,6 +16,7 @@ import { Menu, MenuItem } from "@mui/material";
 import { AccountCircleOutlined } from "@mui/icons-material";
 import { ExpandMore } from "@mui/icons-material";
 import { WizardStyles } from "../assets/css/wizard-style";
+import store from "../redux/store";
 
 const Header = (props) => {
   const [, setHasError] = useState({});
@@ -30,6 +31,7 @@ const Header = (props) => {
   const firstName = props.user.firstName;
   const appService = new AppService();
   const menuId = 'primary-search-account-menu';
+  const state = store.getState();
 
   useEffect(() => {
     if (!setRequestFailed) {
@@ -91,29 +93,33 @@ const Header = (props) => {
             <MainListItems />
           </div>
 
-          <div className={wizardStyle.wrapperLogout}>
-            <span></span>
-            <span className={wizardStyle.title}>{firstName}</span>
-            <IconButton
-              edge="end"
-              aria-label="account of current user"
-              aria-controls={menuId}
-              aria-haspopup="true"
-              color="inherit"
-            >
-              <AccountCircleOutlined />
-            </IconButton>
-            <IconButton
-              edge="end"
-              aria-label="account of current user"
-              aria-controls={menuId}
-              aria-haspopup="true"
-              onClick={handleProfileMenuOpen}
-              color="inherit"
-            >
-              <ExpandMore />
-            </IconButton>
-          </div>
+          {
+            (state.user.role !== 'PARTNER_ROLE' || state.user.role !== 'EMPLOYEE_ROLE')
+              &&
+                <div className={wizardStyle.wrapperLogout}>
+                  <span></span>
+                  <span className={wizardStyle.title}>{firstName}</span>
+                  <IconButton
+                    edge="end"
+                    aria-label="account of current user"
+                    aria-controls={menuId}
+                    aria-haspopup="true"
+                    color="inherit"
+                  >
+                    <AccountCircleOutlined />
+                  </IconButton>
+                  <IconButton
+                    edge="end"
+                    aria-label="account of current user"
+                    aria-controls={menuId}
+                    aria-haspopup="true"
+                    onClick={handleProfileMenuOpen}
+                    color="inherit"
+                  >
+                    <ExpandMore />
+                  </IconButton>
+                </div>
+          }
         </Toolbar>
       </AppBar>
       {renderMenu}

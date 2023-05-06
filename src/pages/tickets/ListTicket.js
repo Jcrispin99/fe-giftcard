@@ -11,17 +11,28 @@ import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { DataGrid } from '@mui/x-data-grid';
 import clsx from 'clsx';
 import dateFormat from 'dateformat';
+import store from '../../redux/store';
 
 const partnerService = new PartnerService();
 const userService = new UserService();
 const giftcardService = new GiftCardService();
+
+
+let dlgSettings = {
+  confirm: false,
+  btn: {
+    close: 'CERRAR',
+  },
+  onConfirm: () => {},
+};
 
 const ListTicket = () => {
 
   const modalStyle = ModalCustomStyles();
   const listStyle = ListStyles();
   const classes = EmployeeStyles();
-
+  const state = store.getState();
+  const isMobile = /mobile|android/i.test(navigator.userAgent);
 
   const { blockUI, dialogUI } = useUI();
 
@@ -36,7 +47,19 @@ const ListTicket = () => {
   const [authorizerAvailable, setAuthorizerAvailable] = useState([]);
   const [rows, setRows] = useState([]);
  
-  const [buys, setBuys] = useState([]);  
+  const [buys, setBuys] = useState([]);
+
+  const handleApprobePaid = async (id) => {
+    try {
+      blockUI.current.open(true);
+      giftcardService.getAccessToken();
+      await giftcardService.approveQR({id});
+      dialogUI.current.open('', '', dlgSettings, 'PAGADO');
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  }
 
   const columns = [
     { 
@@ -105,15 +128,22 @@ const ListTicket = () => {
       headerName: 'ACCIONES', 
       width: 250,
       renderCell: (params) => {
-        return (
-          <div>
-            <Tooltip title="APROBAR PAGO" placement="top">
-              <IconButton aria-label="delete" color="primary" onClick={()=>{}}>
-                <ThumbUpIcon />
+        if (state.user.role === 'ADMIN_ROLE') {
+          return (
+            <div>
+              <IconButton 
+                aria-label="delete" 
+                color="primary" 
+                onClick={()=>{handleApprobePaid(params.id)}}
+              >
+                <Tooltip title="APROBAR PAGO" placement="top">
+                  <ThumbUpIcon />
+                </Tooltip>
               </IconButton>
-            </Tooltip>
-          </div>
-        )
+            </div>
+          )
+        }
+        return null;
       }
     }
   ];
@@ -127,8 +157,6 @@ const ListTicket = () => {
       giftcardService.getAccessToken();
       const r1 = await giftcardService.getTickets(queryString);
       setRows(r1.data.tickets);
-      // const {data:buys} = await buyService.listSearch(`created_at=${values.date}`);
-      // setBuys(buys.data);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -139,7 +167,7 @@ const ListTicket = () => {
     try {
       blockUI.current.open(true);
       partnerService.getAccessToken();
-      const r1 = await partnerService.listSearch('');
+      const r1 = await partnerService.listSearch();
       setPartnersAvailable(r1.data.partners);
       blockUI.current.open(false);
     } catch (e) {
@@ -167,102 +195,102 @@ const ListTicket = () => {
   }, []);
 
   return (
-    <div style={{marginTop: '40px'}}>
-          <Formik
-            initialValues={initialValues}
-            onSubmit={onSubmit}
-            enableReinitialize={true}
-          >
-            {(props) => {
-              const {
-                values,
-                touched,
-                errors,
-                handleChange,
-                handleBlur,
-                handleSubmit,
-              } = props;
-              return(
-                <Grid container>
-                  <Grid item xs={4}>
-                    <FormControl style={{width: '100%', paddingRight: '7px'}}>
-                      <InputLabel id="partnerLabel">Partner</InputLabel>
-                      <Select
-                        labelId="partnerLabel"
-                        id="partner"
-                        label="Socio"
-                        name="partner"
-                        onChange={handleChange}
-                        value={values.partner}
-                        fullWidth
-                      >
-                        <MenuItem value={''} key={`partner${0}`}>LIMPIAR</MenuItem>
-                        {
-                          partnerAvailable.map((partner, index)=>(
-                            <MenuItem value={partner.uid} key={`partner${index}`}>{partner.name}</MenuItem>
-                          ))
-                        }
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TextField
-                      type="date"
-                      id="date"
-                      name="date"
-                      autoComplete="date"
-                      value={values.date || ''}
-                      className={modalStyle.texfield}
-                      placeholder="Escriba aqui ..."
-                      margin="normal"
-                      required
-                      fullWidth
-                      variant="outlined"
-                      helpertext={
-                        errors.date && touched.date ? errors.date : ""
-                      }
-                      error={!!(errors.date && touched.date)}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      style={{paddingRight: '7px'}}
-                    />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <FormControl style={{width: '100%', paddingRight: '7px'}}>
-                      <InputLabel id="authorizerLabel">Autorizador</InputLabel>
-                      <Select
-                        labelId="authorizerLabel"
-                        id="authorizer"
-                        label="Autorizador"
-                        name="authorizer"
-                        value={values.authorizer}
-                        onChange={handleChange}
-                        fullWidth
-                      >
-                         <MenuItem value={''} key={`authorizer${0}`}>LIMPIAR</MenuItem>
-                        {
-                          authorizerAvailable.map((authorizer, index)=>(
-                            <MenuItem value={authorizer.uid} key={`authorizer${index}`}>{authorizer.name}</MenuItem>
-                          ))
-                        }
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12} style={{textAlign: 'center', paddingTop: '17px'}}>
-                    <Tooltip title='BUSCAR' placement="bottom">
-                      <IconButton
-                        component="label"
-                        onClick={()=>{handleSubmit()}}
-                        style={{backgroundColor: '#00beff2b'}}
-                      >
-                        <SearchIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </Grid>
-                </Grid>
-              );
-            }}
-          </Formik>
+    <div style={(isMobile) ? {marginTop: '100px'} : {marginTop: '40px'}}>
+      <Formik
+        initialValues={initialValues}
+        onSubmit={onSubmit}
+        enableReinitialize={true}
+      >
+        {(props) => {
+          const {
+            values,
+            touched,
+            errors,
+            handleChange,
+            handleBlur,
+            handleSubmit,
+          } = props;
+          return(
+            <Grid container>
+              <Grid item xs={4}>
+                <FormControl style={{width: '100%', paddingRight: '7px'}}>
+                  <InputLabel id="partnerLabel">Partner</InputLabel>
+                  <Select
+                    labelId="partnerLabel"
+                    id="partner"
+                    label="Socio"
+                    name="partner"
+                    onChange={handleChange}
+                    value={values.partner}
+                    fullWidth
+                  >
+                    <MenuItem value={''} key={`partner${0}`}>LIMPIAR</MenuItem>
+                    {
+                      partnerAvailable.map((partner, index)=>(
+                        <MenuItem value={partner.uid} key={`partner${index}`}>{partner.name}</MenuItem>
+                      ))
+                    }
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  type="date"
+                  id="date"
+                  name="date"
+                  autoComplete="date"
+                  value={values.date || ''}
+                  className={modalStyle.texfield}
+                  placeholder="Escriba aqui ..."
+                  margin="normal"
+                  required
+                  fullWidth
+                  variant="outlined"
+                  helpertext={
+                    errors.date && touched.date ? errors.date : ""
+                  }
+                  error={!!(errors.date && touched.date)}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  style={{paddingRight: '7px'}}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <FormControl style={{width: '100%', paddingRight: '7px'}}>
+                  <InputLabel id="authorizerLabel">Autorizador</InputLabel>
+                  <Select
+                    labelId="authorizerLabel"
+                    id="authorizer"
+                    label="Autorizador"
+                    name="authorizer"
+                    value={values.authorizer}
+                    onChange={handleChange}
+                    fullWidth
+                  >
+                      <MenuItem value={''} key={`authorizer${0}`}>LIMPIAR</MenuItem>
+                    {
+                      authorizerAvailable.map((authorizer, index)=>(
+                        <MenuItem value={authorizer.uid} key={`authorizer${index}`}>{authorizer.name}</MenuItem>
+                      ))
+                    }
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} style={{textAlign: 'center', paddingTop: '17px'}}>
+                <Tooltip title='BUSCAR' placement="bottom">
+                  <IconButton
+                    component="label"
+                    onClick={()=>{handleSubmit()}}
+                    style={{backgroundColor: '#00beff2b'}}
+                  >
+                    <SearchIcon />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+            </Grid>
+          );
+        }}
+      </Formik>
         
       <Grid container style={{ height: 540, width: '100%', marginTop: '50px' }}>
           <DataGrid
@@ -273,6 +301,7 @@ const ListTicket = () => {
             pageSizeOptions={[20,50,100]}
           />
       </Grid>
+      
     </div>
   )
 }
