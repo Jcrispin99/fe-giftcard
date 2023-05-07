@@ -103,7 +103,8 @@ const OtherBussinessManager = (props) => {
       blockUI.current.open(true);
       partnerService.getAccessToken();
       const r1 = await partnerService.listSearch('');
-      setPartnersAvailable(r1.data.partners);
+      const newPartner = r1.data.partners.filter((e)=>(e.name !== 'Kdosh' && e.name !== 'Olympo'));
+      setPartnersAvailable(newPartner);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
