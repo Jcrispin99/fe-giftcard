@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Avatar, 
   Button, 
@@ -53,6 +53,8 @@ const CustomerManager = (props) => {
   const modalStyle = ModalCustomStyles();
   const customerStyle = CustomerStyles();
   const [checked, setChecked] = useState([]);
+  const [codeScaned, setCodeScaned] = useState('');
+  const formikRef = useRef();
 
   const baseValues = {
     categorie: '',
@@ -253,6 +255,22 @@ const CustomerManager = (props) => {
       setInitialValues({...dataEmployee, categorie: dataEmployee.categorie._id, birthdate});
     }
   }, [dataEmployee]);
+
+  const setFieldValueFromExternalFunction = (codeScaned) => {
+    if (formikRef && formikRef.current && formikRef.current.setFieldValue) {
+      formikRef.current.setFieldValue("code", codeScaned);
+    }
+  };
+
+  useEffect(() => {
+    if(codeScaned.length===10){
+      setFieldValueFromExternalFunction(codeScaned);
+    }
+  }, [codeScaned]);
+
+  useEffect(() => {
+    setCodeScaned('');
+  }, []);
 
   useEffect(() => {
     setRequestFailed(false);
@@ -504,6 +522,7 @@ const CustomerManager = (props) => {
             validationSchema={validationSchemaGiftcard}
             onSubmit={onSubmitGiftcard}
             enableReinitialize={true}
+            innerRef={formikRef}
           >
             {(props) => {
               const {
@@ -550,6 +569,7 @@ const CustomerManager = (props) => {
                         type="text"
                         id="code"
                         name="code"
+                        autoFocus={(openNewGiftCard) ? true : false}
                         autoComplete="code"
                         value={values.code || ''}
                         className={modalStyle.texfield}
@@ -563,7 +583,11 @@ const CustomerManager = (props) => {
                           errors.code && touched.code ? errors.code : ""
                         }
                         error={!!(errors.code && touched.code)}
-                        onChange={handleChange}
+                        onInput={(event)=>{
+                          if(event.target.value/10 < 1){
+                            setCodeScaned(`${codeScaned}${event.target.value}`);
+                          }
+                        }}
                         onBlur={handleBlur}
                       />
                     </Grid>
