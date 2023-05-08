@@ -47,13 +47,22 @@ const ListTicket = () => {
   const [authorizerAvailable, setAuthorizerAvailable] = useState([]);
   const [rows, setRows] = useState([]);
  
-  const [buys, setBuys] = useState([]);
-
   const handleApprobePaid = async (id) => {
     try {
       blockUI.current.open(true);
       giftcardService.getAccessToken();
       await giftcardService.approveQR({id});
+      const newRows = rows.map((e)=>{
+        if(e.id === id){
+          return {
+            ...e,
+            statusPaid: true
+          }
+        }else{
+          return e;
+        }
+      });
+      setRows(newRows);
       dialogUI.current.open('', '', dlgSettings, 'PAGADO');
       blockUI.current.open(false);
     } catch (e) {
@@ -71,6 +80,19 @@ const ListTicket = () => {
         return (
           <div>
             {params.row.partner.name}
+          </div>
+        )
+      }
+    },
+    { 
+      field: 'amount', 
+      headerName: 'MONTO', 
+      flex: 0.4,
+      minWidth: 200,
+      renderCell: (params) => {
+        return (
+          <div>
+            {`S/.${params.value}`}
           </div>
         )
       }
@@ -100,13 +122,13 @@ const ListTicket = () => {
       }
     },
     { 
-      field: 'createdAt', 
-      headerName: 'FECHA CREACIÓN', 
+      field: 'dateScann', 
+      headerName: 'FECHA DE ESCANEO', 
       width: 250,
       renderCell: (params) => {
         return (
           <div>
-            {dateFormat(new Date(params.value), "dd-mm-yy HH:MM")}
+            {(params.row.dateScan) ? dateFormat(new Date(params.value), "dd-mm-yy HH:MM") : ''}
           </div>
         )
       }
@@ -135,6 +157,7 @@ const ListTicket = () => {
                 aria-label="delete" 
                 color="primary" 
                 onClick={()=>{handleApprobePaid(params.id)}}
+                disabled={(params.row.statusPaid)}
               >
                 <Tooltip title="APROBAR PAGO" placement="top">
                   <ThumbUpIcon />

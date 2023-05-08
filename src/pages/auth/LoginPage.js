@@ -81,7 +81,7 @@ const LoginPage = (props) => {
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailed(true);
-      setHasError({ message: e.response.data.msg });
+      setHasError({ message: 'DENEGADO' });
     }
   };
 

@@ -617,7 +617,7 @@ const CustomerManager = (props) => {
                         onBlur={handleBlur}
                       />
                     </Grid>
-                    <Grid item xs={12} className={customerStyle.titlePartner}>
+                    <Grid item xs={12} className={customerStyle.titlePartner} style={{textAlign:'center'}}>
                       PARTNERS
                     </Grid>
 

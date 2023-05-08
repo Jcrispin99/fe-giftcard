@@ -32,6 +32,7 @@ const Header = (props) => {
   const appService = new AppService();
   const menuId = 'primary-search-account-menu';
   const state = store.getState();
+  const isMobile = /mobile|android/i.test(navigator.userAgent);
 
   useEffect(() => {
     if (!setRequestFailed) {
@@ -94,7 +95,7 @@ const Header = (props) => {
           </div>
 
           {
-            (state.user.role !== 'PARTNER_ROLE' || state.user.role !== 'EMPLOYEE_ROLE')
+            (!isMobile)
               &&
                 <div className={wizardStyle.wrapperLogout}>
                   <span></span>
