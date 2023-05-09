@@ -219,7 +219,15 @@ export const ModalCustomStyles = makeStyles((theme) => ({
     '& #amount-helper-text':{
       textAlign: 'center',
       paddingTop: '4px'
+    },
+    '& .MuiInputBase-inputSizeSmall': {
+      textAlign: 'center'
     }
+  },
+  messageErrorLoginCustomer:{
+    textAlign: 'center',
+    fontSize: '13px',
+    color: 'red',
   },
   formError: {
     fontSize: '15px',

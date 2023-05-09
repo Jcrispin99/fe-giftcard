@@ -128,7 +128,7 @@ const ListTicket = () => {
       renderCell: (params) => {
         return (
           <div>
-            {(params.row.dateScan) ? dateFormat(new Date(params.value), "dd-mm-yy HH:MM") : ''}
+            {(params.row.dateScan) ? dateFormat(new Date(params.row.dateScan), "dd-mm-yy HH:MM") : ''}
           </div>
         )
       }

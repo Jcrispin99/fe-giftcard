@@ -18,6 +18,8 @@ import { GiftCardCustomerPublicStyles } from './styles/giftcard-public-style';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import DownloadingIcon from '@mui/icons-material/Downloading';
 import dateFormat from 'dateformat';
+import logo from "../../assets/images/giftcard_logo.png";
+import logoKdosh from "../../assets/images/kdosh_logo.png";
 
 let dlgSettings = {
   confirm: false,
@@ -48,6 +50,9 @@ const GiftCardCustomer = () => {
   const [amountMax, setAmountMax] = useState(100);
   const [viewAllQr, setViewAllQr] = useState(false);
   const [tickets, setTickets] = useState([]);
+  const [viewBtnLogin, setViewBtnLogin] = useState(false);
+  const [cardEntered, setCardEntered] = useState('');
+  const [messageErrorLoginCustomer, setMessageErrorLoginCustomer] = useState(false);
 
   const baseValues = {
     code: ''
@@ -190,6 +195,7 @@ const GiftCardCustomer = () => {
   const handleGenerateCodeTicket = async () => {
     try {
       blockUI.current.open(true);
+      setViewBtnLogin(true);
       const id = location.pathname.split('/gift-card-customer/')[1];
       await authService.mycard({id});
       setStatusGenerateBtn(true);
@@ -203,6 +209,8 @@ const GiftCardCustomer = () => {
         dlgSettings
       );
     } catch (error) {
+      setViewBtnLogin(false);
+      setCardEntered('');
       blockUI.current.open(false);
       dlgSettings = {
         ...dlgSettings,
@@ -283,58 +291,109 @@ const GiftCardCustomer = () => {
                   return(
                     <div>
                       <Grid container spacing={3} className='wrapperForm'>
-                        <Grid item xs={12} className={giftStyle.titleGc}>
-                          GIFT CARD
+                        <Grid item xs={12} style={{textAlign: 'center', paddingTop: '0px'}}>
+                          <img src={logoKdosh} alt="imgGiftcard" style={{width:'64%'}}/>
                         </Grid>
-                        <Grid item xs={4} className={modalStyle.grdItem}>
-                          <label>CÓDIGO</label>
+                        <Grid item xs={12} style={{textAlign: 'center', paddingTop: '0px'}}>
+                          <img src={logo} alt="imgGiftcard" style={{width:'42%'}}/>
                         </Grid>
-                        <Grid item xs={8}>
-                          <TextField
-                            type="text"
-                            id="code"
-                            code="code"
-                            autoComplete="code"
-                            value={values.code || ''}
-                            className={modalStyle.texfield}
-                            placeholder="Escriba aqui ..."
-                            size='small'
-                            margin="normal"
-                            required
-                            fullWidth
-                            variant="outlined"
-                            helperText={
-                              errors.code && touched.code ? errors.code : ""
-                            }
-                            error={!!(errors.code && touched.code)}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                          />
+                        {/* <Grid item xs={4} className={modalStyle.grdItem}>
+                          <label>TARJETA</label>
+                        </Grid> */}
+                        <Grid item xs={12}>
+                          {
+                            (viewBtnLogin)
+                              ?
+                                <TextField
+                                  type="text"
+                                  id="code"
+                                  code="code"
+                                  autoComplete="code"
+                                  value={values.code || ''}
+                                  className={modalStyle.texfield}
+                                  placeholder="Ingrese el código que le llegó al celular"
+                                  size='small'
+                                  margin="normal"
+                                  required
+                                  fullWidth
+                                  variant="outlined"
+                                  helperText={
+                                    errors.code && touched.code ? errors.code : ""
+                                  }
+                                  error={!!(errors.code && touched.code)}
+                                  onChange={handleChange}
+                                  onBlur={handleBlur}
+                                />
+                              :
+                                <TextField
+                                  type="text"
+                                  id="card"
+                                  autoComplete="card"
+                                  className={modalStyle.texfield}
+                                  placeholder="Escriba aqui el código de su tarjeta"
+                                  size='small'
+                                  margin="normal"
+                                  required
+                                  fullWidth
+                                  variant="outlined"
+                                  helperText={
+                                    errors.card && touched.card ? errors.card : ""
+                                  }
+                                  error={!!(errors.card && touched.card)}
+                                  inputProps={{ maxLength: 10 }}
+                                  onChange={(e) => {
+                                    setCardEntered(e.target.value);
+                                    setMessageErrorLoginCustomer(false);
+                                  }}
+                                  onBlur={()=>{
+                                    if(cardEntered.length < 10){
+                                      setMessageErrorLoginCustomer(true);
+                                    }
+                                  }}
+                                />
+
+                          }
                         </Grid>
+                        {
+                          (messageErrorLoginCustomer)
+                            &&
+                              <Grid item xs={12} className={modalStyle.messageErrorLoginCustomer}>
+                                Ingrese los 10 dígitos de su tarjeta
+                              </Grid>
+                        }
                       </Grid>
                       <Box pb={5}/>
                       <Grid container justifyContent="center">
-                        <Button
-                          variant="contained"
-                          size="large"
-                          className={modalStyle.button}
-                          onClick={handleGenerateCodeTicket}
-                          style={{
-                            marginRight: '24px',
-                            backgroundColor: '#808080ba'
-                          }}
-                          disabled={statusGenerateBtn}
-                        >
-                          GENERAR CÓDIGO {timeAvailable}
-                        </Button>
-                        <Button
-                          variant="contained"
-                          size="large"
-                          onClick={()=>{handleSubmit()}}
-                          className={giftStyle.btnGenerateQr}
-                        >
-                          INGRESAR
-                        </Button>
+                        {
+                          (viewBtnLogin)
+                            ?
+                              <Button
+                                variant="contained"
+                                size="large"
+                                onClick={()=>{handleSubmit()}}
+                                className={giftStyle.btnGenerateQr}
+                              >
+                                INGRESAR
+                              </Button>
+                            :
+                              (cardEntered.length === 10)
+                                ?
+                                  <Button
+                                    variant="contained"
+                                    size="large"
+                                    className={modalStyle.button}
+                                    onClick={handleGenerateCodeTicket}
+                                    style={{
+                                      backgroundColor: '#808080ba'
+                                    }}
+                                    disabled={statusGenerateBtn}
+                                  >
+                                    GENERAR CÓDIGO {timeAvailable}
+                                  </Button>
+                                :
+                                  null
+                              
+                        }
                       </Grid>
                     </div>
                   );
@@ -344,10 +403,13 @@ const GiftCardCustomer = () => {
           :
             <Grid item xs={12}>
               <Grid container>
-                <Grid item xs={12} className={giftStyle.titleGc}>
-                  GIFT CARD
+                <Grid item xs={12} style={{textAlign: 'center', paddingTop: '0px'}}>
+                  <img src={logoKdosh} alt="imgGiftcard" style={{width:'64%'}}/>
                 </Grid>
-                <Grid item xs={12} style={{textAlign:'center'}}>
+                <Grid item xs={12} style={{textAlign: 'center', paddingTop: '0px'}}>
+                  <img src={logo} alt="imgGiftcard" style={{width:'42%'}}/>
+                </Grid>
+                <Grid item xs={12} style={{textAlign:'center', marginTop: '26px', marginBottom: '7px'}}>
                   BIENVENIDO/A {card.user?.name} !
                 </Grid>
                 <Grid item xs={12}>
