@@ -32,6 +32,7 @@ const LoginPage = (props) => {
   const [hasError, setHasError] = useState({});
   const [requestFailed, setRequestFailed] = useState(false);
   const [open, setOpen] = useState(true);
+  const [codeSmsAdmin, setCodeSmsAdmin] = useState(false);
 
   let locationState = false;
   if (!_.isUndefined(props.location)) {
@@ -62,11 +63,37 @@ const LoginPage = (props) => {
   }, [requestFailed]);
 
   const LoginSchema = Yup.object().shape({
-    email: Yup.string().email("Invalid email").required("Email is required"),
-    password: Yup.string().min(1, "Minimum 1 character").required("Password is required"),
+    email: Yup.string().email("Correo inválido").required("Obligatorio"),
+    password: Yup.string().min(8, "Mínimo 8 caracteres").required("Obligatorio"),
+  });
+
+  const LoginAdminSchema = Yup.object().shape({
+    code: Yup.number().required("Obligatorio"),
   });
 
   const onSubmit = async (values) => {
+    try {
+      blockUI.current.open(true);
+      setRequestFailed(false);
+      // authentication
+      const r1 = await authService.login(values);
+      if(r1.data.user.role === 'ADMIN_ROLE'){
+        setCodeSmsAdmin(true);
+      }else{
+        const accessToken = r1.data.token;
+        let payload = { ...r1.data.user, accessToken };
+        props.dispatch(addUser(payload));
+        history.push("/dashboard");
+      }
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+      setRequestFailed(true);
+      setHasError({ message: 'DENEGADO' });
+    }
+  };
+
+  const onSubmitAdmin = async (values) => {
     try {
       blockUI.current.open(true);
       setRequestFailed(false);
@@ -109,108 +136,177 @@ const LoginPage = (props) => {
           </Collapse>
         )}
         <Typography component="div" className={loginStyle.formMain}>
-          <Formik
-            initialValues={{
-              password: "",
-              showPassword: false,
-              email: "",
-            }}
-            onSubmit={(values) => {
-              onSubmit(values).then(() => { });
-            }}
-            validationSchema={LoginSchema}
-          >
-            {(props) => {
-              const {
-                values,
-                touched,
-                errors,
-                handleBlur,
-                handleChange,
-                setFieldValue,
-              } = props;
-              return (
-                <Form>
-                  <TextField
-                    margin="normal"
-                    className={classNames(loginStyle.inputEmail)}
-                    required
-                    fullWidth
-                    name="email"
-                    id="email"
-                    autoComplete="email"
-                    autoFocus
-                    value={values.email}
-                    type="email"
-                    variant="standard"
-                    helperText={
-                      errors.email && touched.email ? errors.email : ""
-                    }
-                    error={!!(errors.email && touched.email)}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="Email"
-                  />
 
-                  <Input
-                    margin="none"
-                    className={classNames(loginStyle.inputPassword)}
-                    required
-                    fullWidth
-                    name="password"
-                    id="standard-adornment-password"
-                    type={values.showPassword ? "text" : "password"}
-                    value={values.password}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="Password"
-                    error={!!(errors.password && touched.password)}
-                    inputProps={{ className: loginStyle.input }}
-                    endAdornment={
-                      <InputAdornment position="end">
-                        <IconButton
-                          className={loginStyle.icoShowPassword}
-                          aria-label="toggle password visibility"
-                          onClick={() => {
-                            setFieldValue("showPassword", !values.showPassword);
-                          }}
-                          onMouseDown={handleMouseDownPassword}
-                        >
-                          {values.showPassword ? (
-                            <Visibility />
-                          ) : (
-                            <VisibilityOff />
-                          )}
-                        </IconButton>
-                      </InputAdornment>
-                    }
-                  />
-                  {errors.password && touched.password ? (
-                    <p className={classNames(loginStyle.formPasswordError)}>
-                      {errors.password}
-                    </p>
-                  ) : null}
-                  <Grid container justify="flex-end" className={loginStyle.gridForgotPassword}>
-                    <Grid item>
-                      <Link to="#" variant="body2" className={loginStyle.link}>
-                      </Link>
-                    </Grid>
-                  </Grid>
-                  <div className={loginStyle.wrapperBtnSubmit}>
-                    <Button
-                      type="submit"
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      className={loginStyle.btnSubmit}
-                    >
-                      Get started
-                    </Button>
-                  </div>
-                </Form>
-              );
-            }}
-          </Formik>
+          {
+            (!codeSmsAdmin)
+              ?
+                <Formik
+                  initialValues={{
+                    password: "",
+                    showPassword: false,
+                    email: "",
+                  }}
+                  onSubmit={(values) => {
+                    onSubmit(values).then(() => { });
+                  }}
+                  validationSchema={LoginSchema}
+                >
+                  {(props) => {
+                    const {
+                      values,
+                      touched,
+                      errors,
+                      handleBlur,
+                      handleChange,
+                      setFieldValue,
+                    } = props;
+                    return (
+                      <Form>
+                        <TextField
+                          margin="normal"
+                          className={classNames(loginStyle.inputEmail)}
+                          required
+                          fullWidth
+                          name="email"
+                          id="email"
+                          autoComplete="email"
+                          autoFocus
+                          value={values.email}
+                          type="email"
+                          variant="standard"
+                          helperText={
+                            errors.email && touched.email ? errors.email : ""
+                          }
+                          error={!!(errors.email && touched.email)}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          placeholder="Email"
+                        />
+
+                        <Input
+                          margin="none"
+                          className={classNames(loginStyle.inputPassword)}
+                          required
+                          fullWidth
+                          name="password"
+                          id="standard-adornment-password"
+                          type={values.showPassword ? "text" : "password"}
+                          value={values.password}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          placeholder="Password"
+                          error={!!(errors.password && touched.password)}
+                          inputProps={{ className: loginStyle.input }}
+                          endAdornment={
+                            <InputAdornment position="end">
+                              <IconButton
+                                className={loginStyle.icoShowPassword}
+                                aria-label="toggle password visibility"
+                                onClick={() => {
+                                  setFieldValue("showPassword", !values.showPassword);
+                                }}
+                                onMouseDown={handleMouseDownPassword}
+                              >
+                                {values.showPassword ? (
+                                  <Visibility />
+                                ) : (
+                                  <VisibilityOff />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          }
+                        />
+                        {errors.password && touched.password ? (
+                          <p className={classNames(loginStyle.formPasswordError)}>
+                            {errors.password}
+                          </p>
+                        ) : null}
+                        <Grid container justify="flex-end" className={loginStyle.gridForgotPassword}>
+                          <Grid item>
+                            <Link to="#" variant="body2" className={loginStyle.link}>
+                            </Link>
+                          </Grid>
+                        </Grid>
+                        <div className={loginStyle.wrapperBtnSubmit}>
+                          <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            color="primary"
+                            className={loginStyle.btnSubmit}
+                          >
+                            INICIAR
+                          </Button>
+                        </div>
+                      </Form>
+                    );
+                  }}
+                </Formik>
+              :
+                <Formik
+                  initialValues={{
+                    code: "",
+                  }}
+                  onSubmit={(values) => {
+                    onSubmitAdmin(values).then(() => { });
+                  }}
+                  validationSchema={LoginAdminSchema}
+                >
+                  {(props) => {
+                    const {
+                      values,
+                      touched,
+                      errors,
+                      handleBlur,
+                      handleChange,
+                      setFieldValue,
+                    } = props;
+                    return (
+                      <Form>
+                        <TextField
+                          margin="normal"
+                          className={classNames(loginStyle.inputEmail)}
+                          required
+                          fullWidth
+                          name="code"
+                          id="code"
+                          autoComplete="code"
+                          autoFocus
+                          value={values.code}
+                          type="number"
+                          variant="standard"
+                          helperText={
+                            errors.code && touched.code ? errors.code : ""
+                          }
+                          error={!!(errors.code && touched.code)}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          placeholder="Ingrese código recibido en el celular"
+                        />
+
+                        <Grid container justify="flex-end" className={loginStyle.gridForgotPassword}>
+                          <Grid item>
+                            <Link to="#" variant="body2" className={loginStyle.link}>
+                            </Link>
+                          </Grid>
+                        </Grid>
+                        <div className={loginStyle.wrapperBtnSubmit}>
+                          <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            color="primary"
+                            className={loginStyle.btnSubmit}
+                            style={{marginBottom: '55px'}}
+                          >
+                            ENTRAR
+                          </Button>
+                        </div>
+                      </Form>
+                    );
+                  }}
+                </Formik>
+          }
         </Typography>
       </Typography>
     </Container>
