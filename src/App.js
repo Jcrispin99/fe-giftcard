@@ -12,7 +12,7 @@ function App() {
       <Router>
         <HashRouter>
           <Switch>
-            <Route exact path="/gift-card-customer/:id" component={GiftCardCustomer} />      
+            <Route exact path="/gift-card-customer" component={GiftCardCustomer} />      
             <Route exact path="/login" component={Login} />
             {Routes.map((layout, i) => {
               return (
