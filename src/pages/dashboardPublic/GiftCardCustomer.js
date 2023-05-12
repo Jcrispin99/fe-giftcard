@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 import { useUI } from '../../app/context/ui';
 import { ModalCustomStyles } from '../../assets/css';
 import { AuthService } from '../../services';
@@ -35,6 +35,7 @@ const authService = new AuthService();
 const GiftCardCustomer = () => {
 
   const imagenRef = useRef(null);
+  const history = useHistory();
   const modalStyle = ModalCustomStyles();
   const giftStyle = GiftCardCustomerPublicStyles();
   const [card, setCard] = useState({});
@@ -53,6 +54,8 @@ const GiftCardCustomer = () => {
   const [viewBtnLogin, setViewBtnLogin] = useState(false);
   const [cardEntered, setCardEntered] = useState('');
   const [messageErrorLoginCustomer, setMessageErrorLoginCustomer] = useState(false);
+  const isMobile = /mobile|android/i.test(navigator.userAgent);
+
 
   const baseValues = {
     code: ''
@@ -263,6 +266,13 @@ const GiftCardCustomer = () => {
       intervalTimeAvailable();
     }
   }, []);
+
+  useEffect(() => {
+    if(!isMobile){
+      history.push("/home");
+    }
+  }, []);
+  
 
   return (
     <Grid container className={giftStyle.wrapperGiftCard}>

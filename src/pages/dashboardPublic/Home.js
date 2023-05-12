@@ -1,25 +1,17 @@
 import React from 'react';
-import HeaderPublic from '../../components/HeaderPublic';
-import { makeStyles } from '@mui/styles';
+import branchmain from "../../assets/images/branchmain.png";
+import { GiftCardCustomerPublicStyles } from './styles/giftcard-public-style';
 
 const Home = () => {
 
-  const classes = useStyles();
+  const style = GiftCardCustomerPublicStyles();
 
   return (
-    <>
-      <HeaderPublic/>
-      <div className={classes.wrapperBody}>
-          Home
-      </div>
-    </>
+    <div className={style.wrapperImg}>
+      <img src={branchmain} alt="imgGiftcard" className='imgPending'/>
+      <h5>EN DESARROLLO ...</h5>
+    </div>
   )
 }
 
 export default Home;
-
-const useStyles = makeStyles((theme) => ({
-  wrapperBody:{
-    marginTop: '100px'
-  }
-}));
