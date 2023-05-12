@@ -64,5 +64,13 @@ export const GiftCardCustomerPublicStyles = makeStyles((theme) => ({
     borderRadius: '14px',
     fontSize: '14px',
     textTransform: 'uppercase',
+  },
+  wrapperImg: {
+    textAlign: 'center',
+    marginTop: '40px',
+    '& .imgPending': {
+      width: '15%',
+      borderRadius: '20px'
+    }
   }
 }));
