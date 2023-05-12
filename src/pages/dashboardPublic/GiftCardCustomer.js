@@ -21,6 +21,7 @@ import dateFormat from 'dateformat';
 import LogoutIcon from '@mui/icons-material/Logout';
 import logo from "../../assets/images/giftcard_logo.png";
 import logoKdosh from "../../assets/images/kdosh_logo.png";
+import logoOlympo from "../../assets/images/olympo.jpg";
 
 let dlgSettings = {
   confirm: false,
@@ -114,7 +115,7 @@ const GiftCardCustomer = () => {
       setQrBuy({});
       blockUI.current.open(true);
       const dataLogin = JSON.parse(localStorage.getItem('giftcard'));
-      
+
       const body = {
         id: dataLogin.code,
         partner: partnerSelected.uid,
@@ -353,8 +354,11 @@ const GiftCardCustomer = () => {
                   return(
                     <div style={{padding: '25px'}}>
                       <Grid container spacing={3} className='wrapperForm'>
-                        <Grid item xs={12} style={{textAlign: 'center', paddingTop: '0px'}}>
+                      <Grid item xs={12} style={{textAlign: 'center', paddingTop: '0px'}}>
                           <img src={logoKdosh} alt="imgGiftcard" style={{width:'64%'}}/>
+                        </Grid>
+                        <Grid item xs={12} style={{textAlign: 'center', paddingTop: '0px'}}>
+                          <img src={logoOlympo} alt="imgGiftcard" style={{width:'64%'}}/>
                         </Grid>
                         <Grid item xs={12} style={{textAlign: 'center', paddingTop: '0px'}}>
                           <img src={logo} alt="imgGiftcard" style={{width:'42%'}}/>
