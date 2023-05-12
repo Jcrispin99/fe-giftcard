@@ -16,6 +16,9 @@ class AuthService extends AppService {
   generateQr(formData = {}) {
     return this.http.post('api/giftcards/create-ticket', formData)
   }
+  reloadDataMyGiftcard(formData = {}) {
+    return this.http.post('api/giftcards/reload-data-giftcard', formData)
+  }
 }
 
 export default AuthService;

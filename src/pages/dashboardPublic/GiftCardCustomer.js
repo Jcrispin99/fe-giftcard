@@ -18,6 +18,7 @@ import { GiftCardCustomerPublicStyles } from './styles/giftcard-public-style';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import DownloadingIcon from '@mui/icons-material/Downloading';
 import dateFormat from 'dateformat';
+import LogoutIcon from '@mui/icons-material/Logout';
 import logo from "../../assets/images/giftcard_logo.png";
 import logoKdosh from "../../assets/images/kdosh_logo.png";
 
@@ -35,6 +36,7 @@ const authService = new AuthService();
 const GiftCardCustomer = () => {
 
   const imagenRef = useRef(null);
+  const formikRef = useRef(null);
   const history = useHistory();
   const modalStyle = ModalCustomStyles();
   const giftStyle = GiftCardCustomerPublicStyles();
@@ -58,7 +60,8 @@ const GiftCardCustomer = () => {
 
 
   const baseValues = {
-    code: ''
+    code: '',
+    card: '',
   };
 
   const baseValuesTicket = {
@@ -88,10 +91,10 @@ const GiftCardCustomer = () => {
     try {
       blockUI.current.open(true);
       setRequestFailed('');
-      const id = location.pathname.split('/gift-card-customer/')[1];
-      const { data } = await authService.loguinMyCard({...values, id});
+      const { data } = await authService.loguinMyCard({...values, id: cardEntered });
       setGiftcardValidate(true);
       setCard(data.giftcard);
+      localStorage.setItem('giftcard',JSON.stringify(data.giftcard));
       setTickets(data.tickets);
       setAmountMax(data.giftcard.amountAvailable)
       setPartnersAvailable(data.partners);
@@ -199,8 +202,7 @@ const GiftCardCustomer = () => {
     try {
       blockUI.current.open(true);
       setViewBtnLogin(true);
-      const id = location.pathname.split('/gift-card-customer/')[1];
-      await authService.mycard({id});
+      await authService.mycard({id:cardEntered});
       setStatusGenerateBtn(true);
       localStorage.setItem("statusGenerateBtn", true);
       handleStatusBtnVerify();
@@ -222,9 +224,17 @@ const GiftCardCustomer = () => {
       };
       dialogUI.current.open(
         'NO PERMITIDO',
-        'Comuníquese con el proveedor',
+        'Ingrese bien su tarjeta o comuníquese con el administrador',
         dlgSettings
       );
+      if (formikRef.current) {
+        formikRef.current.resetForm({
+          values: {
+            code: '',
+            card: ''
+          }
+        });
+      }
     }
   };
 
@@ -250,9 +260,41 @@ const GiftCardCustomer = () => {
     linkTemp.click();
   };
 
+  const reloadDataMyGiftcard = async (myGiftcard) => {
+    try {
+      blockUI.current.open(true);
+      setRequestFailed('');
+      const { data } = await authService.reloadDataMyGiftcard({
+        giftcard: myGiftcard.code,
+        code: myGiftcard.securityCodeGenerated,
+        base64: myGiftcard.securitySecretBase64
+      });
+      setGiftcardValidate(true);
+      setCard(data.giftcard);
+      localStorage.setItem('giftcard',JSON.stringify(data.giftcard));
+      setTickets(data.tickets);
+      setAmountMax(data.giftcard.amountAvailable)
+      setPartnersAvailable(data.partners);
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+      setRequestFailed('Código no válido');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.reload();
+  }
+
   useEffect(() => {
     let statusGenerateBtn = localStorage.getItem('statusGenerateBtn');
     const timeLeft = Number(localStorage.getItem('timeLeft'));
+    let myGiftcard = JSON.parse(localStorage.getItem('giftcard'));
+
+    if(myGiftcard){
+      reloadDataMyGiftcard(myGiftcard);
+    }
 
     if(statusGenerateBtn === "true"){
       statusGenerateBtn = true;
@@ -284,6 +326,7 @@ const GiftCardCustomer = () => {
           ?
             <Grid item xs={12}>
               <Formik
+                innerRef={formikRef}
                 initialValues={initialValues}
                 validationSchema={validationSchema}
                 onSubmit={onSubmit}
@@ -299,7 +342,7 @@ const GiftCardCustomer = () => {
                     handleSubmit,
                   } = props;
                   return(
-                    <div>
+                    <div style={{padding: '25px'}}>
                       <Grid container spacing={3} className='wrapperForm'>
                         <Grid item xs={12} style={{textAlign: 'center', paddingTop: '0px'}}>
                           <img src={logoKdosh} alt="imgGiftcard" style={{width:'64%'}}/>
@@ -307,9 +350,6 @@ const GiftCardCustomer = () => {
                         <Grid item xs={12} style={{textAlign: 'center', paddingTop: '0px'}}>
                           <img src={logo} alt="imgGiftcard" style={{width:'42%'}}/>
                         </Grid>
-                        {/* <Grid item xs={4} className={modalStyle.grdItem}>
-                          <label>TARJETA</label>
-                        </Grid> */}
                         <Grid item xs={12}>
                           {
                             (viewBtnLogin)
@@ -331,7 +371,16 @@ const GiftCardCustomer = () => {
                                     errors.code && touched.code ? errors.code : ""
                                   }
                                   error={!!(errors.code && touched.code)}
-                                  onChange={handleChange}
+                                  inputProps={{ 
+                                    maxLength: 10,
+                                    pattern: "[0-9]*"
+                                  }}
+                                  onChange={(e)=>{
+                                    const enteredValue = e.target.value;
+                                    if (!isNaN(Number(enteredValue))) {
+                                      handleChange(e);
+                                    }
+                                  }}
                                   onBlur={handleBlur}
                                 />
                               :
@@ -339,8 +388,9 @@ const GiftCardCustomer = () => {
                                   type="text"
                                   id="card"
                                   autoComplete="card"
+                                  value={values.card || ''}
                                   className={modalStyle.texfield}
-                                  placeholder="Escriba aqui el código de su tarjeta"
+                                  placeholder="Escriba todo el código de su tarjeta"
                                   size='small'
                                   margin="normal"
                                   required
@@ -350,9 +400,17 @@ const GiftCardCustomer = () => {
                                     errors.card && touched.card ? errors.card : ""
                                   }
                                   error={!!(errors.card && touched.card)}
-                                  inputProps={{ maxLength: 10 }}
+                                  inputProps={{ 
+                                    maxLength: 10,
+                                    pattern: "[0-9]*"
+                                  }}
                                   onChange={(e) => {
-                                    setCardEntered(e.target.value);
+                                    const enteredValue = e.target.value;
+                                    const numericValue = enteredValue.replace(/\D/g, "");
+                                    setCardEntered(numericValue);
+                                    if (!isNaN(Number(enteredValue))) {
+                                      handleChange(e);
+                                    }
                                     setMessageErrorLoginCustomer(false);
                                   }}
                                   onBlur={()=>{
@@ -413,6 +471,11 @@ const GiftCardCustomer = () => {
           :
             <Grid item xs={12}>
               <Grid container>
+                <Grid item xs={12} style={{textAlign: 'center', paddingTop: '10px'}}>
+                  <IconButton aria-label="upload qr" component="span" size="large" onClick={handleLogout}>
+                    <LogoutIcon style={{color: 'red'}} />
+                  </IconButton>
+                </Grid>
                 <Grid item xs={12} style={{textAlign: 'center', paddingTop: '0px'}}>
                   <img src={logoKdosh} alt="imgGiftcard" style={{width:'64%'}}/>
                 </Grid>
