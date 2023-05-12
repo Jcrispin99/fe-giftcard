@@ -94,7 +94,11 @@ const GiftCardCustomer = () => {
       const { data } = await authService.loguinMyCard({...values, id: cardEntered });
       setGiftcardValidate(true);
       setCard(data.giftcard);
-      localStorage.setItem('giftcard',JSON.stringify(data.giftcard));
+      localStorage.setItem('giftcard',JSON.stringify({
+        code: data.giftcard.code,
+        securityCodeGenerated: data.giftcard.securityCodeGenerated,
+        securitySecretBase64: data.giftcard.securitySecretBase64
+      }));
       setTickets(data.tickets);
       setAmountMax(data.giftcard.amountAvailable)
       setPartnersAvailable(data.partners);
@@ -109,12 +113,13 @@ const GiftCardCustomer = () => {
     try {
       setQrBuy({});
       blockUI.current.open(true);
-      const id = location.pathname.split('/gift-card-customer/')[1];
+      const dataLogin = JSON.parse(localStorage.getItem('giftcard'));
+      
       const body = {
-        id,
+        id: dataLogin.code,
         partner: partnerSelected.uid,
-        code: card.securityCodeGenerated,
-        securitySecretBase64: card.securitySecretBase64,
+        code: dataLogin.securityCodeGenerated,
+        securitySecretBase64: dataLogin.securitySecretBase64,
         amount: values.amount
       }
 
@@ -271,14 +276,18 @@ const GiftCardCustomer = () => {
       });
       setGiftcardValidate(true);
       setCard(data.giftcard);
-      localStorage.setItem('giftcard',JSON.stringify(data.giftcard));
+      localStorage.setItem('giftcard',JSON.stringify({
+        code: data.giftcard.code,
+        securityCodeGenerated: data.giftcard.securityCodeGenerated,
+        securitySecretBase64: data.giftcard.securitySecretBase64
+      }));
       setTickets(data.tickets);
       setAmountMax(data.giftcard.amountAvailable)
       setPartnersAvailable(data.partners);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
-      setRequestFailed('Código no válido');
+      setRequestFailed(e.response.data.message);
     }
   };
 
