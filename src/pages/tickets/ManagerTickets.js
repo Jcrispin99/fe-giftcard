@@ -49,17 +49,17 @@ const ManagerTickets = (props) => {
     })();
   }, [id]);
 
-  useEffect(() => {
-    const delayTask = setTimeout(() => {
-      if(id){
-        history.push("/dashboard");
-      }
-    }, 10000);
+  // useEffect(() => {
+  //   const delayTask = setTimeout(() => {
+  //     if(id){
+  //       history.push("/dashboard");
+  //     }
+  //   }, 10000);
 
-    return () => {
-      clearTimeout(delayTask);
-    };
-  }, []);
+  //   return () => {
+  //     clearTimeout(delayTask);
+  //   };
+  // }, []);
 
   return (
     <div>
