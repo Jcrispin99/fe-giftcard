@@ -29,11 +29,11 @@ const ManagerTickets = (props) => {
 
   const getVerifyQr = async () => {
     try {
+      console.log('ejecutando');
       blockUI.current.open(true);
       giftCardService.getAccessToken();
       const resp = await giftCardService.verifyQr({id});
       setApprovedQr(true);
-      console.log('resp',resp);
       setMessageApproveQr(resp.data.message);
       blockUI.current.open(false);
     } catch (e) {
@@ -48,6 +48,18 @@ const ManagerTickets = (props) => {
       await getVerifyQr();
     })();
   }, [id]);
+
+  useEffect(() => {
+    const delayTask = setTimeout(() => {
+      if(id){
+        history.push("/dashboard");
+      }
+    }, 10000);
+
+    return () => {
+      clearTimeout(delayTask);
+    };
+  }, []);
 
   return (
     <div>
