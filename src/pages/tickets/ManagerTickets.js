@@ -14,6 +14,7 @@ const ManagerTickets = (props) => {
   const state = store.getState();
   const history = useHistory();
   const [approvedQr, setApprovedQr] = useState(false);
+  const [messageApproveQr, setMessageApproveQr] = useState('');
   const isMobile = /mobile|android/i.test(navigator.userAgent);
   const [requestFailedGiftcard, setRequestFailedGiftcard] = useState(false);
   const [hasError, setHasError] = useState({});
@@ -30,8 +31,10 @@ const ManagerTickets = (props) => {
     try {
       blockUI.current.open(true);
       giftCardService.getAccessToken();
-      await giftCardService.verifyQr({id});
+      const resp = await giftCardService.verifyQr({id});
       setApprovedQr(true);
+      console.log('resp',resp);
+      setMessageApproveQr(resp.data.message);
       blockUI.current.open(false);
     } catch (e) {
       setRequestFailedGiftcard(true);
@@ -44,7 +47,7 @@ const ManagerTickets = (props) => {
     (async function init() {
       await getVerifyQr();
     })();
-  }, []);
+  }, [id]);
 
   return (
     <div>
@@ -64,7 +67,7 @@ const ManagerTickets = (props) => {
                 (approvedQr)
                   &&
                     <div style={{textAlign: 'center', padding: '30px', backgroundColor:'#0b612e', color:'white', borderRadius:'15px', marginTop:'16px'}}>
-                      QR verificado correctamente, puede generar su recibo
+                      { messageApproveQr }
                     </div>
               }
             </div>
