@@ -29,6 +29,12 @@ class GiftCardService extends AppService {
   getTickets(search = '') {
     return this.http.get(`${this.path}/tickets?${search}`);
   }
+  getReportGiftcard(search = '') {
+    return this.http.get(`${this.path}/report?${search}`);
+  }
+  approveGiftcardCompliant(data) {
+    return this.http.post(`${this.path}/approve-giftcard-compliant`, data);
+  }
   approveQR(data) {
     return this.http.post(`${this.path}/approve-qr`, data);
   }

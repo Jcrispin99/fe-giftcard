@@ -16,6 +16,12 @@ const NavigationEmployee = [
     title: 'Tickets',
     type: 'item',
     url: 'ticket'
+  },
+  {
+    id: 'Reportes',
+    title: 'Reportes',
+    type: 'item',
+    url: 'report'
   }
 ];
 

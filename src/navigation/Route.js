@@ -7,6 +7,7 @@ import ListTicket from "../pages/tickets/ListTicket";
 import ListCategories from "../pages/categories/ListCategories";
 import ManagerTickets from "../pages/tickets/ManagerTickets";
 import OtherBussinessList from "../pages/otherBussiness/OtherBussinessList";
+import ListReport from "../pages/reports/ListReport";
 
 const Routes = [
   {
@@ -71,6 +72,13 @@ const Routes = [
     exact: true,
     pageTitle: "",
     component: OtherBussinessList,
+  },
+  {
+    path: "/report",
+    name: "",
+    exact: true,
+    pageTitle: "",
+    component: ListReport,
   },
 ];
 
