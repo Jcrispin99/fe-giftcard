@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useUI } from '../../app/context/ui';
 import { ListStyles } from '../../assets/css';
-import { UserService } from '../../services';
+import { CategorieService, UserService } from '../../services';
 import { EmployeeStyles } from './components/employees-style';
-import { Button, IconButton, Tooltip, Typography, Switch } from '@mui/material';
+import { Button, IconButton, Tooltip, Typography, Switch, Grid, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { DataGrid } from '@mui/x-data-grid';
@@ -11,6 +11,9 @@ import clsx from 'clsx';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CustomerManager from './components/CustomerManager';
 import store from '../../redux/store';
+import { Formik } from 'formik';
+import SearchIcon from '@mui/icons-material/Search';
+
 
 let dlgSettings = {
   confirm: true,
@@ -22,8 +25,13 @@ let dlgSettings = {
 };
 
 const userService = new UserService();
+const categorieService = new CategorieService;
 
 const ListCustomer = () => {
+
+  const baseValues = {
+    categorie: '',
+  };
 
   const listStyle = ListStyles();
   const classes = EmployeeStyles();
@@ -32,6 +40,10 @@ const ListCustomer = () => {
   const [openModalEmployee, setOpenModalEmployee] = useState(false);
   const [dataEmployee, setDataEmployee] = useState({});
   const state = store.getState();
+  const [initialValues, setInitialValues] = useState(baseValues);
+  const [categorieAvailable, setCategorieAvailable] = useState([]);
+
+
 
   const handleChangeStatus = async (e,employee) => {
     try {
@@ -69,14 +81,19 @@ const ListCustomer = () => {
       width: 150
     },
     { 
-      field: 'email', 
-      headerName: 'CORREO', 
-      width: 250
-    },
-    { 
       field: 'phone', 
       headerName: 'CELULAR', 
       width: 250
+    },
+    { 
+      field: 'categorie', 
+      headerName: 'CATEGORÍA', 
+      width: 250,
+      renderCell: (params) => {
+        return (
+          <div>{ params.row.categorie.name }</div>
+        )
+      }
     },
     {
       field: 'status',
@@ -101,26 +118,26 @@ const ListCustomer = () => {
       renderCell: (params) => {
         return (
           <div>
-            <Tooltip title="Editar" placement="top">
-              <IconButton 
-                aria-label="edit" 
-                color="success" 
-                onClick={()=>{handleEditEmployee(params)}}
-                disabled={state.user.role === 'EMPLOYEE_ROLE'}
-              >
+            <IconButton 
+              aria-label="edit" 
+              color="success" 
+              onClick={()=>{handleEditEmployee(params)}}
+              disabled={state.user.role === 'EMPLOYEE_ROLE'}
+            >
+              <Tooltip title="Editar" placement="top">
                 <EditIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Eliminar" placement="top">
-              <IconButton 
-                aria-label="delete" 
-                color="primary" 
-                onClick={()=>{handleDeleteEmployee(params)}}
-                disabled={state.user.role === 'EMPLOYEE_ROLE'}
-              >
+              </Tooltip>
+            </IconButton>
+            <IconButton 
+              aria-label="delete" 
+              color="primary" 
+              onClick={()=>{handleDeleteEmployee(params)}}
+              disabled={state.user.role === 'EMPLOYEE_ROLE'}
+            >
+              <Tooltip title="Eliminar" placement="top">
                 <DeleteForeverIcon />
-              </IconButton>
-            </Tooltip>
+              </Tooltip>
+            </IconButton>
           </div>
         )
       }
@@ -189,15 +206,101 @@ const ListCustomer = () => {
     setDataEmployee({});
   };
 
+  const onSubmit = async(values) => {
+    try {
+      blockUI.current.open(true);
+      const queryString = Object.entries(values)
+        .map(([key, value]) => `${key}=${value}`)
+        .join("&");
+      userService.getAccessToken();
+      const r1 = await userService.listCustomers(queryString);
+      const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
+      setRows(newData);
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  };
+
+  const getListCategorie = async () => {
+    try {
+      blockUI.current.open(true);
+      categorieService.getAccessToken();
+      const r1 = await categorieService.listSearch('');
+      setCategorieAvailable(r1.data.categories);
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  };
+
   useEffect(() => {
     (async function init() {
       await getListUser();
+      await getListCategorie();
     })();
   }, []);
 
   return (
     <div style={{ height: 540, width: '100%', marginTop: '50px' }}>
       <Typography className={classes.title}>CLIENTES</Typography>
+
+      <Formik
+        initialValues={initialValues}
+        onSubmit={onSubmit}
+        enableReinitialize={true}
+      >
+        {(props) => {
+          const {
+            values,
+            touched,
+            errors,
+            handleChange,
+            handleBlur,
+            handleSubmit,
+          } = props;
+          return(
+            <Grid container style={{marginTop: '20px'}}>
+              <Grid item xs={4}></Grid>
+              <Grid item xs={4}>
+                <FormControl style={{width: '100%', paddingRight: '7px'}}>
+                  <InputLabel id="categoriaLabel">CATEGORÍA</InputLabel>
+                  <Select
+                    labelId="categoriaLabel"
+                    id="categorie"
+                    label="Categoría"
+                    name="categorie"
+                    onChange={handleChange}
+                    value={values.categorie}
+                    fullWidth
+                    style={{textAlign: 'center'}}
+                  >
+                    <MenuItem value={''} key={`categorie${0}`}>LIMPIAR</MenuItem>
+                    {
+                      categorieAvailable.map((categorie, index)=>(
+                        <MenuItem value={categorie._id} key={`categorie${index}`}>{categorie.name}</MenuItem>
+                      ))
+                    }
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={4}></Grid>
+              <Grid item xs={12} style={{textAlign: 'center', paddingTop: '17px'}}>
+                <Tooltip title='BUSCAR' placement="bottom">
+                  <IconButton
+                    component="label"
+                    onClick={()=>{handleSubmit()}}
+                    style={{backgroundColor: '#00beff2b'}}
+                  >
+                    <SearchIcon />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+            </Grid>
+          );
+        }}
+      </Formik>
+
       <Button
         onClick={handleCreateEmployee} 
         variant="outlined" 

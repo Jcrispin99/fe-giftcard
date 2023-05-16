@@ -352,5 +352,8 @@ export const ModalCustomStyles = makeStyles((theme) => ({
     borderRadius: '10px', 
     padding: '40px', 
     color: 'gray'
+  },
+  inputCustom: {
+    textAlign: 'center'
   }
 }));

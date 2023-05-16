@@ -41,6 +41,9 @@ class GiftCardService extends AppService {
   verifyQr(data) {
     return this.http.post(`${this.path}/verify-qr`, data);
   }
+  deleteQr(data) {
+    return this.http.post(`${this.path}/delete-qr`, data);
+  }
 }
 
 export default GiftCardService;

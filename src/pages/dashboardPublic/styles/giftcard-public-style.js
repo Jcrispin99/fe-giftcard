@@ -17,7 +17,6 @@ export const GiftCardCustomerPublicStyles = makeStyles((theme) => ({
     borderRadius: '4px',
     padding: '0px',
     marginBottom: '5px',
-    paddingBottom: '18px',
     '& .partner': {
       fontFamily: "'Economica', sans-serif !important",
       fontSize: "18px"

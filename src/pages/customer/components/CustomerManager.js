@@ -121,6 +121,54 @@ const CustomerManager = (props) => {
     setChecked(newChecked);
   };
 
+  const handleRecoverAccount = (values) => {
+    dlgSettings = {
+      ...dlgSettings,
+      confirm: true,
+      onConfirm: () => {
+        onRecoverAccount(values);
+      },
+    };
+    dialogUI.current.open(
+      `EL CLIENTE ESTÁ DESACTIVADO`,
+      'Desea recuperarlo?',
+      dlgSettings
+    );
+  }
+
+  const onRecoverAccount = async(values) => {
+    try {
+      console.log('values',values);
+      blockUI.current.open(true);
+      setRequestFailed(false);
+      userService.getAccessToken();
+      await userService.recoverCustomer(values);
+      const r1 = await userService.listCustomers();
+      const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
+      setRows(newData);
+
+      blockUI.current.open(false);
+      setOpen(false);
+
+      dlgSettings = {
+        confirm: false,
+        btn: {
+          close: 'CERRAR',
+        },
+        onConfirm: () => {},
+      };
+      dialogUI.current.open(
+        `Cliente recuperado`,
+        '',
+        dlgSettings
+      );
+    } catch (error) {
+      blockUI.current.open(false);
+      setRequestFailed(true);
+      setHasError('Comuniquese con el administrador')
+    }
+  }
+
   const onSubmit = async (values) => {
     try {
       blockUI.current.open(true);
@@ -164,12 +212,9 @@ const CustomerManager = (props) => {
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailed(true);
-
-      if (e.response.data.error.keyPattern?.dni) {
-        setHasError({ message: 'El DNI ingresado ya está registrado' });
-      }
-      if (e.response.data.error.keyPattern?.email) {
-        setHasError({ message: 'El correo ingresado ya está registrado' });
+      if (e.response.data.errors[0].param === 'dni') {
+        setHasError({ message: e.response.data.errors[0].msg });
+        handleRecoverAccount(values);
       }
     }
   };

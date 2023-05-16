@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Modal } from '@mui/material';
+import { Grid, IconButton, Modal, Tooltip } from '@mui/material';
 import 'animate.css';
 import _ from 'lodash';
 import { ModalCustomStyles } from '../../assets/css';
@@ -7,6 +7,7 @@ import { GiftCardService } from '../../services';
 import { useUI } from '../../app/context/ui';
 import { GiftCardCustomerPublicStyles } from '../dashboardPublic/styles/giftcard-public-style';
 import dateFormat from 'dateformat';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 let dlgSettings = {
   confirm: false,
@@ -43,6 +44,41 @@ const MyShopping = (props) => {
       blockUI.current.open(false);
     }
   };
+
+  const onHandleDeleteQr = async (ticket) => {
+    try {
+      blockUI.current.open(true);
+      giftCardService.getAccessToken();
+      await giftCardService.deleteQr(ticket);
+      dlgSettings = {
+        ...dlgSettings,
+        confirm: false,
+        btn: {
+          close: 'Cerrar',
+        },
+      };
+      setOpenShopping(false);
+      dialogUI.current.open('', '', dlgSettings, 'Eliminado correctamente, clic en reload');
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  };
+
+  const handleDeleteQr = (ticket) => {
+    dlgSettings = {
+      ...dlgSettings,
+      confirm: true,
+      onConfirm: () => {
+        onHandleDeleteQr(ticket);
+      },
+    };
+    dialogUI.current.open(
+      'Espera!',
+      'Estás seguro de eliminar el QR?',
+      dlgSettings
+    );
+  }
   
   useEffect(() => {
     if(idGiftcardShopping){
@@ -95,6 +131,19 @@ const MyShopping = (props) => {
                           dateFormat(new Date(ticket.createdAt), "dd-mm-yy HH:MM")
                         }
                       </div>
+
+                      <div>
+                        <IconButton
+                          color="primary" 
+                          component="label"
+                          onClick={()=>{handleDeleteQr(ticket)}}
+                        >
+                          <Tooltip title="Eliminar QR" placement="bottom">
+                            <DeleteForeverIcon style={{color: 'red'}}/>
+                          </Tooltip>
+                        </IconButton>
+                      </div>
+
                     </div>
                   </Grid>
             ))

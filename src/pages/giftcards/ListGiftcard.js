@@ -134,7 +134,7 @@ const ListGiftcard = () => {
     };
     dialogUI.current.open(
       'Espera!',
-      'Estás seguro de eliminar esta giftcard?',
+      'Estás seguro de eliminar la giftcard?',
       dlgSettings
     );
   }
@@ -233,15 +233,15 @@ const ListGiftcard = () => {
                       />
                     </Grid>
                     <Grid item xs={1} style={{paddingTop: '9px'}}>
-                      <Tooltip title="Buscar" placement="right">
-                        <IconButton 
-                          color="primary" 
-                          component="label"
-                          onClick={()=>{handleSubmit()}}
-                        >
+                      <IconButton 
+                        color="primary" 
+                        component="label"
+                        onClick={()=>{handleSubmit()}}
+                      >
+                        <Tooltip title="Buscar / Reload" placement="right">
                           <YoutubeSearchedForIcon />
-                        </IconButton>
-                      </Tooltip>
+                        </Tooltip>
+                      </IconButton>
                     </Grid>
                   </Grid>
                 </Grid>
@@ -304,50 +304,50 @@ const ListGiftcard = () => {
                           </Button>
                         </Grid>
                         <Grid item xs={2}>
-                          <Tooltip title="Enviar url de acceso" placement="bottom">
-                            <IconButton 
-                              color="primary" 
-                              component="label"
-                              onClick={()=>{handleSenCard(e)}}
-                              size="large"
-                              style={{color:'green'}}
-                            >
+                          <IconButton 
+                            color="primary" 
+                            component="label"
+                            onClick={()=>{handleSenCard(e)}}
+                            size="large"
+                            style={{color:'green'}}
+                          >
+                            <Tooltip title="Enviar url de acceso" placement="bottom">
                               <QuestionAnswerIcon/>
-                            </IconButton>
-                          </Tooltip>
+                            </Tooltip>
+                          </IconButton>
                         </Grid>
                         <Grid item xs={2}>
-                          <Tooltip title="Editar" placement="bottom">
-                            <IconButton 
-                              color="primary" 
-                              component="label"
-                              onClick={()=>{handleEditGiftcard(e)}}
-                              size="large"
-                              style={{color:'orange'}}
-                              disabled={state.user.role === 'EMPLOYEE_ROLE'}
-                            >
+                          <IconButton 
+                            color="primary" 
+                            component="label"
+                            onClick={()=>{handleEditGiftcard(e)}}
+                            size="large"
+                            style={{color:'orange'}}
+                            disabled={state.user.role === 'EMPLOYEE_ROLE'}
+                          >
+                            <Tooltip title="Editar" placement="bottom">
                               <EditIcon/>
-                            </IconButton>
-                          </Tooltip>
+                            </Tooltip>
+                          </IconButton>
                         </Grid>
                         <Grid item xs={2}>
-                          <Tooltip title="Eliminar" placement="bottom">
-                            <IconButton 
-                              color="primary" 
-                              component="label"
-                              onClick={()=>{handleDeleteGiftcard(e)}}
-                              size="large"
-                              style={{color:'red'}}
-                              disabled={state.user.role === 'EMPLOYEE_ROLE'}
-                            >
+                          <IconButton 
+                            color="primary" 
+                            component="label"
+                            onClick={()=>{handleDeleteGiftcard(e)}}
+                            size="large"
+                            style={{color:'red'}}
+                            disabled={state.user.role === 'EMPLOYEE_ROLE'}
+                          >
+                            <Tooltip title="Eliminar" placement="bottom">
                               <DeleteForeverIcon/>
-                            </IconButton>
-                          </Tooltip>
+                            </Tooltip>
+                          </IconButton>
                         </Grid>
                       </Grid>
                     </Grid>
                     <Grid item xs={1} className='card2 animate__animated animate__rotateInDownRight'>
-                      <Tooltip title="COMPRAR" placement="right">
+                      
                         <IconButton 
                           color="primary" 
                           component="label"
@@ -356,9 +356,10 @@ const ListGiftcard = () => {
                           }}
                           size="large"
                         >
-                          <PaidIcon/>
+                          <Tooltip title="COMPRAR" placement="right">
+                            <PaidIcon/>
+                          </Tooltip>
                         </IconButton>
-                      </Tooltip>
                     </Grid>
                     <Grid item xs={12}>
                       <article className="gift-card animate__animated animate__rotateInDownLeft">

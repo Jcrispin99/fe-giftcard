@@ -18,7 +18,7 @@ class UserService extends AppService {
     return this.http.get(`${this.path}?${search}`);
   }
   listCustomers(search='') {
-    return this.http.get(`${this.path}/customers`);
+    return this.http.get(`${this.path}/customers?${search}`);
   }
   listAccountPartner(search='') {
     return this.http.get(`${this.path}/account-partner`);
@@ -28,6 +28,9 @@ class UserService extends AppService {
   }
   me() {
     return this.http.get(`${this.path}/me`);
+  }
+  recoverCustomer(data) {
+    return this.http.post(`${this.path}/recover-customer`, data);
   }
 }
 
