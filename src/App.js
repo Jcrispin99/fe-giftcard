@@ -3,8 +3,11 @@ import { BrowserRouter as Router, Switch, Route, HashRouter} from "react-router-
 import ProtectedRoute from "./components/guard/ProtectedRoute";
 import Routes from "./navigation/Route";
 import Login from './pages/auth/LoginPage';
-import GiftCardCustomer from "./pages/dashboardPublic/GiftCardCustomer";
+import LoginPageCustomer from "./pages/auth/LoginPageCustomer";
 import Home from "./pages/dashboardPublic/Home";
+import CustomerNewPassword from "./pages/auth/CustomerNewPassword";
+import RoutesCustomer from "./navigation/RouteCustomer";
+import ProtectedCustomerRoute from "./components/guard/ProtectedCustomerRoute";
 
 function App() {
 
@@ -13,12 +16,25 @@ function App() {
       <Router>
         <HashRouter>
           <Switch>
-            <Route exact path="/gift-card-customer" component={GiftCardCustomer} />
+            <Route exact path="/gift-card-customer" component={LoginPageCustomer} />
+            <Route exact path="/customer-new-password" component={CustomerNewPassword} />
             <Route exact path="/home" component={Home} />      
             <Route exact path="/login" component={Login} />
             {Routes.map((layout, i) => {
               return (
                 <ProtectedRoute
+                  key={i}
+                  exact={layout.exact}
+                  path={layout.path}
+                  component={layout.component}
+                  name={layout.name}
+                />
+              );
+            })}
+
+            {RoutesCustomer.map((layout, i) => {
+              return (
+                <ProtectedCustomerRoute
                   key={i}
                   exact={layout.exact}
                   path={layout.path}

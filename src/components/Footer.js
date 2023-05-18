@@ -4,8 +4,6 @@ import { connect } from "react-redux";
 import { makeStyles } from '@mui/styles';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import Navigation from "../navigation/Navigation";
-import Button from '@mui/material/Button';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { IconButton } from '@mui/material';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
@@ -37,13 +35,17 @@ const Footer = (props) => {
                 >
                   <LogoutIcon />
                 </IconButton>
-                <IconButton
-                  component="label"
-                  onClick={()=>{history.push('/ticket')}}
-                  style={{backgroundColor: '#00beff2b', marginLeft: '15px'}}
-                >
-                  <QrCode2Icon />
-                </IconButton>
+                {
+                  (props.user.role !== 'USER_ROLE')
+                    &&
+                      <IconButton
+                        component="label"
+                        onClick={()=>{history.push('/ticket')}}
+                        style={{backgroundColor: '#00beff2b', marginLeft: '15px'}}
+                      >
+                        <QrCode2Icon />
+                      </IconButton>
+                }
               </div>
             </Toolbar>
           </AppBar>

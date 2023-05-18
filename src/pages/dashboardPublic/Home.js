@@ -9,7 +9,7 @@ const Home = () => {
   return (
     <div className={style.wrapperImg}>
       <img src={branchmain} alt="imgGiftcard" className='imgPending'/>
-      <h5>EN DESARROLLO ...</h5>
+      <h5>SISTEMA DE CLIENTES SOLO PERMITIDO DESDE CELULARES</h5>
     </div>
   )
 }

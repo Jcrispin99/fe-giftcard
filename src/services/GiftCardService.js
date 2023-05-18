@@ -44,6 +44,15 @@ class GiftCardService extends AppService {
   deleteQr(data) {
     return this.http.post(`${this.path}/delete-qr`, data);
   }
+
+  //customer
+
+  reloadDataMyGiftcard(formData = {}) {
+    return this.http.post(`${this.path}/reload-data-giftcard`, formData);
+  }
+  generateQr(formData = {}) {
+    return this.http.post(`${this.path}/create-ticket`, formData)
+  }
 }
 
 export default GiftCardService;

@@ -138,7 +138,6 @@ const CustomerManager = (props) => {
 
   const onRecoverAccount = async(values) => {
     try {
-      console.log('values',values);
       blockUI.current.open(true);
       setRequestFailed(false);
       userService.getAccessToken();

@@ -13,7 +13,7 @@ export const LoginStyles = makeStyles(() => ({
     margin: "3px 0 2px 0",
     borderRadius: "4px",
     height: "37px",
-    backgroundColor:'#80BB57 !important',
+    backgroundColor:'black !important',
     color:'white',
     fontWeight: 'bold !important',
     width: '155px !important',
@@ -42,6 +42,16 @@ export const LoginStyles = makeStyles(() => ({
     transform: "translate(-50%, -50%)",
     width: "500px",
     boxShadow: '0px 6px 8px 4px rgb(36 35 35 / 15%)',
+    borderRadius: '4px',
+  },
+  panFormMobile: {
+    backgroundColor: "white",
+    padding: "50px",
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "500px",
     borderRadius: '4px',
   },
   formMain: {
@@ -78,10 +88,15 @@ export const LoginStyles = makeStyles(() => ({
     "& .MuiInputBase-input": {
       color: "#484646",
       WebkitBoxShadow: "0 0 0 1000px #e0e0e0 inset",
+      textAlign: 'center'
     }
   },
   inputPassword: {
     marginTop: "10px",
+    "& .MuiInputBase-input": {
+      color: "#484646",
+      textAlign: 'center'
+    }
   },
   input: {
     "&:-webkit-autofill": {
@@ -110,5 +125,10 @@ export const LoginStyles = makeStyles(() => ({
   },
   alert:{
     align: 'center'
+  },
+  infoDesktop: {
+    textAlign: 'center',
+    fontSize: '13px',
+    marginTop: '15px'
   }
 }));
