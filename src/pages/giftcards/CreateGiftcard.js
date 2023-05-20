@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Avatar,
   Button, 
-  Checkbox, 
+  Checkbox,
   FormControlLabel, 
   Grid, 
-  IconButton, 
+  IconButton,
+  MenuItem, 
   Modal, 
+  Select, 
   Tooltip
 } from '@mui/material';
 import 'animate.css';
@@ -60,6 +62,7 @@ const CreateGiftcard = (props) => {
     giftphone: '',
     amount: '',
     code: '',
+    type: '',
     permissions: []
   };
 
@@ -70,6 +73,9 @@ const CreateGiftcard = (props) => {
       .number()
       .required('Obligatorio'),
     code: Yup
+      .string()
+      .required('Obligatorio'),
+    type: Yup
       .string()
       .required('Obligatorio')
   });
@@ -325,6 +331,28 @@ const CreateGiftcard = (props) => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                     />
+                  </Grid>
+                  <Grid item xs={4} className={modalStyle.grdItem}>
+                    <label>M. PAGO</label>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Select
+                      labelId="type"
+                      id="type"
+                      name="type"
+                      value={values.type}
+                      label="Tipo"
+                      onChange={handleChange}
+                      fullWidth
+                      helpertext={
+                        errors.type && touched.type ? errors.type : ""
+                      }
+                      error={!!(errors.type && touched.type)}
+                      style={{height: '44px', textAlign: 'center'}}
+                    >
+                      <MenuItem value={'EFECTIVO'}>EFECTIVO</MenuItem>
+                      <MenuItem value={'TARJETA'} >TARJETA</MenuItem>
+                    </Select>
                   </Grid>
                   <Grid item xs={7} className={customerStyle.titlePartner}>
                     PARTNERS

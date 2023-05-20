@@ -90,6 +90,18 @@ const ListReport = () => {
       }
     },
     { 
+      field: 'type', 
+      headerName: 'MÉTODO DE PAGO', 
+      width: 250,
+      renderCell: (params) => {
+        return (
+          <div>
+            {`${params.value}`}
+          </div>
+        )
+      }
+    },
+    { 
       field: 'createdAt', 
       headerName: 'F. CREACIÓN', 
       width: 250,

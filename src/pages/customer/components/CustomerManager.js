@@ -68,7 +68,8 @@ const CustomerManager = (props) => {
     giftphone: '',
     amount: '',
     code: '',
-    permissions: []
+    permissions: [],
+    type: '',
   };
 
   const [initialValues, setInitialValues] = useState(baseValues);
@@ -105,7 +106,10 @@ const CustomerManager = (props) => {
       .string()
       .required('Obligatorio'),
     giftphone: Yup
-      .number()
+      .number(),
+    type: Yup
+      .string()
+      .required('Obligatorio'),
   });
 
   const handleChangePartner = (event) => {
@@ -637,7 +641,7 @@ const CustomerManager = (props) => {
                     </Grid>
                     <Grid item xs={4} className={modalStyle.grdItem}>
                       <label>CELULAR</label>
-                      <div className='optional'>(Nuevo receptor)</div>
+                      <div className='optional'>(Nuevo receptorrrr)</div>
                     </Grid>
                     <Grid item xs={8}>
                       <TextField
@@ -660,6 +664,28 @@ const CustomerManager = (props) => {
                         onChange={handleChange}
                         onBlur={handleBlur}
                       />
+                    </Grid>
+                    <Grid item xs={4} className={modalStyle.grdItem}>
+                      <label>M. PAGO</label>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Select
+                        labelId="type"
+                        id="type"
+                        name="type"
+                        value={values.type}
+                        label="Tipo"
+                        onChange={handleChange}
+                        fullWidth
+                        helpertext={
+                          errors.type && touched.type ? errors.type : ""
+                        }
+                        error={!!(errors.type && touched.type)}
+                        style={{height: '44px', textAlign: 'center'}}
+                      >
+                        <MenuItem value={'EFECTIVO'}>EFECTIVO</MenuItem>
+                        <MenuItem value={'TARJETA'} >TARJETA</MenuItem>
+                      </Select>
                     </Grid>
                     <Grid item xs={12} className={customerStyle.titlePartner} style={{textAlign:'center'}}>
                       PARTNERS
