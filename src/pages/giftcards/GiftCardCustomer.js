@@ -64,6 +64,16 @@ const GiftCardCustomer = (props) => {
   const handleConfirmGenerateTicket = async (values) => {
     try {
       setQrBuy({});
+      dlgSettings = {
+        ...dlgSettings,
+        confirm: false,
+        onConfirm: () => {},
+      };
+      dialogUI.current.open(
+        '',
+        'Ticket generado',
+        dlgSettings
+      );
       blockUI.current.open(true);
       const body = {
         giftcard: user.giftcard,
@@ -93,16 +103,7 @@ const GiftCardCustomer = (props) => {
         status: true
       }, ...tickets];
       setTickets(newTickets);
-      dlgSettings = {
-        ...dlgSettings,
-        confirm: false,
-        onConfirm: () => {},
-      };
-      dialogUI.current.open(
-        '',
-        'Ticket generado',
-        dlgSettings
-      );
+      
       setInitialValuesTicket({amount:''});
       blockUI.current.open(false);
     } catch (e) {
