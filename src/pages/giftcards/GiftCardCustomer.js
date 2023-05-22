@@ -312,7 +312,7 @@ const GiftCardCustomer = (props) => {
                           style={(ticket.status) ? {color:'green'} : {color:'red'}}
                         >
                           {
-                            (ticket.status) ? 'DISPONIBLE' : 'ESCANEADO'
+                            (ticket.status) ? 'DISPONIBLE' : 'CANJEADO'
                           }
                         </div>
                         <div style={{

@@ -104,7 +104,7 @@ const ListTicket = () => {
       renderCell: (params) => {
         return (
           <div className={params.value ? listStyle.containerNotPay : listStyle.containerPay}>
-            {(params.value) ? 'DISPONIBLE' : 'ESCANEADO'}
+            {(params.value) ? 'DISPONIBLE' : 'CANJEADO'}
           </div>
         )
       }

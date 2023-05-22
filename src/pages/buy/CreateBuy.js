@@ -238,7 +238,7 @@ const CreateBuy = (props) => {
                             padding: '2px',
                           }}>
                             {
-                              (qrBuy.status) ? 'DISPONIBLE' : 'ESCANEADO'
+                              (qrBuy.status) ? 'DISPONIBLE' : 'CANJEADO'
                             }
                           </div>
                         </div>
