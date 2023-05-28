@@ -73,7 +73,10 @@ const CustomerNewPassword = (props) => {
       const res = await authService.newPassword({...values, identify: locationState.user.identify});
       history.push({
           pathname: '/gift-card-customer',
-          state: { message: res.data.msg }
+          state: { 
+            message: res.data.msg,
+            giftcard: locationState.giftcard
+          }
       });
       blockUI.current.open(false);
     } catch (e) {
@@ -149,7 +152,7 @@ const CustomerNewPassword = (props) => {
                           value={values.password}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          placeholder="Ingrese nueva contraseña"
+                          placeholder="Crea tu nueva contraseña"
                           error={!!(errors.password && touched.password)}
                           inputProps={{ className: loginStyle.input }}
                           endAdornment={

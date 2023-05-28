@@ -124,7 +124,8 @@ export const LoginStyles = makeStyles(() => ({
     textDecoration: 'none'
   },
   alert:{
-    align: 'center'
+    align: 'center',
+    textAlign: 'center'
   },
   infoDesktop: {
     textAlign: 'center',

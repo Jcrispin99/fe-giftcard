@@ -71,5 +71,23 @@ export const GiftCardCustomerPublicStyles = makeStyles((theme) => ({
       width: '15%',
       borderRadius: '20px'
     }
-  }
+  },
+  expandBtn: {
+    fontSize: '16px',
+    border: 'none',
+    transition: 'all 0.3s ease-in-out',
+    animation: '$expandAnimation 2s infinite',
+    backgroundColor: '#73937E !important'
+  },
+  '@keyframes expandAnimation': {
+    '0%': {
+      transform: 'scale(1)'
+    },
+    '50%': {
+      transform: 'scale(1.1)'
+    },
+    '100%': {
+      transform: 'scale(1)'
+    }
+  },
 }));

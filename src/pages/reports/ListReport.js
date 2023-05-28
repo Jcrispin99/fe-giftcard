@@ -4,17 +4,16 @@ import { Formik } from 'formik';
 import { useUI } from '../../app/context/ui';
 import { ListStyles, ModalCustomStyles } from '../../assets/css';
 import SearchIcon from '@mui/icons-material/Search';
-import * as Yup from 'yup';
-import { GiftCardService, PartnerService, UserService } from '../../services';
+import { GiftCardService, UserService } from '../../services';
 import { EmployeeStyles } from '../employee/components/employees-style';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { DataGrid } from '@mui/x-data-grid';
 import clsx from 'clsx';
 import dateFormat from 'dateformat';
 import store from '../../redux/store';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
+import * as XLSX from 'xlsx';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
 
-const partnerService = new PartnerService();
 const userService = new UserService();
 const giftcardService = new GiftCardService();
 
@@ -36,6 +35,7 @@ const ListReport = () => {
   const isMobile = /mobile|android/i.test(navigator.userAgent);
   const [amountTotal, setAmountTotal] = useState(0);
   const [idsGiftcardsCompliant, setIdsGiftcardsCompliant] = useState([]);
+  const [dataExport, setDataExport] = useState([]);
 
   const { blockUI, dialogUI } = useUI();
 
@@ -45,8 +45,7 @@ const ListReport = () => {
     authorizer: ''
   };
 
-  const [initialValues, setInitialValues] = useState(baseValues); 
-  const [partnerAvailable, setPartnersAvailable] = useState([]);
+  const [initialValues, setInitialValues] = useState(baseValues);
   const [creatorAvailable, setCreatorAvailable] = useState([]);
   const [rows, setRows] = useState([]);
 
@@ -144,6 +143,7 @@ const ListReport = () => {
         }
       });
       setRows(rows);
+      customizeExport(r1.data.giftcards);
       setAmountTotal(r1.data.totalAmount);
       setIdsGiftcardsCompliant(giftcardsCompliant);
       blockUI.current.open(false);
@@ -151,6 +151,33 @@ const ListReport = () => {
       blockUI.current.open(false);
     }
   };
+
+  const customizeExport = (data) => {
+    try {
+      const headers = [
+        'CLIENTE',
+        'GIFTCARD',
+        'MONTO',
+        'MÉTODO DE PAGO',
+        'FECHA DE CREACIÓN',
+        'ESTADO DE CONFORMIDAD'
+      ];
+      const dataExcel = data.map((row)=>{
+        return [
+          row.user?.name,
+          row.code,
+          `S/${row.amount}`,
+          row.type,
+          (row.createdAt) ? dateFormat(new Date(row.createdAt), "dd-mm-yy HH:MM") : '',
+          (row.statusCompliant) ? 'CONFORME' : 'NO CONFORME'
+        ]
+      });
+      dataExcel.unshift(headers);
+      setDataExport(dataExcel);
+    } catch (error) {
+      setDataExport([]);
+    }
+  }
 
   const getListCreators = async () => {
     try {
@@ -179,6 +206,14 @@ const ListReport = () => {
       } catch (e) {
         blockUI.current.open(false);
       }
+  };
+
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.aoa_to_sheet(dataExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Giftcards');
+    let nameFile = dateFormat(new Date(), "HH:MM:ss")
+    XLSX.writeFile(workbook, `giftcards_${nameFile}.xlsx`);
   };
 
   useEffect(() => {
@@ -278,6 +313,21 @@ const ListReport = () => {
                         </IconButton>
                 }
               </Grid>
+              {
+                (rows.length>0)
+                  &&
+                    <Grid item xs={12} style={{textAlign: 'center', marginTop: '45px'}}>
+                      <IconButton
+                        component="label"
+                        onClick={()=>{exportToExcel()}}
+                        style={{backgroundColor: '#57c115', color: 'white'}}
+                      >
+                        <Tooltip title='DESCARGAR' placement="bottom">
+                          <SaveAltIcon />
+                        </Tooltip>
+                      </IconButton>
+                    </Grid>
+              }
             </Grid>
           );
         }}

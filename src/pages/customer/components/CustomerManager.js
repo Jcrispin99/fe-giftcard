@@ -217,7 +217,10 @@ const CustomerManager = (props) => {
       setRequestFailed(true);
       if (e.response.data.errors[0].param === 'dni') {
         setHasError({ message: e.response.data.errors[0].msg });
-        handleRecoverAccount(values);
+        let dni = rows.find((customer) => customer.dni === values.dni);
+        if(!dni){
+          handleRecoverAccount(values);
+        }
       }
     }
   };

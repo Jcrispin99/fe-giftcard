@@ -77,7 +77,10 @@ const LoginPageCustomer = (props) => {
       if(r1.data.type === "init_access"){
         history.push({
           pathname: '/customer-new-password',
-          state: { user: r1.data.user }
+          state: { 
+            user: r1.data.user, 
+            giftcard: values.giftcard 
+          }
         });
       }else{
         const accessToken = r1.data.token;
@@ -137,7 +140,7 @@ const LoginPageCustomer = (props) => {
                   initialValues={{
                     password: "",
                     showPassword: false,
-                    giftcard: "",
+                    giftcard: (locationState) ? locationState.giftcard  : "",
                   }}
                   onSubmit={(values) => {
                     onSubmit(values).then(() => { });

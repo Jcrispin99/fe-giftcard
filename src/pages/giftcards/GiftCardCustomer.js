@@ -13,10 +13,10 @@ import {
 } from '@mui/material';
 import { Formik } from 'formik';
 import { GiftCardCustomerPublicStyles } from './styles/giftcard-public-style';
-import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import dateFormat from 'dateformat';
 import logo from "../../assets/images/giftcard_logo.png";
 import logoKdosh from "../../assets/images/kdosh_logo.png";
+import TouchAppIcon from '@mui/icons-material/TouchApp';
 import { connect } from 'react-redux';
 
 let dlgSettings = {
@@ -206,7 +206,7 @@ const GiftCardCustomer = (props) => {
         <Grid item xs={12} style={{textAlign:'center', marginTop: '30px'}}>
           <Grid container>
             <Grid item xs={12}>
-              GENERAR QR DE CONSUMO
+              Ingrese el monto que desea consumir:
             </Grid>
             <Grid item xs={12} style={{textAlign: 'center', marginTop: '32px'}}>
               <Formik
@@ -258,6 +258,9 @@ const GiftCardCustomer = (props) => {
                           <Grid item xs={4}></Grid>
                         </Grid>
                       </Grid>
+                      <Grid item xs={12} style={{marginBottom: '28px'}}>
+                        Por favor, seleccione la tienda de su elección:
+                      </Grid>
                       <Grid item xs={12} className={giftStyle.wrapperPartners}>
                         {
                           partnersAvailable.map((partner, index)=>(
@@ -271,7 +274,7 @@ const GiftCardCustomer = (props) => {
                                   />
                                 </Tooltip>
                               </Grid>
-                              <Grid item xs={7} style={{paddingTop: '6px'}}>
+                              <Grid item xs={7} style={{paddingTop: '6px'}} className="expand-btn">
                                 <Button
                                   variant="contained"
                                   size="large"
@@ -279,8 +282,8 @@ const GiftCardCustomer = (props) => {
                                     setPartnerSelected(partner);
                                     handleSubmit();
                                   }}
-                                  startIcon={<QrCodeScannerIcon />}
-                                  className={giftStyle.btnGenerateQr}
+                                  startIcon={<TouchAppIcon />}
+                                  className={giftStyle.expandBtn}
                                 >
                                   CLIC AQUÍ 
                                 </Button>

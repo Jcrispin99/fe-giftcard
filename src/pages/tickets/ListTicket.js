@@ -9,9 +9,11 @@ import { GiftCardService, PartnerService, UserService } from '../../services';
 import { EmployeeStyles } from '../employee/components/employees-style';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { DataGrid } from '@mui/x-data-grid';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import clsx from 'clsx';
 import dateFormat from 'dateformat';
 import store from '../../redux/store';
+import * as XLSX from 'xlsx';
 
 const partnerService = new PartnerService();
 const userService = new UserService();
@@ -33,6 +35,7 @@ const ListTicket = () => {
   const classes = EmployeeStyles();
   const state = store.getState();
   const isMobile = /mobile|android/i.test(navigator.userAgent);
+  const [dataExport, setDataExport] = useState([]);
 
   const { blockUI, dialogUI } = useUI();
 
@@ -46,6 +49,8 @@ const ListTicket = () => {
   const [partnerAvailable, setPartnersAvailable] = useState([]);
   const [authorizerAvailable, setAuthorizerAvailable] = useState([]);
   const [rows, setRows] = useState([]);
+  const [amountTotal, setAmountTotal] = useState(0);
+
  
   const handleApprobePaid = async (id) => {
     try {
@@ -179,12 +184,41 @@ const ListTicket = () => {
         .join("&");
       giftcardService.getAccessToken();
       const r1 = await giftcardService.getTickets(queryString);
+      customizeExport(r1.data.tickets);      
       setRows(r1.data.tickets);
+      setAmountTotal(r1.data.totalAmount);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
     }
   };
+
+  const customizeExport = (tickets) => {
+    try {
+      const headers = [
+        'PARTNER',
+        'MONTO',
+        'ESTADO DE VERIFICACIÓN',
+        'AUTORIZADOR',
+        'FECHA DE ESCANEO',
+        'ESTADO DE PAGO'
+      ];
+      const dataExcel = tickets.map((ticket)=>{
+        return [
+          ticket.partner.name,
+          `S/${ticket.amount}`,
+          (ticket.status) ? 'DISPONIBLE' : 'CANJEADO',
+          (ticket.authorizer?.name) ? ticket.authorizer?.name : '____',
+          (ticket.dateScan) ? dateFormat(new Date(ticket.dateScan), "dd-mm-yy HH:MM") : '',
+          (ticket.statusPaid) ? 'PAGADO' : 'FALTA PAGAR'
+        ]
+      });
+      dataExcel.unshift(headers);
+      setDataExport(dataExcel);
+    } catch (error) {
+      setDataExport([]);
+    }
+  }
 
   const getListPartner = async () => {
     try {
@@ -208,6 +242,14 @@ const ListTicket = () => {
     } catch (e) {
       blockUI.current.open(false);
     }
+  };
+
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.aoa_to_sheet(dataExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Tickets');
+    let nameFile = dateFormat(new Date(), "HH:MM:ss")
+    XLSX.writeFile(workbook, `tickets_${nameFile}.xlsx`);
   };
 
   useEffect(() => {
@@ -300,16 +342,34 @@ const ListTicket = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={12} style={{textAlign: 'center', paddingTop: '17px'}}>
-                <Tooltip title='BUSCAR' placement="bottom">
-                  <IconButton
-                    component="label"
-                    onClick={()=>{handleSubmit()}}
-                    style={{backgroundColor: '#00beff2b'}}
-                  >
+                <IconButton
+                  component="label"
+                  onClick={()=>{handleSubmit()}}
+                  style={{backgroundColor: '#00beff2b'}}
+                >
+                  <Tooltip title='BUSCAR' placement="bottom">
                     <SearchIcon />
-                  </IconButton>
-                </Tooltip>
+                  </Tooltip>
+                </IconButton>
               </Grid>
+              <Grid item xs={12} style={{textAlign: 'center', marginTop: '45px'}}>
+                <span style={{marginRight: '20px'}}>{ `MONTO TOTAL: S/${amountTotal}` }</span>
+              </Grid>
+              {
+                (rows.length>0)
+                  &&
+                    <Grid item xs={12} style={{textAlign: 'center', marginTop: '45px'}}>
+                      <IconButton
+                        component="label"
+                        onClick={()=>{exportToExcel()}}
+                        style={{backgroundColor: '#57c115', color: 'white'}}
+                      >
+                        <Tooltip title='DESCARGAR' placement="bottom">
+                          <SaveAltIcon />
+                        </Tooltip>
+                      </IconButton>
+                    </Grid>
+              }
             </Grid>
           );
         }}
