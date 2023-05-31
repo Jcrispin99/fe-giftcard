@@ -152,7 +152,7 @@ const CustomerNewPassword = (props) => {
                           value={values.password}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          placeholder="Crea tu nueva contraseña"
+                          placeholder="Crea tu nueva contraseña, mínimo de 8 dígitos"
                           error={!!(errors.password && touched.password)}
                           inputProps={{ className: loginStyle.input }}
                           endAdornment={
