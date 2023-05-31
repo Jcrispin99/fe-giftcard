@@ -178,7 +178,7 @@ const LoginPageCustomer = (props) => {
                           error={!!(errors.giftcard && touched.giftcard)}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          placeholder="Ingrese su código de giftcard"
+                          placeholder="Ingrese los 10 dígitos de la tarjeta"
                         />
 
                         <Input
@@ -192,7 +192,7 @@ const LoginPageCustomer = (props) => {
                           value={values.password}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          placeholder="Password"
+                          placeholder="Ingrese la contraseña"
                           error={!!(errors.password && touched.password)}
                           inputProps={{ className: loginStyle.input }}
                           endAdornment={
