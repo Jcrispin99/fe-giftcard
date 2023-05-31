@@ -9,7 +9,9 @@ import {
   TextField, 
   Button, 
   Avatar,
-  Tooltip 
+  Tooltip, 
+  Modal,
+  Box
 } from '@mui/material';
 import { Formik } from 'formik';
 import { GiftCardCustomerPublicStyles } from './styles/giftcard-public-style';
@@ -18,6 +20,18 @@ import logo from "../../assets/images/giftcard_logo.png";
 import logoKdosh from "../../assets/images/kdosh_logo.png";
 import TouchAppIcon from '@mui/icons-material/TouchApp';
 import { connect } from 'react-redux';
+
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
 
 let dlgSettings = {
   confirm: false,
@@ -46,6 +60,8 @@ const GiftCardCustomer = (props) => {
   const [viewAllQr, setViewAllQr] = useState(true);
   const [tickets, setTickets] = useState([]);
   const isMobile = /mobile|android/i.test(navigator.userAgent);
+  const [openViewQr, setOpenViewQr] = useState(false);
+  const [qrImageExpand, setQrImageExpand] = useState({});
 
   const baseValuesTicket = {
     amount: ''
@@ -105,6 +121,19 @@ const GiftCardCustomer = (props) => {
       setTickets(newTickets);
       
       setInitialValuesTicket({amount:''});
+
+      setQrImageExpand({
+        amount: values.amount,
+        qrImage: r1.data.url,
+        partner: {
+          name: partnerSelected.name
+        },
+        createdAt: r1.data.date,
+        status: true
+      });
+      
+      setOpenViewQr(true);
+
       blockUI.current.open(false);
     } catch (e) {
       setQrBuy({});
@@ -301,7 +330,18 @@ const GiftCardCustomer = (props) => {
               (viewAllQr)
                 &&
                   tickets.map((ticket, index)=>(
-                    <Grid key={`ticket${index}`} item xs={6} style={{textAlign:'center', marginTop: '20px'}}>
+                    <Grid 
+                      key={`ticket${index}`} 
+                      item 
+                      xs={6} 
+                      style={{textAlign:'center', marginTop: '20px'}}
+                      onClick={
+                        ()=>{
+                          setQrImageExpand(ticket);
+                          setOpenViewQr(true);
+                        }
+                      }
+                    >
                       <div className={giftStyle.wrapperQr} style={(ticket.status) ? {borderColor:'green'} : {borderColor:'red'}}>
                         <img src={ticket.qrImage} style={{width: '100%'}}/>
                         <div className='partner'>
@@ -336,6 +376,36 @@ const GiftCardCustomer = (props) => {
           </Grid>
         </Grid>
       </Grid>  
+
+      <Modal
+        open={openViewQr}
+        onClose={()=>{
+          setOpenViewQr(false)
+        }}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div className={giftStyle.wrapperQr} style={(qrImageExpand.status) ? {borderColor:'green'} : {borderColor:'red'}}>
+            <img src={qrImageExpand.qrImage} style={{width: '100%'}}/>
+            <div className='partner' style={{textAlign: 'center'}}>
+              {qrImageExpand.partner?.name}
+            </div>
+            <div className='amount' style={{textAlign: 'center'}}>
+              S/{qrImageExpand.amount}
+            </div>
+            <div 
+              className='status'
+              style={(qrImageExpand.status) ? {color:'green', textAlign: 'center'} : {color:'red', textAlign: 'center'}}
+            >
+              {
+                (qrImageExpand.status) ? 'DISPONIBLE' : 'CANJEADO'
+              }
+            </div>
+          </div>
+        </Box>
+      </Modal>
+
     </Grid>
   )
 }

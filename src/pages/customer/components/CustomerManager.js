@@ -105,8 +105,6 @@ const CustomerManager = (props) => {
     code: Yup
       .string()
       .required('Obligatorio'),
-    giftphone: Yup
-      .number(),
     type: Yup
       .string()
       .required('Obligatorio'),
@@ -252,7 +250,7 @@ const CustomerManager = (props) => {
       blockUI.current.open(false);
       setRequestFailedGiftcard(true);
       if (!_.isUndefined(e.response.data)) {
-        setHasErrorGiftcard({ message: e.response.data.msg });
+        setHasErrorGiftcard({ message: e.response.data.message });
       }
     }
   }

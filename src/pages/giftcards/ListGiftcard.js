@@ -64,7 +64,7 @@ const ListGiftcard = () => {
       setGiftCards([]);
       userService.getAccessToken();
       giftCardService.getAccessToken();
-      if(values.type === 1){
+      if(values.type === "1"){
         const r1 = await userService.listSearch(`limit=100&dni=${values.dato}`);
         if(r1.data.total > 0){
           setDataUser(r1.data.users[0]);

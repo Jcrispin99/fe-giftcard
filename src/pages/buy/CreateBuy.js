@@ -11,6 +11,7 @@ import { useUI } from '../../app/context/ui';
 import { v4 as uuidv4 } from 'uuid';
 import { useHistory } from 'react-router-dom';
 import { GiftCardCustomerPublicStyles } from '../dashboardPublic/styles/giftcard-public-style';
+import store from '../../redux/store';
 
 let dlgSettings = {
   confirm: false,
@@ -31,6 +32,7 @@ const CreateBuy = (props) => {
     giftCardBuy
   } = props;
   const { blockUI, dialogUI } = useUI();
+  const state = store.getState();
   const modalStyle = ModalCustomStyles();
   const giftStyle = GiftCardCustomerPublicStyles();
   const baseValues = {
@@ -88,7 +90,8 @@ const CreateBuy = (props) => {
       blockUI.current.open(true);
       partnerService.getAccessToken();
       const r1 = await partnerService.listSearch('');
-      setPartnersAvailable(r1.data.partners);
+      const newr1 = r1.data.partners.filter((partner)=>partner.uid === state.user.partner);
+      setPartnersAvailable(newr1);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);

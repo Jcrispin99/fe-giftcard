@@ -5,12 +5,12 @@ import { Formik } from 'formik';
 import { Box, TextField, Typography } from '@mui/material';
 import * as Yup from 'yup';
 import _ from 'lodash';
-import { UserService, CategorieService } from '../../../services';
+import { UserService, PartnerService } from '../../../services';
 import { useUI } from '../../../app/context/ui';
 import { ModalCustomStyles } from '../../../assets/css';
 
 const userService = new UserService();
-const categorieService = new CategorieService();
+const partnerService = new PartnerService();
 
 const EmployeeManager = (props) => {
 
@@ -18,6 +18,7 @@ const EmployeeManager = (props) => {
   const { blockUI } = useUI();
   const modalStyle = ModalCustomStyles();
   const baseValues = {
+    partner: '',
     dni: '',
     name: '',
     email: '',
@@ -28,9 +29,12 @@ const EmployeeManager = (props) => {
   const [initialValues, setInitialValues] = useState(baseValues);
   const [hasError, setHasError] = useState({});
   const [requestFailed, setRequestFailed] = useState(false);
-  const [categoriesAvailable, setCategoriesAvailable] = useState([]);
+  const [partnersAvailable, setPartnersAvailable] = useState([]);
 
   const validationSchema = Yup.object({
+    partner: Yup
+      .string()
+      .required('Obligatorio'),
     dni: Yup
       .string()
       .matches(/^[0-9]+$/, 'Debe contener solo números')
@@ -93,12 +97,13 @@ const EmployeeManager = (props) => {
     }
   };
 
-  const getListCategorie = async () => {
+  const getListPartner = async () => {
     try {
       blockUI.current.open(true);
-      categorieService.getAccessToken();
-      const r1 = await categorieService.listSearch('');
-      setCategoriesAvailable(r1.data.categories);
+      partnerService.getAccessToken();
+      const r1 = await partnerService.listSearch('');
+      const newPartner = r1.data.partners.filter((e)=>(e.name === 'Kdosh' || e.name === 'Olympo'));
+      setPartnersAvailable(newPartner);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -119,7 +124,7 @@ const EmployeeManager = (props) => {
 
   useEffect(() => {
     (async function init() {
-      await getListCategorie();
+      await getListPartner();
     })();
   }, []);
   
@@ -158,33 +163,33 @@ const EmployeeManager = (props) => {
             return(
               <div>
                 <Grid container spacing={3} className='wrapperForm'>
-                  {/* <Grid item xs={4} className={modalStyle.grdItem}>
-                    <label>CATEGORÍA</label>
+                  <Grid item xs={4} className={modalStyle.grdItem}>
+                    <label>TIENDA</label>
                   </Grid>
                   <Grid item xs={8}>
                     <FormControl variant="outlined" fullWidth className={modalStyle.inputCustom}>
                       <Select
                         displayEmpty
-                        id="categorie"
-                        name="categorie"
-                        value={values.categorie}
+                        id="partner"
+                        name="partner"
+                        value={values.partner}
                         onChange={handleChange}
                         size='small'
-                        error={touched.categorie && Boolean(errors.categorie)}
+                        error={touched.partner && Boolean(errors.partner)}
                         helpertext={
-                          errors.categorie && touched.categorie ? errors.categorie : ""
+                          errors.partner && touched.partner ? errors.partner : ""
                         }
                       >
                         <MenuItem value="">Selecciona una opción</MenuItem>
                         {
-                          categoriesAvailable.map((e, index)=>(
-                            <MenuItem key={`categorie${index}`} value={e._id}>{e.name}</MenuItem>
+                          partnersAvailable.map((e, index)=>(
+                            <MenuItem key={`partner${index}`} value={e.uid}>{e.name}</MenuItem>
                           ))
                         }
                       </Select>
-                      <FormHelperText className={modalStyle.formError}>{errors.categorie}</FormHelperText>
+                      <FormHelperText style={{color: 'red'}} className={modalStyle.formError}>{errors.partner}</FormHelperText>
                     </FormControl>
-                  </Grid> */}
+                  </Grid>
                   <Grid item xs={4} className={modalStyle.grdItem}>
                     <label>DNI</label>
                   </Grid>
