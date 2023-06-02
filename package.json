@@ -19,6 +19,7 @@
     "classnames": "^2.3.1",
     "date-format": "^4.0.14",
     "dateformat": "^5.0.3",
+    "exceljs": "^4.3.0",
     "formik": "^2.2.9",
     "lodash": "^4.17.21",
     "material-ui-icons": "^1.0.0-beta.36",

@@ -14,6 +14,8 @@ import clsx from 'clsx';
 import dateFormat from 'dateformat';
 import store from '../../redux/store';
 import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
+
 
 const partnerService = new PartnerService();
 const userService = new UserService();
@@ -40,7 +42,7 @@ const ListTicket = () => {
   const { blockUI, dialogUI } = useUI();
 
   const baseValues = {
-    date: '',
+    date: dateFormat(new Date(), 'yyyy-mm-dd'),
     partner: '',
     authorizer: ''
   };
@@ -225,7 +227,17 @@ const ListTicket = () => {
       blockUI.current.open(true);
       partnerService.getAccessToken();
       const r1 = await partnerService.listSearch();
-      setPartnersAvailable(r1.data.partners);
+
+      if(state.user.role === "EMPLOYEE_ROLE"){
+        const newR1 = r1.data.partners.filter((e) => e.uid === state.user.partner);
+        setPartnersAvailable(newR1);
+        setInitialValues(prevValues => ({
+          ...prevValues,
+          partner: newR1[0].uid
+        }));
+      }else{
+        setPartnersAvailable(r1.data.partners);
+      }
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -236,8 +248,19 @@ const ListTicket = () => {
     try {
       blockUI.current.open(true);
       userService.getAccessToken();
-      const r1 = await userService.listAuthorizers('');
-      setAuthorizerAvailable(r1.data.users);
+      let r1 = await userService.listAuthorizers('');
+
+      if(state.user.role === "EMPLOYEE_ROLE"){
+        const newR1 = r1.data.users.filter((e) => e.uid === state.user.uid);
+        setAuthorizerAvailable(newR1);
+        setInitialValues(prevValues => ({
+          ...prevValues,
+          authorizer: newR1[0].uid
+        }));
+      }else{
+        setAuthorizerAvailable(r1.data.users);
+      }
+
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -245,17 +268,35 @@ const ListTicket = () => {
   };
 
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.aoa_to_sheet(dataExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Tickets');
-    let nameFile = dateFormat(new Date(), "HH:MM:ss")
-    XLSX.writeFile(workbook, `tickets_${nameFile}.xlsx`);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Tickets');
+    worksheet.addRows(dataExport);
+
+    const nameFile = new Date().toLocaleTimeString();
+    const password = 'admin_48483845';
+
+    worksheet.protect('', {
+      password: password,
+      sheet: true,
+      objects: true,
+      scenarios: true,
+    });
+
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tickets_${nameFile}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+    
   };
 
   useEffect(() => {
     (async function init() {
-      await getListPartner();
-      await getListAuthorizers();
+      await Promise.all([getListAuthorizers(), getListPartner()]);
     })();
   }, []);
 

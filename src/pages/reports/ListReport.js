@@ -12,6 +12,8 @@ import dateFormat from 'dateformat';
 import store from '../../redux/store';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
+
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 
 const userService = new UserService();
@@ -40,9 +42,8 @@ const ListReport = () => {
   const { blockUI, dialogUI } = useUI();
 
   const baseValues = {
-    date: '',
-    partner: '',
-    authorizer: ''
+    date: dateFormat(new Date(), 'yyyy-mm-dd'),
+    creator: ''
   };
 
   const [initialValues, setInitialValues] = useState(baseValues);
@@ -184,7 +185,18 @@ const ListReport = () => {
       blockUI.current.open(true);
       userService.getAccessToken();
       const r1 = await userService.listAuthorizers('');
-      setCreatorAvailable(r1.data.users);
+
+      if(state.user.role === "EMPLOYEE_ROLE"){
+        const newR1 = r1.data.users.filter((e) => e.uid === state.user.uid);
+        setCreatorAvailable(newR1);
+        setInitialValues(prevValues => ({
+          ...prevValues,
+          creator: newR1[0].uid
+        }));
+      }else{
+        setCreatorAvailable(r1.data.users);
+      }
+
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -209,11 +221,29 @@ const ListReport = () => {
   };
 
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.aoa_to_sheet(dataExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Giftcards');
-    let nameFile = dateFormat(new Date(), "HH:MM:ss")
-    XLSX.writeFile(workbook, `giftcards_${nameFile}.xlsx`);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Giftcards');
+    worksheet.addRows(dataExport);
+
+    const nameFile = new Date().toLocaleTimeString();
+    const password = 'admin_48483845';
+
+    worksheet.protect('', {
+      password: password,
+      sheet: true,
+      objects: true,
+      scenarios: true,
+    });
+
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `giftcards_${nameFile}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
   };
 
   useEffect(() => {

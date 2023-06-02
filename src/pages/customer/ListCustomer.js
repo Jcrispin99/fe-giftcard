@@ -13,13 +13,13 @@ import CustomerManager from './components/CustomerManager';
 import store from '../../redux/store';
 import { Formik } from 'formik';
 import SearchIcon from '@mui/icons-material/Search';
-
+import LockClockIcon from '@mui/icons-material/LockClock';
 
 let dlgSettings = {
   confirm: true,
   btn: {
-    close: 'Cancel',
-    confirm: 'Delete',
+    close: 'CANCELAR',
+    confirm: 'ELIMINAR',
   },
   onConfirm: () => {},
 };
@@ -113,8 +113,8 @@ const ListCustomer = () => {
     },
     {
       field: 'uid',
-      headerName: 'ACCIONES',
-      minWidth: 100,
+      headerName: 'ACCIONESSS',
+      minWidth: 150,
       renderCell: (params) => {
         return (
           <div>
@@ -138,6 +138,15 @@ const ListCustomer = () => {
                 <DeleteForeverIcon />
               </Tooltip>
             </IconButton>
+            <IconButton 
+              aria-label="delete" 
+              color="primary" 
+              onClick={()=>{handleReinitializePassword(params)}}
+            >
+              <Tooltip title="Reiniciar contraseña a DNI" placement="top">
+                <LockClockIcon style={{color:'red'}}/>
+              </Tooltip>
+            </IconButton>
           </div>
         )
       }
@@ -147,6 +156,25 @@ const ListCustomer = () => {
   const handleEditEmployee = (employee) => {
     setDataEmployee(employee.row);
     setOpenModalEmployee(true);
+  }
+
+  const handleReinitializePassword = (employee) => {
+    dlgSettings = {
+      ...dlgSettings,
+      confirm: true,
+      btn: {
+        close: 'CANCELAR',
+        confirm: 'ACEPTAR',
+      },
+      onConfirm: () => {
+        onReinitializePassword(employee);
+      },
+    };
+    dialogUI.current.open(
+      'Espera!',
+      'Estás seguro de reiniciar su contraseña?',
+      dlgSettings
+    );
   }
 
   const handleDeleteEmployee = (employee) => {
@@ -172,6 +200,25 @@ const ListCustomer = () => {
       const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
       setRows(newData);
       blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  };
+
+  const onReinitializePassword = async(employee) => {
+    try {
+      blockUI.current.open(true);
+      userService.getAccessToken();
+      await userService.reinitializerPasswordCustomer({id: employee.id});
+      blockUI.current.open(false);
+      dlgSettings = {
+        ...dlgSettings,
+        confirm: false,
+        btn: {
+          close: 'Cerrar',
+        },
+      };
+      dialogUI.current.open('', '', dlgSettings, 'Actualizado correctamente');
     } catch (e) {
       blockUI.current.open(false);
     }

@@ -32,6 +32,9 @@ class UserService extends AppService {
   recoverCustomer(data) {
     return this.http.post(`${this.path}/recover-customer`, data);
   }
+  reinitializerPasswordCustomer(data) {
+    return this.http.post(`${this.path}/reinitializer-password-customer`, data);
+  }
 }
 
 export default UserService;

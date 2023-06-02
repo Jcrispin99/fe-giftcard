@@ -24,6 +24,7 @@ import {
 import { useUI } from '../../app/context/ui';
 import { CustomerStyles } from '../customer/components/customer-style';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
+import BackspaceIcon from '@mui/icons-material/Backspace';
 
 let dlgSettings = {
   confirm: false,
@@ -205,6 +206,11 @@ const CreateGiftcard = (props) => {
     }
   };
 
+  const handleClearCode = () => {
+    setCodeScaned('');
+    formikRef.current.setFieldValue("code", '');
+  }
+
   useEffect(() => {
     if(codeScaned.length===10){
       setFieldValueFromExternalFunction(codeScaned);
@@ -250,6 +256,18 @@ const CreateGiftcard = (props) => {
             return(
               <div>
                 <Grid container spacing={3} className='wrapperForm'>
+                  <Grid item xs={12} style={{textAlign: 'center'}}>
+                    <Tooltip title="LIMPIAR CAMPO" placement="top">
+                      <IconButton
+                        color="primary" 
+                        component="label"
+                        onClick={handleClearCode}
+                        size="large"
+                      >
+                        <BackspaceIcon/>
+                      </IconButton>
+                    </Tooltip>
+                  </Grid>
                   <Grid item xs={4} className={modalStyle.grdItem}>
                     <label>MONTO</label>
                   </Grid>
@@ -306,6 +324,7 @@ const CreateGiftcard = (props) => {
                       onBlur={handleBlur}
                     />
                   </Grid>
+                  
                   <Grid item xs={4} className={modalStyle.grdItem}>
                     <label>CELULAR</label>
                     <div className='optional'>(Nuevo receptor)</div>

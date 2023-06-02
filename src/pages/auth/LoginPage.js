@@ -77,7 +77,7 @@ const LoginPage = (props) => {
       setRequestFailed(false);
       // authentication
       const r1 = await authService.login(values);
-      if(r1.data.user.role === 'ADMIN_ROLE'){
+      if(r1.data.user.role === 'ADMIN_ROLE' || r1.data.user.role === 'EMPLOYEE_ROLE'){
         setCodeSmsAdmin(true);
       }else{
         const accessToken = r1.data.token;

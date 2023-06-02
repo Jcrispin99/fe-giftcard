@@ -35,6 +35,7 @@ const Footer = (props) => {
                 >
                   <LogoutIcon />
                 </IconButton>
+                <span className={classes.infoClose}>CERRAR</span>
                 {
                   (props.user.role !== 'USER_ROLE')
                     &&
@@ -84,5 +85,10 @@ const useStyles = makeStyles((theme) => ({
     button:{
         'fontSize': '11px',
         'color':'#9e1a00'
+    },
+    infoClose: {
+      color: 'red',
+      paddingLeft: '13px',
+      fontSize: '11px',
     }
 }));
