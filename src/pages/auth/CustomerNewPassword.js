@@ -114,6 +114,11 @@ const CustomerNewPassword = (props) => {
             &&
               <div className={loginStyle.infoDesktop}>POR FAVOR INGRESAR AL SISTEMA DESDE SU CELULAR. GRACIAS !!</div>
         }
+
+        <Typography component="div">
+          <p className={loginStyle.formError} align="center" style={{color: '#d50125', paddingTop: '34px'}}>Crea tu nueva contraseña, mínimo 8 caracteres</p>
+        </Typography>
+
         <Typography component="div" className={loginStyle.formMain}>
           
           {
@@ -152,7 +157,7 @@ const CustomerNewPassword = (props) => {
                           value={values.password}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          placeholder="Crea tu nueva contraseña, mínimo de 8 dígitos"
+                          placeholder="Escriba aquí"
                           error={!!(errors.password && touched.password)}
                           inputProps={{ className: loginStyle.input }}
                           endAdornment={
