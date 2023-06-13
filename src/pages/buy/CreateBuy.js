@@ -90,7 +90,13 @@ const CreateBuy = (props) => {
       blockUI.current.open(true);
       partnerService.getAccessToken();
       const r1 = await partnerService.listSearch('');
-      const newr1 = r1.data.partners.filter((partner)=>partner.uid === state.user.partner);
+      let newr1 = [];
+      if(state.user.role === 'ADMIN_ROLE'){
+        newr1 = r1.data.partners.filter((e)=>(e.name === 'Kdosh' ||e.name === 'Olympo'));
+      }else{
+        newr1 = r1.data.partners.filter((partner)=>partner.uid === state.user.partner);
+      }
+
       setPartnersAvailable(newr1);
       blockUI.current.open(false);
     } catch (e) {

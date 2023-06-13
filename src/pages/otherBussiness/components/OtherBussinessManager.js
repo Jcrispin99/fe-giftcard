@@ -103,7 +103,7 @@ const OtherBussinessManager = (props) => {
       blockUI.current.open(true);
       partnerService.getAccessToken();
       const r1 = await partnerService.listSearch('');
-      const newPartner = r1.data.partners.filter((e)=>(e.name !== 'Kdosh' && e.name !== 'Olympo'));
+      const newPartner = r1.data.partners.filter((e)=>(e.name !== 'Kdosh'));
       setPartnersAvailable(newPartner);
       blockUI.current.open(false);
     } catch (e) {
@@ -241,31 +241,6 @@ const OtherBussinessManager = (props) => {
                         errors.name && touched.name ? errors.name : ""
                       }
                       error={!!(errors.name && touched.name)}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                    />
-                  </Grid>
-                  <Grid item xs={4} className={modalStyle.grdItem}>
-                    <label>F.NAC</label>
-                  </Grid>
-                  <Grid item xs={8}>
-                    <TextField
-                      type="date"
-                      id="birthdate"
-                      name="birthdate"
-                      autoComplete="birthdate"
-                      value={values.birthdate || ''}
-                      className={modalStyle.texfield}
-                      placeholder="Escriba aqui ..."
-                      size='small'
-                      margin="normal"
-                      required
-                      fullWidth
-                      variant="outlined"
-                      helperText={
-                        errors.birthdate && touched.birthdate ? errors.birthdate : ""
-                      }
-                      error={!!(errors.birthdate && touched.birthdate)}
                       onChange={handleChange}
                       onBlur={handleBlur}
                     />
