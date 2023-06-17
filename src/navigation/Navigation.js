@@ -1,5 +1,11 @@
 const Navigation = [
   {
+    id: 'Empresas',
+    title: 'Empresas',
+    type: 'item',
+    url: 'partner'
+  },
+  {
     id: 'Categorias',
     title: 'Categorias',
     type: 'item',

@@ -165,7 +165,7 @@ const useStyles = makeStyles((theme) => ({
   logo:{
     width: '20%',
     margin: '13px 0px',
-    marginLeft: '89px'
+    // marginLeft: '89px'
   },
   wrapperItems:{
     marginRight: '71px'
