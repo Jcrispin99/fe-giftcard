@@ -25,7 +25,7 @@ let dlgSettings = {
 };
 
 const userService = new UserService();
-const categorieService = new CategorieService;
+const categorieService = new CategorieService();
 
 const ListCustomer = () => {
 
@@ -113,7 +113,7 @@ const ListCustomer = () => {
     },
     {
       field: 'uid',
-      headerName: 'ACCIONESSS',
+      headerName: 'ACCIONES',
       minWidth: 150,
       renderCell: (params) => {
         return (
@@ -364,13 +364,19 @@ const ListCustomer = () => {
         pageSize={20}
         pageSizeOptions={[20,50,100]}
       />
-      <CustomerManager
-        open={openModalEmployee}
-        setOpen={setOpenModalEmployee}
-        setRows={setRows}
-        rows={rows}
-        dataEmployee={dataEmployee}
-      />
+
+      {
+        (openModalEmployee)
+          &&
+            <CustomerManager
+              open={openModalEmployee}
+              setOpen={setOpenModalEmployee}
+              setRows={setRows}
+              rows={rows}
+              dataEmployee={dataEmployee}
+            />
+      }
+      
     </div>
   )
 }

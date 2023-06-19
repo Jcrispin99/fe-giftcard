@@ -10,6 +10,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import clsx from 'clsx';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import OtherBussinessManager from './components/OtherBussinessManager';
+import Search from './components/Search';
 
 let dlgSettings = {
   confirm: true,
@@ -27,9 +28,9 @@ const OtherBussinessList = () => {
   const listStyle = ListStyles();
   const classes = OtherBussinessStyles();
   const { blockUI, dialogUI } = useUI();
-  const [rows, setRows] = useState([]);
-  const [openModalEmployee, setOpenModalEmployee] = useState(false);
-  const [dataEmployee, setDataEmployee] = useState({});
+  const [ rows, setRows ] = useState([]);
+  const [ openModalEmployee, setOpenModalEmployee ] = useState(false);
+  const [ dataEmployee, setDataEmployee ] = useState({});
 
   const handleChangeStatus = async (e,employee) => {
     try {
@@ -202,6 +203,7 @@ const OtherBussinessList = () => {
   return (
     <div style={{ height: 540, width: '100%', marginTop: '50px' }}>
       <Typography className={classes.title}>SOCIOS</Typography>
+      <Search  setRows={setRows} />
       <Button
         onClick={handleCreateEmployee} 
         variant="outlined" 

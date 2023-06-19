@@ -156,7 +156,7 @@ const CreateGiftcard = (props) => {
     try {
       blockUI.current.open(true);
       partnerService.getAccessToken();
-      const r1 = await partnerService.listSearch('');
+      const r1 = await partnerService.listSearch('status=1,2');
       setPartnersAvailable(r1.data.partners);
       const checkedPartners = r1.data.partners.map((e)=>({id: e.uid, status: true}));
       setChecked(checkedPartners);

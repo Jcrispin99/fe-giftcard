@@ -101,7 +101,7 @@ const EmployeeManager = (props) => {
     try {
       blockUI.current.open(true);
       partnerService.getAccessToken();
-      const r1 = await partnerService.listSearch('');
+      const r1 = await partnerService.listSearch('status=1,2');
       const newPartner = r1.data.partners.filter((e)=>(e.name === 'KDOSH'));
       setPartnersAvailable(newPartner);
       blockUI.current.open(false);

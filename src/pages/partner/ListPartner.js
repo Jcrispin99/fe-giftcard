@@ -90,7 +90,7 @@ const ListPartner = () => {
       blockUI.current.open(true);
       partnerService.getAccessToken();
       const r1 = await partnerService.listSearch('status=1,2');
-      const newPartner = r1.data.partners.filter((e)=>(e.name !== 'Kdosh'));
+      const newPartner = r1.data.partners.filter((e)=>(e.name !== 'KDOSH'));
       let newRows = newPartner.map((e)=>({...e, id: e.uid}));
       setRows(newRows);
       blockUI.current.open(false);

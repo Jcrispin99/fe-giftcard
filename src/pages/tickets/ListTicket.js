@@ -226,7 +226,7 @@ const ListTicket = () => {
     try {
       blockUI.current.open(true);
       partnerService.getAccessToken();
-      const r1 = await partnerService.listSearch();
+      const r1 = await partnerService.listSearch("status=1,2");
 
       if(state.user.role === "EMPLOYEE_ROLE"){
         const newR1 = r1.data.partners.filter((e) => e.uid === state.user.partner);

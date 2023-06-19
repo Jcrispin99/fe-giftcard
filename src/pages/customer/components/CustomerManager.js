@@ -258,6 +258,7 @@ const CustomerManager = (props) => {
   const onBuyGiftcard = async(customer) => {
     try {
       setCustomerCreated(customer);
+      console.log('customer',customer);
       setOpenNewGiftCard(true);
       dlgSettings = {
         ...dlgSettings,
@@ -288,7 +289,7 @@ const CustomerManager = (props) => {
     try {
       blockUI.current.open(true);
       partnerService.getAccessToken();
-      const r1 = await partnerService.listSearch('');
+      const r1 = await partnerService.listSearch('status=1,2');
       setPartnersAvailable(r1.data.partners);
       const checkedPartners = r1.data.partners.map((e)=>({id: e.uid, status: true}));
       setChecked(checkedPartners);
@@ -332,6 +333,8 @@ const CustomerManager = (props) => {
       await getListPartner();
     })();
   }, []);
+
+  console.log('openNewGiftCard',openNewGiftCard);
   
   return (
     <>
@@ -495,31 +498,6 @@ const CustomerManager = (props) => {
                         onBlur={handleBlur}
                       />
                     </Grid>
-                    {/* <Grid item xs={4} className={modalStyle.grdItem}>
-                      <label>CORREO</label>
-                    </Grid>
-                    <Grid item xs={8}>
-                      <TextField
-                        type="email"
-                        id="email"
-                        name="email"
-                        autoComplete="email"
-                        value={values.email || ''}
-                        className={modalStyle.texfield}
-                        placeholder="Escriba aqui ..."
-                        size='small'
-                        margin="normal"
-                        required
-                        fullWidth
-                        variant="outlined"
-                        helperText={
-                          errors.email && touched.email ? errors.email : ""
-                        }
-                        error={!!(errors.email && touched.email)}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid> */}
                   </Grid>
                   <Box pb={5}/>
                   <Grid container justifyContent="center">
@@ -551,206 +529,211 @@ const CustomerManager = (props) => {
         </div>
       </Modal>
 
-      <Modal
-        open={openNewGiftCard}
-        onClose={() => setOpenNewGiftCard(false)}
-        aria-labelledby="simple-modal-title"
-        aria-describedby="simple-modal-description"
-        disableEscapeKeyDown={true}
-        className="animate__animated animate__backInLeft"
-      >
-        <div className={modalStyle.paperModal}>
-          <Typography className="title">NUEVA GIFT CARD</Typography>
-          <Typography component="div">
-            {requestFailedGiftcard && (
-              <p className={modalStyle.formError} align="center">{hasErrorGiftcard.message}</p>
-            )}
-          </Typography>
-          <Formik
-            initialValues={initialValuesGiftcard}
-            validationSchema={validationSchemaGiftcard}
-            onSubmit={onSubmitGiftcard}
-            enableReinitialize={true}
-            innerRef={formikRef}
-          >
-            {(props) => {
-              const {
-                values,
-                touched,
-                errors,
-                handleChange,
-                handleBlur,
-                handleSubmit,
-              } = props;
-              return(
-                <div>
-                  <Grid container spacing={3} className='wrapperForm'>
-                    <Grid item xs={4} className={modalStyle.grdItem}>
-                      <label>MONTO</label>
-                    </Grid>
-                    <Grid item xs={8}>
-                      <TextField
-                        type="number"
-                        id="amount"
-                        name="amount"
-                        autoComplete="amount"
-                        value={values.amount || ''}
-                        className={modalStyle.texfield}
-                        placeholder="Escriba aqui ..."
-                        size='small'
-                        margin="normal"
-                        required
-                        fullWidth
-                        variant="outlined"
-                        helperText={
-                          errors.amount && touched.amount ? errors.amount : ""
-                        }
-                        error={!!(errors.amount && touched.amount)}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid>
-                    <Grid item xs={4} className={modalStyle.grdItem}>
-                      <label>CÓDIGO</label>
-                    </Grid>
-                    <Grid item xs={8}>
-                      <TextField
-                        type="text"
-                        id="code"
-                        name="code"
-                        autoFocus={(openNewGiftCard) ? true : false}
-                        autoComplete="code"
-                        value={values.code || ''}
-                        className={modalStyle.texfield}
-                        placeholder="Escriba aqui ..."
-                        size='small'
-                        margin="normal"
-                        required
-                        fullWidth
-                        variant="outlined"
-                        helperText={
-                          errors.code && touched.code ? errors.code : ""
-                        }
-                        error={!!(errors.code && touched.code)}
-                        onInput={(event)=>{
-                          if(event.target.value/10 < 1){
-                            setCodeScaned(`${codeScaned}${event.target.value}`);
-                          }
-                        }}
-                        onBlur={handleBlur}
-                      />
-                    </Grid>
-                    <Grid item xs={4} className={modalStyle.grdItem}>
-                      <label>CELULAR</label>
-                      <div className='optional'>(Nuevo receptorrrr)</div>
-                    </Grid>
-                    <Grid item xs={8}>
-                      <TextField
-                        type="number"
-                        id="giftphone"
-                        name="giftphone"
-                        autoComplete="giftphone"
-                        value={values.giftphone || ''}
-                        className={modalStyle.texfield}
-                        placeholder="Escriba aqui ..."
-                        size='small'
-                        margin="normal"
-                        required
-                        fullWidth
-                        variant="outlined"
-                        helperText={
-                          errors.giftphone && touched.giftphone ? errors.giftphone : ""
-                        }
-                        error={!!(errors.giftphone && touched.giftphone)}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid>
-                    <Grid item xs={4} className={modalStyle.grdItem}>
-                      <label>M. PAGO</label>
-                    </Grid>
-                    <Grid item xs={8}>
-                      <Select
-                        labelId="type"
-                        id="type"
-                        name="type"
-                        value={values.type}
-                        label="Tipo"
-                        onChange={handleChange}
-                        fullWidth
-                        helpertext={
-                          errors.type && touched.type ? errors.type : ""
-                        }
-                        error={!!(errors.type && touched.type)}
-                        style={{height: '44px', textAlign: 'center'}}
-                      >
-                        <MenuItem value={'EFECTIVO'}>EFECTIVO</MenuItem>
-                        <MenuItem value={'TARJETA'} >TARJETA</MenuItem>
-                      </Select>
-                    </Grid>
-                    <Grid item xs={12} className={customerStyle.titlePartner} style={{textAlign:'center'}}>
-                      PARTNERS
-                    </Grid>
-
-                    <Grid item xs={12} className={customerStyle.wrapperPartner}>
-                    {
-                      partnersAvailable.map((partner, index)=>(
-                        <Grid key={`partner${index}`} container>
-                          <Grid item xs={5}>
-                            <Avatar
-                              alt={partner.name}
-                              src={partner.logo}
-                              sx={{ width: 56, height: 56 }}
-                            />
+      {
+        (openNewGiftCard)
+          &&
+            <Modal
+              open={openNewGiftCard}
+              onClose={() => setOpenNewGiftCard(false)}
+              aria-labelledby="simple-modal-title"
+              aria-describedby="simple-modal-description"
+              disableEscapeKeyDown={true}
+              className="animate__animated animate__backInLeft"
+            >
+              <div className={modalStyle.paperModal}>
+                <Typography className="title">NUEVA GIFT CARD</Typography>
+                <Typography component="div">
+                  {requestFailedGiftcard && (
+                    <p className={modalStyle.formError} align="center">{hasErrorGiftcard.message}</p>
+                  )}
+                </Typography>
+                <Formik
+                  initialValues={initialValuesGiftcard}
+                  validationSchema={validationSchemaGiftcard}
+                  onSubmit={onSubmitGiftcard}
+                  enableReinitialize={true}
+                  innerRef={formikRef}
+                >
+                  {(props) => {
+                    const {
+                      values,
+                      touched,
+                      errors,
+                      handleChange,
+                      handleBlur,
+                      handleSubmit,
+                    } = props;
+                    return(
+                      <div>
+                        <Grid container spacing={3} className='wrapperForm'>
+                          <Grid item xs={4} className={modalStyle.grdItem}>
+                            <label>MONTO</label>
                           </Grid>
-                          <Grid item xs={7}>
-                            <FormControlLabel
-                              className={customerStyle.wrapperCheckbox}
-                              control={
-                                <Checkbox
-                                  checked={checked.filter((e)=>e.id === partner.uid)[0].status}
-                                  onChange={handleChangePartner}
-                                  value={partner.uid}
-                                />
+                          <Grid item xs={8}>
+                            <TextField
+                              type="number"
+                              id="amount"
+                              name="amount"
+                              autoComplete="amount"
+                              value={values.amount || ''}
+                              className={modalStyle.texfield}
+                              placeholder="Escriba aqui ..."
+                              size='small'
+                              margin="normal"
+                              required
+                              fullWidth
+                              variant="outlined"
+                              helperText={
+                                errors.amount && touched.amount ? errors.amount : ""
                               }
-                              label={partner.name}
+                              error={!!(errors.amount && touched.amount)}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
                             />
                           </Grid>
-                        </Grid>
-                      ))
-                    }
-                    </Grid>
+                          <Grid item xs={4} className={modalStyle.grdItem}>
+                            <label>CÓDIGO</label>
+                          </Grid>
+                          <Grid item xs={8}>
+                            <TextField
+                              type="text"
+                              id="code"
+                              name="code"
+                              autoFocus={(openNewGiftCard) ? true : false}
+                              autoComplete="code"
+                              value={values.code || ''}
+                              className={modalStyle.texfield}
+                              placeholder="Escriba aqui ..."
+                              size='small'
+                              margin="normal"
+                              required
+                              fullWidth
+                              variant="outlined"
+                              helperText={
+                                errors.code && touched.code ? errors.code : ""
+                              }
+                              error={!!(errors.code && touched.code)}
+                              onInput={(event)=>{
+                                if(event.target.value/10 < 1){
+                                  setCodeScaned(`${codeScaned}${event.target.value}`);
+                                }
+                              }}
+                              onBlur={handleBlur}
+                            />
+                          </Grid>
+                          <Grid item xs={4} className={modalStyle.grdItem}>
+                            <label>CELULAR</label>
+                            <div className='optional'>(Nuevo receptorrrr)</div>
+                          </Grid>
+                          <Grid item xs={8}>
+                            <TextField
+                              type="number"
+                              id="giftphone"
+                              name="giftphone"
+                              autoComplete="giftphone"
+                              value={values.giftphone || ''}
+                              className={modalStyle.texfield}
+                              placeholder="Escriba aqui ..."
+                              size='small'
+                              margin="normal"
+                              required
+                              fullWidth
+                              variant="outlined"
+                              helperText={
+                                errors.giftphone && touched.giftphone ? errors.giftphone : ""
+                              }
+                              error={!!(errors.giftphone && touched.giftphone)}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                            />
+                          </Grid>
+                          <Grid item xs={4} className={modalStyle.grdItem}>
+                            <label>M. PAGO</label>
+                          </Grid>
+                          <Grid item xs={8}>
+                            <Select
+                              labelId="type"
+                              id="type"
+                              name="type"
+                              value={values.type}
+                              label="Tipo"
+                              onChange={handleChange}
+                              fullWidth
+                              helpertext={
+                                errors.type && touched.type ? errors.type : ""
+                              }
+                              error={!!(errors.type && touched.type)}
+                              style={{height: '44px', textAlign: 'center'}}
+                            >
+                              <MenuItem value={'EFECTIVO'}>EFECTIVO</MenuItem>
+                              <MenuItem value={'TARJETA'} >TARJETA</MenuItem>
+                            </Select>
+                          </Grid>
+                          <Grid item xs={12} className={customerStyle.titlePartner} style={{textAlign:'center'}}>
+                            PARTNERS
+                          </Grid>
 
-                  </Grid>
-                  <Box pb={5}/>
-                  <Grid container justifyContent="center">
-                    <Button
-                      variant="contained"
-                      size="large"
-                      className={modalStyle.button}
-                      onClick={() => { setOpenNewGiftCard(false) }}
-                      style={{
-                        marginRight: '24px',
-                        backgroundColor: '#808080ba'
-                      }}
-                    >
-                      CANCELAR
-                    </Button>
-                    <Button
-                      variant="contained"
-                      size="large"
-                      color="primary"
-                      onClick={()=>{handleSubmit()}}
-                    >
-                      GUARDAR
-                    </Button>
-                  </Grid>
-                </div>
-              );
-            }}
-          </Formik>
-        </div>
-      </Modal>
+                          <Grid item xs={12} className={customerStyle.wrapperPartner}>
+                          {
+                            partnersAvailable.map((partner, index)=>(
+                              <Grid key={`partner${index}`} container>
+                                <Grid item xs={5}>
+                                  <Avatar
+                                    alt={partner.name}
+                                    src={partner.logo}
+                                    sx={{ width: 56, height: 56 }}
+                                  />
+                                </Grid>
+                                <Grid item xs={7}>
+                                  <FormControlLabel
+                                    className={customerStyle.wrapperCheckbox}
+                                    control={
+                                      <Checkbox
+                                        checked={checked.filter((e)=>e.id === partner.uid)[0].status}
+                                        onChange={handleChangePartner}
+                                        value={partner.uid}
+                                      />
+                                    }
+                                    label={partner.name}
+                                  />
+                                </Grid>
+                              </Grid>
+                            ))
+                          }
+                          </Grid>
+
+                        </Grid>
+                        <Box pb={5}/>
+                        <Grid container justifyContent="center">
+                          <Button
+                            variant="contained"
+                            size="large"
+                            className={modalStyle.button}
+                            onClick={() => { setOpenNewGiftCard(false) }}
+                            style={{
+                              marginRight: '24px',
+                              backgroundColor: '#808080ba'
+                            }}
+                          >
+                            CANCELAR
+                          </Button>
+                          <Button
+                            variant="contained"
+                            size="large"
+                            color="primary"
+                            onClick={()=>{handleSubmit()}}
+                          >
+                            GUARDAR
+                          </Button>
+                        </Grid>
+                      </div>
+                    );
+                  }}
+                </Formik>
+              </div>
+            </Modal>
+      }
+      
     </>
   )
 }

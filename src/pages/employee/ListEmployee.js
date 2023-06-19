@@ -205,13 +205,19 @@ const ListEmployee = () => {
         pageSize={20}
         pageSizeOptions={[20,50,100]}
       />
-      <EmployeeManager
-        open={openModalEmployee}
-        setOpen={setOpenModalEmployee}
-        setRows={setRows}
-        rows={rows}
-        dataEmployee={dataEmployee}
-      />
+
+      {
+        (openModalEmployee)
+          &&
+            <EmployeeManager
+              open={openModalEmployee}
+              setOpen={setOpenModalEmployee}
+              setRows={setRows}
+              rows={rows}
+              dataEmployee={dataEmployee}
+            />
+      }
+      
     </div>
   )
 }

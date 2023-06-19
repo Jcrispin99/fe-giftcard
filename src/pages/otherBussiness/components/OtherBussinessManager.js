@@ -119,8 +119,9 @@ const OtherBussinessManager = (props) => {
   useEffect(() => {
     setRequestFailed(false);
     if(dataEmployee.id){
+      console.log('dataEmployee',dataEmployee);
       const birthdate = new Date(dataEmployee.birthdate).toISOString().split("T")[0];
-      setInitialValues({...dataEmployee, birthdate});
+      setInitialValues({...dataEmployee, birthdate, partner: dataEmployee.partner._id});
     }else{
       setInitialValues(baseValues);
       
