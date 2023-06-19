@@ -258,7 +258,6 @@ const CustomerManager = (props) => {
   const onBuyGiftcard = async(customer) => {
     try {
       setCustomerCreated(customer);
-      console.log('customer',customer);
       setOpenNewGiftCard(true);
       dlgSettings = {
         ...dlgSettings,
@@ -334,8 +333,6 @@ const CustomerManager = (props) => {
     })();
   }, []);
 
-  console.log('openNewGiftCard',openNewGiftCard);
-  
   return (
     <>
       <Modal

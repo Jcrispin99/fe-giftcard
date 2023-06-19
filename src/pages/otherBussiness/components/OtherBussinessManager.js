@@ -87,7 +87,6 @@ const OtherBussinessManager = (props) => {
       setRequestFailed(true);
 
       if (e.response.data.errors[0].param === 'dni') {
-        console.log('test');
         setHasError({ message: e.response.data.errors[0].msg });
       }
 
@@ -119,7 +118,6 @@ const OtherBussinessManager = (props) => {
   useEffect(() => {
     setRequestFailed(false);
     if(dataEmployee.id){
-      console.log('dataEmployee',dataEmployee);
       const birthdate = new Date(dataEmployee.birthdate).toISOString().split("T")[0];
       setInitialValues({...dataEmployee, birthdate, partner: dataEmployee.partner._id});
     }else{
