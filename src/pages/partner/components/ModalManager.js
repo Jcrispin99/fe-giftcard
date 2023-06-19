@@ -5,17 +5,25 @@ import { Formik } from 'formik';
 import { Box, TextField, Typography } from '@mui/material';
 import * as Yup from 'yup';
 import _ from 'lodash';
-import { CategorieService } from '../../../services';
+import { PartnerService } from '../../../services';
 import { useUI } from '../../../app/context/ui';
 import { ModalCustomStyles } from '../../../assets/css';
 
-const categorieService = new CategorieService();
+const partnerService = new PartnerService();
+
+let dlgSettings = {
+  confirm: false,
+  btn: {
+    close: 'CERRAR',
+  },
+  onConfirm: () => {},
+};
 
 const ModalManager = (props) => {
 
-  const { open, setOpen, setRows, dataCategorie } = props;
+  const { open, setOpen, rows, setRows, data } = props;
 
-  const { blockUI } = useUI();
+  const { blockUI, dialogUI } = useUI();
   const modalStyle = ModalCustomStyles();
 
   const baseValues = {
@@ -36,46 +44,68 @@ const ModalManager = (props) => {
     try {
       blockUI.current.open(true);
       setRequestFailed(false);
-      categorieService.getAccessToken();
-
-      if(dataCategorie.id){
-        await categorieService.update({
-            ...values,
-          }, dataCategorie.id);
+      partnerService.getAccessToken();
+      let newRows = [];
+      if(data.id){
+        let {data: partnerUpdate} = await partnerService.update({
+          ...values,
+        }, data.id);
+        newRows = rows.map((e)=>{
+          if(e.id == partnerUpdate.uid){
+            return {...partnerUpdate, id: partnerUpdate.uid};
+          }else{
+            return e;
+          }
+        });
       }else{
-        await categorieService.create(
-          {
-            ...values, 
-            status: 1,
-            role: 'USER_ROLE'
-          });
+        let { data: newPartner } = await partnerService.create(values);
+        if(newPartner.type === 'new'){
+          newRows = [...rows, {
+            id: newPartner.partner.uid,
+            ...newPartner.partner
+          }]
+        }
+        if(newPartner.type === 'restored'){
+          dialogUI.current.open('', '', dlgSettings, 'Restaurado ');
+          newRows = [...rows, {
+            id: newPartner.partner.uid,
+            ...newPartner.partner
+          }]
+        }
       }
-      const r1 = await categorieService.listSearch();
-      const newData = r1.data.categories.map((e)=>({...e, id: e._id}));
-      setRows(newData);
+
+      setRows(newRows);
       blockUI.current.open(false);
       setOpen(false);
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailed(true);
-      if(dataCategorie.id){
-        setInitialValues(dataCategorie);
+      
+      if(data.id){
+        setInitialValues(data);
       }
+
       if (!_.isUndefined(e.response.data)) {
-        setHasError({ message: e.response.data.msg });
+        let type = e.response.data.type;
+        switch (type) {
+          case "repeated": setHasError({ message: 'La empresa que ingresó ya existe' }); break;
+          case "in_trash_can": setHasError({ message: 'La empresa que ingresó está en papelera' }); break;
+          default: setHasError({ message: e.response.data.msg }); break;
+        }
       }
+      
     }
   };
 
   useEffect(() => {
-    if(dataCategorie.id){
+    if(data.id){
       setRequestFailed(false);
-      setInitialValues({...dataCategorie});
+      setInitialValues({...data});
     }else{
       setInitialValues(baseValues);
       setRequestFailed(false);
     }
-  }, [dataCategorie]);
+  }, [data]);
 
   useEffect(() => {
     setRequestFailed(false);
@@ -93,7 +123,7 @@ const ModalManager = (props) => {
         className="animate__animated animate__backInLeft"
       >
         <div className={modalStyle.paperModal}>
-          <Typography className="title">{(!dataCategorie.id) ? 'CREAR CATEGORÍA' : 'EDITAR CATEGORÍA'}</Typography>
+          <Typography className="title">{(!data.id) ? 'CREAR EMPRESA' : 'EDITAR EMPRESA'}</Typography>
           <Typography component="div">
             {requestFailed && (
               <p className={modalStyle.formError} align="center">{hasError.message}</p>

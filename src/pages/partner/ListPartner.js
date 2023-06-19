@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUI } from '../../app/context/ui';
 import { ListStyles } from '../../assets/css';
-import { CategorieService } from '../../services';
+import { CategorieService, PartnerService } from '../../services';
 import { PartnerStyles } from './components/partner-style';
 import { Button, IconButton, Tooltip, Typography, Switch } from '@mui/material';
 import dateFormat from "dateformat";
@@ -11,26 +11,29 @@ import { DataGrid } from '@mui/x-data-grid';
 import clsx from 'clsx';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ModalManager from './components/ModalManager';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import Recycle from './components/Recycle';
 
 let dlgSettings = {
   confirm: true,
   btn: {
-    close: 'Cancel',
-    confirm: 'Delete',
+    close: 'CANCELAR',
+    confirm: 'ELIMINAR',
   },
   onConfirm: () => {},
 };
 
-const categorieService = new CategorieService();
+const partnerService = new PartnerService();
 
 const ListPartner = () => {
 
   const listStyle = ListStyles();
   const classes = PartnerStyles();
   const { blockUI, dialogUI } = useUI();
-  const [rows, setRows] = useState([]);
-  const [openModalCategorie, setOpenModalCategorie] = useState(false);
-  const [dataCategorie, setDataCategorie] = useState({});
+  const [ rows, setRows ] = useState([]);
+  const [ openModal, setOpenModal ] = useState(false);
+  const [ openModalRecycle, setOpenModalRecycle ] = useState(false);
+  const [ data, setData ] = useState({});
 
   const columns = [
     { 
@@ -63,8 +66,8 @@ const ListPartner = () => {
   ];
 
   const handleEdit = (data) => {
-    setDataCategorie(data.row);
-    setOpenModalCategorie(true);
+    setData(data.row);
+    setOpenModal(true);
   }
 
   const handleDelete = (data) => {
@@ -77,18 +80,19 @@ const ListPartner = () => {
     };
     dialogUI.current.open(
       'Espera!',
-      'Estás seguro de eliminar esta categoría?',
+      'Estás seguro de eliminarlo?',
       dlgSettings
     );
   }
 
-  const getListCategorie = async () => {
+  const getListPartner = async () => {
     try {
       blockUI.current.open(true);
-      categorieService.getAccessToken();
-      const r1 = await categorieService.listSearch('');
-      const newData = r1.data.categories.map((e)=>({...e, id: e._id}));
-      setRows(newData);
+      partnerService.getAccessToken();
+      const r1 = await partnerService.listSearch('status=1,2');
+      const newPartner = r1.data.partners.filter((e)=>(e.name !== 'Kdosh'));
+      let newRows = newPartner.map((e)=>({...e, id: e.uid}));
+      setRows(newRows);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -98,8 +102,8 @@ const ListPartner = () => {
   const onDeleteTable = async(data) => {
     try {
       blockUI.current.open(true);
-      categorieService.getAccessToken();
-      await categorieService.update({
+      partnerService.getAccessToken();
+      await partnerService.update({
         ...data,
         status: 3
       },data.id);
@@ -110,7 +114,7 @@ const ListPartner = () => {
         ...dlgSettings,
         confirm: false,
         btn: {
-          close: 'Close',
+          close: 'CERRAR',
         },
       };
       dialogUI.current.open('', '', dlgSettings, 'Eliminado correctamente');
@@ -120,18 +124,18 @@ const ListPartner = () => {
   };
 
   const handleCreate = () => {
-    setDataCategorie({});
-    setOpenModalCategorie(true);
+    setData({});
+    setOpenModal(true);
   };
 
   useEffect(() => {
     (async function init() {
-    //   await getListCategorie();
+      await getListPartner();
     })();
   }, []);
 
   return (
-    <div style={{ height: 540, width: '100%', marginTop: '50px' }}>
+    <div style={{ height: 540, width: '100%', marginTop: '50px', marginBottom: '50px' }}>
       <Typography className={classes.title}>EMPRESAS</Typography>
       <Button
         onClick={handleCreate} 
@@ -141,6 +145,16 @@ const ListPartner = () => {
       >
         CREAR
       </Button>
+
+      <Button
+        onClick={()=>{setOpenModalRecycle(true)}} 
+        variant="outlined" 
+        startIcon={<RestoreFromTrashIcon />}
+        style={{marginBottom: '16px', marginLeft: '16px', color: 'red', border: 'solid 1px red'}}
+      >
+        PAPELERA
+      </Button>
+
       <DataGrid
         className={clsx(listStyle.dataGrid, classes.root)} 
         rows={rows} 
@@ -148,13 +162,28 @@ const ListPartner = () => {
         pageSize={20}
         pageSizeOptions={[20,50,100]}
       />
-      {/* <ModalManager
-        open={openModalCategorie}
-        setOpen={setOpenModalCategorie}
-        setRows={setRows}
-        rows={rows}
-        dataCategorie={dataCategorie}
-      /> */}
+
+      {
+        (openModal)
+          &&
+            <ModalManager
+              open={openModal}
+              setOpen={setOpenModal}
+              setRows={setRows}
+              rows={rows}
+              data={data}
+            />
+      }
+
+      {
+        (openModalRecycle)
+          &&
+            <Recycle
+              openR={openModalRecycle}
+              setOpenR={setOpenModalRecycle}
+            />
+      }
+
     </div>
   )
 }

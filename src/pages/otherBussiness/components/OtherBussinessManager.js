@@ -5,12 +5,11 @@ import { Formik } from 'formik';
 import { Box, TextField, Typography } from '@mui/material';
 import * as Yup from 'yup';
 import _ from 'lodash';
-import { UserService, CategorieService, PartnerService } from '../../../services';
+import { UserService, PartnerService } from '../../../services';
 import { useUI } from '../../../app/context/ui';
 import { ModalCustomStyles } from '../../../assets/css';
 
 const userService = new UserService();
-const categorieService = new CategorieService();
 const partnerService = new PartnerService();
 
 const OtherBussinessManager = (props) => {
@@ -86,6 +85,12 @@ const OtherBussinessManager = (props) => {
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailed(true);
+
+      if (e.response.data.errors[0].param === 'dni') {
+        console.log('test');
+        setHasError({ message: e.response.data.errors[0].msg });
+      }
+
       if(dataEmployee.id){
         setInitialValues(dataEmployee);
       }
@@ -102,8 +107,8 @@ const OtherBussinessManager = (props) => {
     try {
       blockUI.current.open(true);
       partnerService.getAccessToken();
-      const r1 = await partnerService.listSearch('');
-      const newPartner = r1.data.partners.filter((e)=>(e.name !== 'Kdosh'));
+      const r1 = await partnerService.listSearch('status=1,2');
+      const newPartner = r1.data.partners.filter((e)=>(e.name !== 'KDOSH'));
       setPartnersAvailable(newPartner);
       blockUI.current.open(false);
     } catch (e) {

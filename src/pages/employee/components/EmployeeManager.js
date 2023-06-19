@@ -102,7 +102,7 @@ const EmployeeManager = (props) => {
       blockUI.current.open(true);
       partnerService.getAccessToken();
       const r1 = await partnerService.listSearch('');
-      const newPartner = r1.data.partners.filter((e)=>(e.name === 'Kdosh'));
+      const newPartner = r1.data.partners.filter((e)=>(e.name === 'KDOSH'));
       setPartnersAvailable(newPartner);
       blockUI.current.open(false);
     } catch (e) {

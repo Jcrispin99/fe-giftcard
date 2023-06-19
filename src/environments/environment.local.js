@@ -1,4 +1,4 @@
 export const environment = {
-  apiMain: 'http://localhost:8081/',
+  apiMain: 'http://localhost:8080/',
   gateway: false,
 };

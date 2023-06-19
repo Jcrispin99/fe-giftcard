@@ -67,6 +67,17 @@ const OtherBussinessList = () => {
       minWidth: 200,
     },
     { 
+      field: 'bussiness', 
+      headerName: 'EMPRESA', 
+      flex: 0.4,
+      minWidth: 200,
+      renderCell: (params) => {
+        return (
+          <div>{ params.row.partner.name }</div>
+        )
+      }
+    },
+    { 
       field: 'dni', 
       headerName: 'DNI', 
       width: 150
@@ -79,7 +90,8 @@ const OtherBussinessList = () => {
     { 
       field: 'phone', 
       headerName: 'CELULAR', 
-      width: 250
+      flex: 0.4,
+      minWidth: 100,
     },
     {
       field: 'status',
@@ -205,13 +217,17 @@ const OtherBussinessList = () => {
         pageSize={20}
         pageSizeOptions={[20,50,100]}
       />
-      <OtherBussinessManager
-        open={openModalEmployee}
-        setOpen={setOpenModalEmployee}
-        setRows={setRows}
-        rows={rows}
-        dataEmployee={dataEmployee}
-      />
+      {
+        (openModalEmployee)
+          &&
+            <OtherBussinessManager
+              open={openModalEmployee}
+              setOpen={setOpenModalEmployee}
+              setRows={setRows}
+              rows={rows}
+              dataEmployee={dataEmployee}
+            />
+      }
     </div>
   )
 }
