@@ -12,7 +12,9 @@ const MainListItems = () => {
 
   if(state && state.user.role !== ''){
     if(state.user.role === 'PARTNER_ROLE'){
-      if(!/mobile|android/i.test(navigator.userAgent)){
+      if(state.user.partner === '643cc88d275ca4adfd709dfc'){
+        nav = NavigationEmployee;
+      }else{
         nav = NavigationPartner;
       }
     }
@@ -22,9 +24,7 @@ const MainListItems = () => {
     }
     if(state.user.role === 'EMPLOYEE_ROLE')
     {
-      if(!/mobile|android/i.test(navigator.userAgent)){
-        nav = NavigationEmployee;
-      }
+      nav = NavigationEmployee;
     }
   }
 

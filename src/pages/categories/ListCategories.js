@@ -11,6 +11,8 @@ import { DataGrid } from '@mui/x-data-grid';
 import clsx from 'clsx';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ModalManager from './components/ModalManager';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import Recycle from './components/Recycle';
 
 let dlgSettings = {
   confirm: true,
@@ -31,6 +33,7 @@ const ListCategories = () => {
   const [rows, setRows] = useState([]);
   const [openModalCategorie, setOpenModalCategorie] = useState(false);
   const [dataCategorie, setDataCategorie] = useState({});
+  const [ openModalRecycle, setOpenModalRecycle ] = useState(false);
 
   const columns = [
     { 
@@ -86,7 +89,7 @@ const ListCategories = () => {
     try {
       blockUI.current.open(true);
       categorieService.getAccessToken();
-      const r1 = await categorieService.listSearch('');
+      const r1 = await categorieService.listSearch('status=1,2');
       const newData = r1.data.categories.map((e)=>({...e, id: e._id}));
       setRows(newData);
       blockUI.current.open(false);
@@ -141,6 +144,16 @@ const ListCategories = () => {
       >
         CREAR
       </Button>
+
+      <Button
+        onClick={()=>{setOpenModalRecycle(true)}} 
+        variant="outlined" 
+        startIcon={<RestoreFromTrashIcon />}
+        style={{marginBottom: '16px', marginLeft: '16px', color: 'red', border: 'solid 1px red'}}
+      >
+        PAPELERA
+      </Button>
+
       <DataGrid
         className={clsx(listStyle.dataGrid, classes.root)} 
         rows={rows} 
@@ -148,13 +161,28 @@ const ListCategories = () => {
         pageSize={20}
         pageSizeOptions={[20,50,100]}
       />
-      <ModalManager
-        open={openModalCategorie}
-        setOpen={setOpenModalCategorie}
-        setRows={setRows}
-        rows={rows}
-        dataCategorie={dataCategorie}
-      />
+
+      {
+        (openModalCategorie)
+          &&
+            <ModalManager
+              open={openModalCategorie}
+              setOpen={setOpenModalCategorie}
+              setRows={setRows}
+              rows={rows}
+              dataCategorie={dataCategorie}
+            />
+      }
+
+      {
+        (openModalRecycle)
+          &&
+            <Recycle
+              openR={openModalRecycle}
+              setOpenR={setOpenModalRecycle}
+            />
+      }
+      
     </div>
   )
 }

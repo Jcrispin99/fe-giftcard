@@ -13,7 +13,7 @@ const categorieService = new CategorieService();
 
 const ModalManager = (props) => {
 
-  const { open, setOpen, setRows, dataCategorie } = props;
+  const { open, setOpen, rows, setRows, dataCategorie } = props;
 
   const { blockUI } = useUI();
   const modalStyle = ModalCustomStyles();
@@ -37,32 +37,43 @@ const ModalManager = (props) => {
       blockUI.current.open(true);
       setRequestFailed(false);
       categorieService.getAccessToken();
-
+      let newRows = [];
       if(dataCategorie.id){
-        await categorieService.update({
+        let { data: categorieUpdate } = await categorieService.update({
             ...values,
           }, dataCategorie.id);
+        newRows = rows.map((e) => 
+          e.id == categorieUpdate.uid 
+            ? { ...categorieUpdate, id: categorieUpdate.uid } 
+            : e);
       }else{
-        await categorieService.create(
-          {
-            ...values, 
-            status: 1,
-            role: 'USER_ROLE'
-          });
+        let { data: newCategorie } = await categorieService.create(values);
+        if(newCategorie.type === 'new'){
+          newRows = [...rows, {
+            id: newCategorie.categorie._id,
+            ...newCategorie.categorie
+          }]
+        }
       }
-      const r1 = await categorieService.listSearch();
-      const newData = r1.data.categories.map((e)=>({...e, id: e._id}));
-      setRows(newData);
+
+      setRows(newRows);
       blockUI.current.open(false);
       setOpen(false);
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailed(true);
+
       if(dataCategorie.id){
         setInitialValues(dataCategorie);
       }
+      
       if (!_.isUndefined(e.response.data)) {
-        setHasError({ message: e.response.data.msg });
+        let type = e.response.data.type;
+        switch (type) {
+          case "repeated": setHasError({ message: 'La categoría que ingresó ya existe' }); break;
+          case "in_trash_can": setHasError({ message: 'La categoría que ingresó está en papelera' }); break;
+          default: setHasError({ message: e.response.data.msg }); break;
+        }
       }
     }
   };

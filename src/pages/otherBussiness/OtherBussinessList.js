@@ -11,6 +11,8 @@ import clsx from 'clsx';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import OtherBussinessManager from './components/OtherBussinessManager';
 import Search from './components/Search';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import Recycle from './components/Recycle';
 
 let dlgSettings = {
   confirm: true,
@@ -31,6 +33,7 @@ const OtherBussinessList = () => {
   const [ rows, setRows ] = useState([]);
   const [ openModalEmployee, setOpenModalEmployee ] = useState(false);
   const [ dataEmployee, setDataEmployee ] = useState({});
+  const [ openModalRecycle, setOpenModalRecycle ] = useState(false);
 
   const handleChangeStatus = async (e,employee) => {
     try {
@@ -156,7 +159,7 @@ const OtherBussinessList = () => {
     try {
       blockUI.current.open(true);
       userService.getAccessToken();
-      const r1 = await userService.listAccountPartner('');
+      const r1 = await userService.listAccountPartner('status=1,2');
       const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
       setRows(newData);
       blockUI.current.open(false);
@@ -212,6 +215,16 @@ const OtherBussinessList = () => {
       >
         CREAR
       </Button>
+
+      <Button
+        onClick={()=>{setOpenModalRecycle(true)}} 
+        variant="outlined" 
+        startIcon={<RestoreFromTrashIcon />}
+        style={{marginBottom: '16px', marginLeft: '16px', color: 'red', border: 'solid 1px red'}}
+      >
+        PAPELERA
+      </Button>
+
       <DataGrid
         className={clsx(listStyle.dataGrid, classes.root)} 
         rows={rows} 
@@ -219,6 +232,7 @@ const OtherBussinessList = () => {
         pageSize={20}
         pageSizeOptions={[20,50,100]}
       />
+
       {
         (openModalEmployee)
           &&
@@ -230,6 +244,16 @@ const OtherBussinessList = () => {
               dataEmployee={dataEmployee}
             />
       }
+
+      {
+        (openModalRecycle)
+          &&
+            <Recycle
+              openR={openModalRecycle}
+              setOpenR={setOpenModalRecycle}
+            />
+      }
+
     </div>
   )
 }

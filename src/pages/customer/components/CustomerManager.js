@@ -190,12 +190,11 @@ const CustomerManager = (props) => {
             role: 'USER_ROLE'
           });
       }
-      const r1 = await userService.listCustomers();
+      const r1 = await userService.listCustomers("status=1,2");
       const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
       setRows(newData);
 
       blockUI.current.open(false);
-      setOpen(false);
 
       dlgSettings = {
         ...dlgSettings,
@@ -245,7 +244,8 @@ const CustomerManager = (props) => {
         permissions
       });
       blockUI.current.open(false);
-      setOpenNewGiftCard(false)
+      setOpenNewGiftCard(false);
+      setOpen(false);
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailedGiftcard(true);
@@ -255,7 +255,7 @@ const CustomerManager = (props) => {
     }
   }
 
-  const onBuyGiftcard = async(customer) => {
+  const onBuyGiftcard = (customer) => {
     try {
       setCustomerCreated(customer);
       setOpenNewGiftCard(true);
@@ -276,7 +276,7 @@ const CustomerManager = (props) => {
     try {
       blockUI.current.open(true);
       categorieService.getAccessToken();
-      const r1 = await categorieService.listSearch('');
+      const r1 = await categorieService.listSearch('status=1,2');
       setCategoriesAvailable(r1.data.categories);
       blockUI.current.open(false);
     } catch (e) {

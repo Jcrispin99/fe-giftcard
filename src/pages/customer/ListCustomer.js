@@ -273,7 +273,7 @@ const ListCustomer = () => {
     try {
       blockUI.current.open(true);
       categorieService.getAccessToken();
-      const r1 = await categorieService.listSearch('');
+      const r1 = await categorieService.listSearch('status=1,2');
       setCategorieAvailable(r1.data.categories);
       blockUI.current.open(false);
     } catch (e) {

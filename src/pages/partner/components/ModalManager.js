@@ -50,23 +50,13 @@ const ModalManager = (props) => {
         let {data: partnerUpdate} = await partnerService.update({
           ...values,
         }, data.id);
-        newRows = rows.map((e)=>{
-          if(e.id == partnerUpdate.uid){
-            return {...partnerUpdate, id: partnerUpdate.uid};
-          }else{
-            return e;
-          }
-        });
+        newRows = rows.map((e) => 
+          e.id == partnerUpdate.uid 
+          ? { ...partnerUpdate, id: partnerUpdate.uid } 
+          : e);
       }else{
         let { data: newPartner } = await partnerService.create(values);
         if(newPartner.type === 'new'){
-          newRows = [...rows, {
-            id: newPartner.partner.uid,
-            ...newPartner.partner
-          }]
-        }
-        if(newPartner.type === 'restored'){
-          dialogUI.current.open('', '', dlgSettings, 'Restaurado ');
           newRows = [...rows, {
             id: newPartner.partner.uid,
             ...newPartner.partner

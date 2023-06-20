@@ -14,6 +14,9 @@ class CategorieService extends AppService {
   listSearch(search = '') {
     return this.http.get(`${this.path}?${search}`);
   }
+  recover(id, data={}) {
+    return this.http.put(`${this.path}/recover/${id}`, data);
+  }
 }
 
 export default CategorieService;

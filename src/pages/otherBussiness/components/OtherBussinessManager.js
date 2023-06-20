@@ -77,7 +77,7 @@ const OtherBussinessManager = (props) => {
             role: 'PARTNER_ROLE'
           });
       }
-      const r1 = await userService.listAccountPartner();
+      const r1 = await userService.listAccountPartner("status=1,2");
       const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
       setRows(newData);
       blockUI.current.open(false);
@@ -86,19 +86,20 @@ const OtherBussinessManager = (props) => {
       blockUI.current.open(false);
       setRequestFailed(true);
 
-      if (e.response.data.errors[0].param === 'dni') {
-        setHasError({ message: e.response.data.errors[0].msg });
-      }
-
       if(dataEmployee.id){
         setInitialValues(dataEmployee);
       }
-      if (e.response.data.error.keyPattern?.dni) {
-        setHasError({ message: 'El DNI ingresado ya está registrado' });
+
+      if (!_.isUndefined(e.response.data)) {
+        let type = e.response.data.type;
+        switch (type) {
+          case "Email repeated": setHasError({ message: 'El correo ya está registrado' }); break;
+          case "DNI repeated": setHasError({ message: 'El DNI ya está registrado' }); break;
+          case "in_trash_can": setHasError({ message: 'El usuario está en papelera' }); break;
+          default: setHasError({ message: e.response.data.msg }); break;
+        }
       }
-      if (e.response.data.error.keyPattern?.email) {
-        setHasError({ message: 'El correo ingresado ya está registrado' });
-      }
+
     }
   };
 
