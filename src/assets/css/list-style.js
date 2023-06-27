@@ -37,5 +37,19 @@ export const ListStyles = makeStyles(() => ({
     borderRadius: '12px',
     fontWeight: 'bold',
     backgroundColor: 'green'
+  },
+  containerNotMatch: {
+    color: 'white',
+    padding: '10px 50px',
+    borderRadius: '12px',
+    fontWeight: 'bold',
+    backgroundColor: '#490864'
+  },
+  containerMatch: {
+    color: 'black',
+    padding: '10px 50px',
+    borderRadius: '12px',
+    fontWeight: 'bold',
+    backgroundColor: '#49086459'
   }
 }));

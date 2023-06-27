@@ -370,6 +370,7 @@ const ListGiftcard = () => {
                           <div className="gift-card__amount-remaining">Monto Inicial: S/{e.amount}</div>    
                           <div className="gift-card__code">{e.code}</div>
                           <div className="gift-card__msg">Código de Identificación</div>
+                          <div className="gift-card__msg">CREADO POR: {e.creator.name}</div>
                         </section>
                       </article>
                     </Grid>

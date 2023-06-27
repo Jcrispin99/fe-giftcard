@@ -58,7 +58,7 @@ const MyShopping = (props) => {
         },
       };
       setOpenShopping(false);
-      dialogUI.current.open('', '', dlgSettings, 'Eliminado correctamente, clic en reload');
+      dialogUI.current.open('', '', dlgSettings, 'Eliminado correctamente');
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -131,6 +131,21 @@ const MyShopping = (props) => {
                           dateFormat(new Date(ticket.createdAt), "dd-mm-yy HH:MM")
                         }
                       </div>
+
+                      {
+                        (!ticket.status)
+                          &&
+                            <div style={{
+                              fontSize: '11px',
+                              backgroundColor: 'rgb(196 35 35)',
+                              color: 'white',
+                              marginTop: '7px',
+                              padding: '2px',
+                            }}>
+                              { ticket.authorizer.name || '' }
+                            </div>
+
+                      }
 
                       <div>
                         <IconButton

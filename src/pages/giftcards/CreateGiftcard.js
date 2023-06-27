@@ -24,7 +24,7 @@ import {
 import { useUI } from '../../app/context/ui';
 import { CustomerStyles } from '../customer/components/customer-style';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
-import BackspaceIcon from '@mui/icons-material/Backspace';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 let dlgSettings = {
   confirm: false,
@@ -264,7 +264,7 @@ const CreateGiftcard = (props) => {
                         onClick={handleClearCode}
                         size="large"
                       >
-                        <BackspaceIcon/>
+                        <RefreshIcon/>
                       </IconButton>
                     </Tooltip>
                   </Grid>

@@ -11,9 +11,8 @@ import clsx from 'clsx';
 import dateFormat from 'dateformat';
 import store from '../../redux/store';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
-import * as XLSX from 'xlsx';
 import ExcelJS from 'exceljs';
-
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 
 const userService = new UserService();
@@ -123,6 +122,42 @@ const ListReport = () => {
             {(params.value) ? 'CONFORME' : 'NO CONFORME'}
           </div>
         )
+      },
+    },
+    { 
+      field: 'statusMatch', 
+      headerName: 'ESTADO CUADRE', 
+      width: 250,
+      renderCell: (params) => {
+        return (
+          <div className={params.value ? listStyle.containerMatch : listStyle.containerNotMatch}>
+            {(params.value) ? 'SUPERVISADO' : 'NO SUPERVISADO'}
+          </div>
+        )
+      },
+    },
+    { 
+      field: 'createdAtD', 
+      headerName: 'ACCIONES', 
+      width: 250,
+      renderCell: (params) => {
+        if (state.user.role === 'ADMIN_ROLE') {
+          return (
+            <div>
+              <IconButton
+                aria-label="delete" 
+                color="primary" 
+                onClick={()=>{handleApprobeMatch(params.id)}}
+                disabled={(params.row.statusMatch)}
+              >
+                <Tooltip title="APROBAR CUADRE" placement="top">
+                  <ThumbUpIcon />
+                </Tooltip>
+              </IconButton>
+            </div>
+          )
+        }
+        return null;
       }
     }
   ];
@@ -180,6 +215,30 @@ const ListReport = () => {
     }
   }
 
+  const handleApprobeMatch = async (id) => {
+    try {
+      blockUI.current.open(true);
+      giftcardService.getAccessToken();
+      await giftcardService.approveMatch({id});
+      const newRows = rows.map((e)=>{
+        if(e.id === id){
+          return {
+            ...e,
+            statusMatch: true
+          }
+        }else{
+          return e;
+        }
+      });
+
+      setRows(newRows);
+      dialogUI.current.open('', '', dlgSettings, 'CUADRADO');
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  }
+
   const getListCreators = async () => {
     try {
       blockUI.current.open(true);
@@ -225,6 +284,14 @@ const ListReport = () => {
     const worksheet = workbook.addWorksheet('Giftcards');
     worksheet.addRows(dataExport);
 
+    worksheet.columns.forEach((column, index) => {
+      if (index === 0) {
+        column.width = 40;
+      } else {
+        column.width = 25;
+      }
+    });
+    
     const nameFile = new Date().toLocaleTimeString();
     const password = 'admin_48483845';
 

@@ -44,6 +44,9 @@ class GiftCardService extends AppService {
   deleteQr(data) {
     return this.http.post(`${this.path}/delete-qr`, data);
   }
+  approveMatch(data) {
+    return this.http.post(`${this.path}/approve-match`, data);
+  }
 
   //customer
 

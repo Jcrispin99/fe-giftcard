@@ -7,9 +7,11 @@ import {
   FormControlLabel, 
   FormHelperText, 
   Grid, 
+  IconButton, 
   MenuItem, 
   Modal, 
-  Select 
+  Select, 
+  Tooltip
 } from '@mui/material';
 import 'animate.css';
 import { Formik } from 'formik';
@@ -29,6 +31,7 @@ import {
 import { useUI } from '../../../app/context/ui';
 import { ModalCustomStyles } from '../../../assets/css';
 import { CustomerStyles } from './customer-style';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 let dlgSettings = {
   confirm: true,
@@ -311,6 +314,11 @@ const CustomerManager = (props) => {
     }
   };
 
+  const handleClearCode = () => {
+    setCodeScaned('');
+    formikRef.current.setFieldValue("code", '');
+  }
+
   useEffect(() => {
     if(codeScaned.length===10){
       setFieldValueFromExternalFunction(codeScaned);
@@ -563,6 +571,18 @@ const CustomerManager = (props) => {
                     return(
                       <div>
                         <Grid container spacing={3} className='wrapperForm'>
+                          <Grid item xs={12} style={{textAlign: 'center'}}>
+                            <Tooltip title="LIMPIAR CAMPO" placement="top">
+                              <IconButton
+                                color="primary" 
+                                component="label"
+                                onClick={handleClearCode}
+                                size="large"
+                              >
+                                <RefreshIcon/>
+                              </IconButton>
+                            </Tooltip>
+                          </Grid>
                           <Grid item xs={4} className={modalStyle.grdItem}>
                             <label>MONTO</label>
                           </Grid>
