@@ -9,6 +9,7 @@ import RestoreIcon from '@mui/icons-material/Restore';
 import { DataGrid } from '@mui/x-data-grid';
 import clsx from 'clsx';
 import { makeStyles } from '@mui/styles';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 let dlgSettings = {
   confirm: false,
@@ -78,11 +79,52 @@ const Recycle = (props) => {
                 <RestoreIcon />
               </IconButton>
             </Tooltip>
+            <Tooltip title="Eliminar definitivamente" placement="top">
+              <IconButton aria-label="delete" color="error" onClick={()=>{handleDelete(params.id)}}>
+                <DeleteForeverIcon />
+              </IconButton>
+            </Tooltip>
           </div>
         )
       }
     },
   ];
+
+  const handleDelete = (id) => {
+    dlgSettings = {
+      ...dlgSettings,
+      confirm: true,
+      onConfirm: () => {
+        onDeleteForever(id);
+      },
+    };
+    dialogUI.current.open(
+      'ALERTA',
+      'La eliminación es definitiva, estás seguro de eliminarlo?',
+      dlgSettings
+    );
+  };
+
+  const onDeleteForever = async(id) => {
+    try {
+      blockUI.current.open(true);
+      categorieService.getAccessToken();
+      await categorieService.delete(id);
+      let newRows = rows.filter((e)=>(e.id !== id));
+      setRows(newRows);
+      blockUI.current.open(false);
+      dlgSettings = {
+        ...dlgSettings,
+        confirm: false,
+        btn: {
+          close: 'CERRAR',
+        },
+      };
+      dialogUI.current.open('', '', dlgSettings, 'Eliminado definitamente');
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  };
 
   const handleRecover = async (param) => {
     try {

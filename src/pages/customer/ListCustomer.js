@@ -14,6 +14,10 @@ import store from '../../redux/store';
 import { Formik } from 'formik';
 import SearchIcon from '@mui/icons-material/Search';
 import LockClockIcon from '@mui/icons-material/LockClock';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useHistory } from 'react-router-dom';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import Recycle from './components/Recycle';
 
 let dlgSettings = {
   confirm: true,
@@ -32,7 +36,7 @@ const ListCustomer = () => {
   const baseValues = {
     categorie: '',
   };
-
+  const history = useHistory();
   const listStyle = ListStyles();
   const classes = EmployeeStyles();
   const { blockUI, dialogUI } = useUI();
@@ -42,8 +46,7 @@ const ListCustomer = () => {
   const state = store.getState();
   const [initialValues, setInitialValues] = useState(baseValues);
   const [categorieAvailable, setCategorieAvailable] = useState([]);
-
-
+  const [ openModalRecycle, setOpenModalRecycle ] = useState(false);
 
   const handleChangeStatus = async (e,employee) => {
     try {
@@ -71,27 +74,30 @@ const ListCustomer = () => {
   const columns = [
     { 
       field: 'name', 
-      headerName: 'NOMBRE COMPLETO', 
-      flex: 0.4,
-      minWidth: 200,
+      headerName: 'NOMBRE COMPLETO',
+      width: 450,
+      minWidth: 450,
     },
     { 
       field: 'dni', 
       headerName: 'DNI', 
-      width: 150
+      width: 100,
+      minWidth: 100
     },
     { 
       field: 'phone', 
       headerName: 'CELULAR', 
-      width: 250
+      width: 120,
+      minWidth: 120
     },
     { 
       field: 'categorie', 
       headerName: 'CATEGORÍA', 
-      width: 250,
+      width: 150,
+      minWidth: 150,
       renderCell: (params) => {
         return (
-          <div>{ params.row.categorie.name }</div>
+          <div>{ params.row.categorie?.name || '' }</div>
         )
       }
     },
@@ -114,17 +120,28 @@ const ListCustomer = () => {
     {
       field: 'uid',
       headerName: 'ACCIONES',
-      minWidth: 150,
+      with: 190,
+      minWidth: 190,
       renderCell: (params) => {
         return (
           <div>
             <IconButton 
               aria-label="edit" 
               color="success" 
-              onClick={()=>{handleEditEmployee(params)}}
-              disabled={state.user.role === 'EMPLOYEE_ROLE'}
+              onClick={()=>{handleViewDetail(params.row.dni)}}
+              disabled={state.user.role === 'EMPLOYEE_ROLE' || state.user.role === 'PARTNER_ROLE'}
             >
-              <Tooltip title="Editar" placement="top">
+              <Tooltip title="Ver detalles" placement="top">
+                <VisibilityIcon sx={{color:'orange'}}/>
+              </Tooltip>
+            </IconButton>
+            <IconButton 
+              aria-label="edit" 
+              color="success" 
+              onClick={()=>{handleEditEmployee(params)}}
+              disabled={state.user.role === 'EMPLOYEE_ROLE' || state.user.role === 'PARTNER_ROLE'}
+            >
+              <Tooltip title="Editar datos generales" placement="top">
                 <EditIcon />
               </Tooltip>
             </IconButton>
@@ -132,7 +149,7 @@ const ListCustomer = () => {
               aria-label="delete" 
               color="primary" 
               onClick={()=>{handleDeleteEmployee(params)}}
-              disabled={state.user.role === 'EMPLOYEE_ROLE'}
+              disabled={state.user.role === 'EMPLOYEE_ROLE' || state.user.role === 'PARTNER_ROLE'}
             >
               <Tooltip title="Eliminar" placement="top">
                 <DeleteForeverIcon />
@@ -156,6 +173,19 @@ const ListCustomer = () => {
   const handleEditEmployee = (employee) => {
     setDataEmployee(employee.row);
     setOpenModalEmployee(true);
+  }
+
+  const handleViewDetail = (dni) => {
+    try {
+      blockUI.current.open(true);
+      history.push({
+        pathname: '/giftcard',
+        state: { dni }
+      });
+      blockUI.current.open(false);
+    } catch (error) {
+      blockUI.current.open(false);
+    }
   }
 
   const handleReinitializePassword = (employee) => {
@@ -196,7 +226,7 @@ const ListCustomer = () => {
     try {
       blockUI.current.open(true);
       userService.getAccessToken();
-      const r1 = await userService.listCustomers('');
+      const r1 = await userService.listCustomers('status=1,2');
       const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
       setRows(newData);
       blockUI.current.open(false);
@@ -260,7 +290,7 @@ const ListCustomer = () => {
         .map(([key, value]) => `${key}=${value}`)
         .join("&");
       userService.getAccessToken();
-      const r1 = await userService.listCustomers(queryString);
+      const r1 = await userService.listCustomers(`${queryString}&status=1,2`);
       const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
       setRows(newData);
       blockUI.current.open(false);
@@ -357,13 +387,25 @@ const ListCustomer = () => {
       >
         CREAR
       </Button>
-      <DataGrid
-        className={clsx(listStyle.dataGrid, classes.root)} 
-        rows={rows} 
-        columns={columns}
-        pageSize={20}
-        pageSizeOptions={[20,50,100]}
-      />
+
+      <Button
+        onClick={()=>{setOpenModalRecycle(true)}} 
+        variant="outlined" 
+        startIcon={<RestoreFromTrashIcon />}
+        style={{marginBottom: '16px', marginLeft: '16px', color: 'red', border: 'solid 1px red'}}
+      >
+        PAPELERA
+      </Button>
+
+      <Grid container style={{ height: 560, width: '100%', marginTop: '50px' }}>
+        <DataGrid
+          className={clsx(listStyle.dataGrid, classes.root)} 
+          rows={rows} 
+          columns={columns}
+          pageSize={20}
+          pageSizeOptions={[20,50,100]}
+        />
+      </Grid>
 
       {
         (openModalEmployee)
@@ -374,6 +416,15 @@ const ListCustomer = () => {
               setRows={setRows}
               rows={rows}
               dataEmployee={dataEmployee}
+            />
+      }
+
+      {
+        (openModalRecycle)
+          &&
+            <Recycle
+              openR={openModalRecycle}
+              setOpenR={setOpenModalRecycle}
             />
       }
       

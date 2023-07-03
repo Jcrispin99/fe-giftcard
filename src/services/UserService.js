@@ -14,6 +14,15 @@ class UserService extends AppService {
   delete(id) {
     return this.http.delete(`${this.path}/${id}`);
   }
+  deletePartner(id) {
+    return this.http.delete(`${this.path}/delete-partner/${id}`);
+  }
+  deleteEmployee(id) {
+    return this.http.delete(`${this.path}/delete-employee/${id}`);
+  }
+  deleteCustomer(id) {
+    return this.http.delete(`${this.path}/delete-customer/${id}`);
+  }
   listSearch(search='') {
     return this.http.get(`${this.path}?${search}`);
   }

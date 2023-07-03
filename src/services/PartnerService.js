@@ -17,6 +17,9 @@ class PartnerService extends AppService {
   recover(id, data={}) {
     return this.http.put(`${this.path}/recover/${id}`, data);
   }
+  delete(id) {
+    return this.http.delete(`${this.path}/${id}`);
+  }
 }
 
 export default PartnerService;

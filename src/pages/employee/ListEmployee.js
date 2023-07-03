@@ -10,6 +10,8 @@ import { DataGrid } from '@mui/x-data-grid';
 import clsx from 'clsx';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EmployeeManager from './components/EmployeeManager';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import Recycle from './components/Recycle';
 
 let dlgSettings = {
   confirm: true,
@@ -30,6 +32,7 @@ const ListEmployee = () => {
   const [rows, setRows] = useState([]);
   const [openModalEmployee, setOpenModalEmployee] = useState(false);
   const [dataEmployee, setDataEmployee] = useState({});
+  const [ openModalRecycle, setOpenModalRecycle ] = useState(false);
 
   const handleChangeStatus = async (e,employee) => {
     try {
@@ -144,7 +147,7 @@ const ListEmployee = () => {
     try {
       blockUI.current.open(true);
       userService.getAccessToken();
-      const r1 = await userService.listSearch('');
+      const r1 = await userService.listSearch("status=1,2");
       const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
       setRows(newData);
       blockUI.current.open(false);
@@ -198,6 +201,14 @@ const ListEmployee = () => {
       >
         CREAR
       </Button>
+      <Button
+        onClick={()=>{setOpenModalRecycle(true)}} 
+        variant="outlined" 
+        startIcon={<RestoreFromTrashIcon />}
+        style={{marginBottom: '16px', marginLeft: '16px', color: 'red', border: 'solid 1px red'}}
+      >
+        PAPELERA
+      </Button>
       <DataGrid
         className={clsx(listStyle.dataGrid, classes.root)} 
         rows={rows} 
@@ -215,6 +226,15 @@ const ListEmployee = () => {
               setRows={setRows}
               rows={rows}
               dataEmployee={dataEmployee}
+            />
+      }
+
+      {
+        (openModalRecycle)
+          &&
+            <Recycle
+              openR={openModalRecycle}
+              setOpenR={setOpenModalRecycle}
             />
       }
       

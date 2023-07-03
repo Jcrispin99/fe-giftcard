@@ -18,7 +18,7 @@ const EmployeeManager = (props) => {
   const { blockUI } = useUI();
   const modalStyle = ModalCustomStyles();
   const baseValues = {
-    partner: '',
+    partner: '643cc82f275ca4adfd709dfb',
     dni: '',
     name: '',
     email: '',
@@ -32,9 +32,6 @@ const EmployeeManager = (props) => {
   const [partnersAvailable, setPartnersAvailable] = useState([]);
 
   const validationSchema = Yup.object({
-    partner: Yup
-      .string()
-      .required('Obligatorio'),
     dni: Yup
       .string()
       .matches(/^[0-9]+$/, 'Debe contener solo números')
@@ -77,7 +74,7 @@ const EmployeeManager = (props) => {
             role: 'EMPLOYEE_ROLE'
           });
       }
-      const r1 = await userService.listSearch();
+      const r1 = await userService.listSearch("status=1,2");
       const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
       setRows(newData);
       blockUI.current.open(false);
@@ -163,33 +160,6 @@ const EmployeeManager = (props) => {
             return(
               <div>
                 <Grid container spacing={3} className='wrapperForm'>
-                  <Grid item xs={4} className={modalStyle.grdItem}>
-                    <label>TIENDA</label>
-                  </Grid>
-                  <Grid item xs={8}>
-                    <FormControl variant="outlined" fullWidth className={modalStyle.inputCustom}>
-                      <Select
-                        displayEmpty
-                        id="partner"
-                        name="partner"
-                        value={values.partner}
-                        onChange={handleChange}
-                        size='small'
-                        error={touched.partner && Boolean(errors.partner)}
-                        helpertext={
-                          errors.partner && touched.partner ? errors.partner : ""
-                        }
-                      >
-                        <MenuItem value="">Selecciona una opción</MenuItem>
-                        {
-                          partnersAvailable.map((e, index)=>(
-                            <MenuItem key={`partner${index}`} value={e.uid}>{e.name}</MenuItem>
-                          ))
-                        }
-                      </Select>
-                      <FormHelperText style={{color: 'red'}} className={modalStyle.formError}>{errors.partner}</FormHelperText>
-                    </FormControl>
-                  </Grid>
                   <Grid item xs={4} className={modalStyle.grdItem}>
                     <label>DNI</label>
                   </Grid>

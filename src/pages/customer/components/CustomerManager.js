@@ -126,53 +126,6 @@ const CustomerManager = (props) => {
     setChecked(newChecked);
   };
 
-  const handleRecoverAccount = (values) => {
-    dlgSettings = {
-      ...dlgSettings,
-      confirm: true,
-      onConfirm: () => {
-        onRecoverAccount(values);
-      },
-    };
-    dialogUI.current.open(
-      `EL CLIENTE ESTÁ DESACTIVADO`,
-      'Desea recuperarlo?',
-      dlgSettings
-    );
-  }
-
-  const onRecoverAccount = async(values) => {
-    try {
-      blockUI.current.open(true);
-      setRequestFailed(false);
-      userService.getAccessToken();
-      await userService.recoverCustomer(values);
-      const r1 = await userService.listCustomers();
-      const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
-      setRows(newData);
-
-      blockUI.current.open(false);
-      setOpen(false);
-
-      dlgSettings = {
-        confirm: false,
-        btn: {
-          close: 'CERRAR',
-        },
-        onConfirm: () => {},
-      };
-      dialogUI.current.open(
-        `Cliente recuperado`,
-        '',
-        dlgSettings
-      );
-    } catch (error) {
-      blockUI.current.open(false);
-      setRequestFailed(true);
-      setHasError('Comuniquese con el administrador')
-    }
-  }
-
   const onSubmit = async (values) => {
     try {
       blockUI.current.open(true);
@@ -192,6 +145,19 @@ const CustomerManager = (props) => {
             status: 1,
             role: 'USER_ROLE'
           });
+
+          dlgSettings = {
+            ...dlgSettings,
+            confirm: true,
+            onConfirm: () => {
+              onBuyGiftcard(resultUser.data.user);
+            },
+          };
+          dialogUI.current.open(
+            `Cliente ${resultUser.data.user.name} registrado`,
+            'Desea agregar una gift card?',
+            dlgSettings
+          );
       }
       const r1 = await userService.listCustomers("status=1,2");
       const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
@@ -199,27 +165,18 @@ const CustomerManager = (props) => {
 
       blockUI.current.open(false);
 
-      dlgSettings = {
-        ...dlgSettings,
-        confirm: true,
-        onConfirm: () => {
-          onBuyGiftcard(resultUser.data.user);
-        },
-      };
-      dialogUI.current.open(
-        `Cliente ${resultUser.data.user.name} registrado`,
-        'Desea agregar una gift card?',
-        dlgSettings
-      );
-
+      if(dataEmployee.id){
+        setOpen(false);
+      }
     } catch (e) {
       blockUI.current.open(false);
       setRequestFailed(true);
-      if (e.response.data.errors[0].param === 'dni') {
-        setHasError({ message: e.response.data.errors[0].msg });
-        let dni = rows.find((customer) => customer.dni === values.dni);
-        if(!dni){
-          handleRecoverAccount(values);
+      if (!_.isUndefined(e.response.data)) {
+        let type = e.response.data.type;
+        switch (type) {
+          case "DNI repeated": setHasError({ message: 'El DNI ya está registrado' }); break;
+          case "in_trash_can": setHasError({ message: 'El usuario está en papelera' }); break;
+          default: setHasError({ message: e.response.data.msg }); break;
         }
       }
     }
@@ -304,7 +261,7 @@ const CustomerManager = (props) => {
   useEffect(() => {
     if(dataEmployee.id){
       const birthdate = new Date(dataEmployee.birthdate).toISOString().split("T")[0];
-      setInitialValues({...dataEmployee, categorie: dataEmployee.categorie._id, birthdate});
+      setInitialValues({...dataEmployee, categorie: dataEmployee.categorie?._id, birthdate});
     }
   }, [dataEmployee]);
 
@@ -640,7 +597,7 @@ const CustomerManager = (props) => {
                           </Grid>
                           <Grid item xs={4} className={modalStyle.grdItem}>
                             <label>CELULAR</label>
-                            <div className='optional'>(Nuevo receptorrrr)</div>
+                            <div className='optional'>(Nuevo receptor)</div>
                           </Grid>
                           <Grid item xs={8}>
                             <TextField

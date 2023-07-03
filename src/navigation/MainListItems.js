@@ -11,19 +11,17 @@ const MainListItems = () => {
   let nav = [];
 
   if(state && state.user.role !== ''){
-    if(state.user.role === 'PARTNER_ROLE'){
+    if(state.user?.role === 'PARTNER_ROLE'){
       if(state.user.partner === '643cc88d275ca4adfd709dfc'){
         nav = NavigationEmployee;
       }else{
         nav = NavigationPartner;
       }
     }
-    if(state.user.role === 'ADMIN_ROLE')
-    {
+    if(state.user.role === 'ADMIN_ROLE'){
       nav = Navigation;
     }
-    if(state.user.role === 'EMPLOYEE_ROLE')
-    {
+    if(state.user.role === 'EMPLOYEE_ROLE'){
       nav = NavigationEmployee;
     }
   }

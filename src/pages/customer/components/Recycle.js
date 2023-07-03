@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { IconButton, Modal, Tooltip } from '@mui/material';
 import 'animate.css';
 import _ from 'lodash';
-import { PartnerService } from '../../../services';
+import { CategorieService, UserService } from '../../../services';
 import { useUI } from '../../../app/context/ui';
 import { ListStyles, ModalCustomStyles } from '../../../assets/css';
 import RestoreIcon from '@mui/icons-material/Restore';
@@ -19,7 +19,7 @@ let dlgSettings = {
   onConfirm: () => {},
 };
 
-const partnerService = new PartnerService();
+const userService = new UserService();
 
 const LocalStyles = makeStyles(() => ({
   table: { 
@@ -34,6 +34,15 @@ const LocalStyles = makeStyles(() => ({
     borderRadius: '10px',
     backgroundColor: '#ff000014',
     color: '#9b0000'
+  },
+  infoWarning: {
+    marginTop: '16px',
+    backgroundColor: '#80808014',
+    color: 'red',
+    fontSize: '13px',
+    padding: '10px',
+    textAlign: 'center',
+    borderRadius: '10px'
   }
 }));
 
@@ -47,13 +56,13 @@ const Recycle = (props) => {
   const localStyle = LocalStyles();
   const [ rows, setRows ] = useState([]);
 
-  const getListPartner = async () => {
+  const getListUser = async () => {
     try {
       blockUI.current.open(true);
-      partnerService.getAccessToken();
-      const r1 = await partnerService.listSearch('status=3');
-      let newRows = r1.data.partners.map((e)=>({...e, id: e.uid}));
-      setRows(newRows);
+      userService.getAccessToken();
+      const r1 = await userService.listCustomers('status=3');
+      const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
+      setRows(newData);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -67,8 +76,24 @@ const Recycle = (props) => {
       flex: 0.4,
       minWidth: 200,
     },
+    { 
+      field: 'dni', 
+      headerName: 'DNI', 
+      width: 150
+    },
+    { 
+      field: 'categorie', 
+      headerName: 'CATEGORÍA', 
+      width: 150,
+      minWidth: 150,
+      renderCell: (params) => {
+        return (
+          <div>{ params.row.categorie?.name || '' }</div>
+        )
+      }
+    },
     {
-      field: '_id',
+      field: 'id',
       headerName: 'ACCIONES',
       minWidth: 100,
       renderCell: (params) => {
@@ -108,8 +133,8 @@ const Recycle = (props) => {
   const onDeleteForever = async(id) => {
     try {
       blockUI.current.open(true);
-      partnerService.getAccessToken();
-      await partnerService.delete(id);
+      userService.getAccessToken();
+      await userService.deleteCustomer(id);
       let newRows = rows.filter((e)=>(e.id !== id));
       setRows(newRows);
       blockUI.current.open(false);
@@ -129,8 +154,8 @@ const Recycle = (props) => {
   const handleRecover = async (param) => {
     try {
       blockUI.current.open(true);
-      partnerService.getAccessToken();
-      await partnerService.recover(param.row.id);
+      userService.getAccessToken();
+      await userService.recoverUser(param.row.id);
       let newRows = rows.filter((e)=>(e.id !== param.row.id));
       setRows(newRows);
       blockUI.current.open(false);
@@ -143,7 +168,7 @@ const Recycle = (props) => {
 
   useEffect(() => {
     (async function init() {
-      await getListPartner();
+      await getListUser();
     })();
   }, []);
 
@@ -157,10 +182,15 @@ const Recycle = (props) => {
         disableEscapeKeyDown={true}
         className="animate__animated animate__backInLeft"
       >
-        <div className={modalStyle.paperModal} style={{width: '500px'}}>
+        <div className={modalStyle.paperModal} style={{width: '820px'}}>
           <div className={localStyle.title}>
             PAPELERA
           </div>
+
+          <div className={localStyle.infoWarning}>
+            <span>¡ALERTA! Al eliminar permanentemente al usuario, también se borrarán todas sus tarjetas de regalo y boletos asociados.</span>
+          </div>
+
           <div className={localStyle.table}>
             <DataGrid
               className={clsx(listStyle.dataGrid)}

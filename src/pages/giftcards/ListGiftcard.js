@@ -1,5 +1,5 @@
 import { Button, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField, Tooltip } from '@mui/material'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { ModalCustomStyles } from '../../assets/css';
@@ -15,6 +15,8 @@ import CreateBuy from '../buy/CreateBuy';
 import YoutubeSearchedForIcon from '@mui/icons-material/YoutubeSearchedFor';
 import MyShopping from '../buy/MyShopping';
 import store from '../../redux/store';
+import { useLocation } from 'react-router-dom';
+import LockClockIcon from '@mui/icons-material/LockClock';
 
 const userService = new UserService();
 const giftCardService = new GiftCardService();
@@ -41,6 +43,7 @@ const ListGiftcard = () => {
   const [idGiftcardShopping, setIdGiftcardShopping] = useState('');
   const [newRequest, setNewRequest] = useState('');
   const state = store.getState();
+  const location = useLocation();
 
   const baseValues = {
     type: 2,
@@ -65,7 +68,7 @@ const ListGiftcard = () => {
       userService.getAccessToken();
       giftCardService.getAccessToken();
       if(values.type === "1"){
-        const r1 = await userService.listSearch(`limit=100&dni=${values.dato}`);
+        const r1 = await userService.listSearch(`dni=${values.dato}`);
         if(r1.data.total > 0){
           setDataUser(r1.data.users[0]);
           const r2 = await giftCardService.mygiftcards(`user_id=${r1.data.users[0].uid}`);
@@ -160,6 +163,56 @@ const ListGiftcard = () => {
       blockUI.current.open(false);
     }
   };
+
+  const handleReinitializePassword = () => {
+    dlgSettings = {
+      ...dlgSettings,
+      confirm: true,
+      btn: {
+        close: 'CANCELAR',
+        confirm: 'ACEPTAR',
+      },
+      onConfirm: () => {
+        onReinitializePassword();
+      },
+    };
+    dialogUI.current.open(
+      'Espera!',
+      'Estás seguro de reiniciar su contraseña?',
+      dlgSettings
+    );
+  }
+
+  const onReinitializePassword = async() => {
+    try {
+      blockUI.current.open(true);
+      userService.getAccessToken();
+      await userService.reinitializerPasswordCustomer({id: dataUser.uid});
+      blockUI.current.open(false);
+      dlgSettings = {
+        ...dlgSettings,
+        confirm: false,
+        btn: {
+          close: 'Cerrar',
+        },
+      };
+      dialogUI.current.open('', '', dlgSettings, 'Actualizado correctamente');
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  };
+
+  useEffect(() => {
+    if (location.state) {
+      const { dni } = location.state;
+      const dataSearch = {
+        type: "1", 
+        dato: dni
+      }
+      setInitialValues(dataSearch)
+      onSubmit(dataSearch)
+    }
+  }, [location]);
 
   return (
     <div style={{marginTop: '40px'}}>
@@ -257,9 +310,19 @@ const ListGiftcard = () => {
               &&
                 <Grid item xs={6} className={modalStyle.wrapperInfoGiftcard}>
                   <Grid container>
-                    <Grid item xs={4}>{dataUser?.name}</Grid>
-                    {/* <Grid item xs={4}>{dateFormat(new Date(dataUser?.createdAt), "dd/mm/yyyy")}</Grid> */}
-                    <Grid item xs={4}>{`Total: ${giftCards?.length}`}</Grid>
+                    <Grid item xs={4} style={{paddingTop: '8px'}}>{dataUser?.name}</Grid>
+                    <Grid item xs={4} style={{paddingTop: '8px'}}>{`Total: ${giftCards?.length}`}</Grid>
+                    <Grid item xs={4}>
+                      <IconButton
+                        aria-label="delete" 
+                        color="primary" 
+                        onClick={()=>{handleReinitializePassword()}}
+                      >
+                        <Tooltip title="Reiniciar contraseña a DNI" placement="top">
+                          <LockClockIcon style={{color:'red'}}/>
+                        </Tooltip>
+                      </IconButton>
+                    </Grid>
                   </Grid>
                 </Grid>
           }
@@ -279,14 +342,18 @@ const ListGiftcard = () => {
                 </Button>
               </Grid>
         }
-        <CreateGiftcard
-          open={open}
-          setOpen={setOpen}
-          dataCard={giftCardReview}
-          dataUser={dataUser}
-          giftCards={giftCards}
-          setGiftCards={setGiftCards}
-        />
+        {
+          (open)
+            &&
+              <CreateGiftcard
+                open={open}
+                setOpen={setOpen}
+                dataCard={giftCardReview}
+                dataUser={dataUser}
+                giftCards={giftCards}
+                setGiftCards={setGiftCards}
+              />
+        }
       </Grid>
       <Grid container>
         {

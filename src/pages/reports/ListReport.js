@@ -14,6 +14,8 @@ import DoneAllIcon from '@mui/icons-material/DoneAll';
 import ExcelJS from 'exceljs';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 
 const userService = new UserService();
 const giftcardService = new GiftCardService();
@@ -51,10 +53,38 @@ const ListReport = () => {
 
   const columns = [
     { 
+      field: 'createdAtD', 
+      headerName: '_', 
+      width: 60,
+      renderCell: (params) => {
+        if (state.user.role === 'ADMIN_ROLE') {
+          return (
+            <div>
+              <IconButton
+                aria-label="delete" 
+                color="primary" 
+                onClick={()=>{handleApprobeMatch(params.id, params.row.statusMatch, params.row.amount)}}
+              >
+                <Tooltip title="APROBAR CUADRE" placement="top">
+                  {
+                    (params.row.statusMatch)
+                      ? <CheckBoxIcon />
+                      : <CheckBoxOutlineBlankIcon />
+                  }
+                  
+                </Tooltip>
+              </IconButton>
+            </div>
+          )
+        }
+        return null;
+      }
+    },
+    { 
       field: '_id', 
       headerName: 'CLIENTE', 
-      flex: 0.4,
-      minWidth: 200,
+      width: 300,
+      minWidth: 300,
       renderCell: (params) => {
         return (
           <div>
@@ -66,8 +96,8 @@ const ListReport = () => {
     { 
       field: 'code', 
       headerName: 'GIFTCARD', 
-      flex: 0.4,
-      minWidth: 200,
+      width: 140,
+      minWidth: 140,
       renderCell: (params) => {
         return (
           <div>
@@ -79,7 +109,8 @@ const ListReport = () => {
     { 
       field: 'amount', 
       headerName: 'MONTO', 
-      width: 250,
+      width: 100,
+      minWidth: 100,
       renderCell: (params) => {
         return (
           <div>
@@ -91,7 +122,8 @@ const ListReport = () => {
     { 
       field: 'type', 
       headerName: 'MÉTODO DE PAGO', 
-      width: 250,
+      width: 150,
+      minWidth: 150,
       renderCell: (params) => {
         return (
           <div>
@@ -103,7 +135,8 @@ const ListReport = () => {
     { 
       field: 'createdAt', 
       headerName: 'F. CREACIÓN', 
-      width: 250,
+      width: 130,
+      minWidth: 130,
       renderCell: (params) => {
         return (
           <div>
@@ -111,18 +144,6 @@ const ListReport = () => {
           </div>
         )
       }
-    },
-    { 
-      field: 'statusCompliant', 
-      headerName: 'ESTADO CONFORMIDAD', 
-      width: 250,
-      renderCell: (params) => {
-        return (
-          <div className={params.value ? listStyle.containerPay : listStyle.containerNotPay}>
-            {(params.value) ? 'CONFORME' : 'NO CONFORME'}
-          </div>
-        )
-      },
     },
     { 
       field: 'statusMatch', 
@@ -135,30 +156,6 @@ const ListReport = () => {
           </div>
         )
       },
-    },
-    { 
-      field: 'createdAtD', 
-      headerName: 'ACCIONES', 
-      width: 250,
-      renderCell: (params) => {
-        if (state.user.role === 'ADMIN_ROLE') {
-          return (
-            <div>
-              <IconButton
-                aria-label="delete" 
-                color="primary" 
-                onClick={()=>{handleApprobeMatch(params.id)}}
-                disabled={(params.row.statusMatch)}
-              >
-                <Tooltip title="APROBAR CUADRE" placement="top">
-                  <ThumbUpIcon />
-                </Tooltip>
-              </IconButton>
-            </div>
-          )
-        }
-        return null;
-      }
     }
   ];
 
@@ -196,7 +193,7 @@ const ListReport = () => {
         'MONTO',
         'MÉTODO DE PAGO',
         'FECHA DE CREACIÓN',
-        'ESTADO DE CONFORMIDAD'
+        'ESTADO DE CUADRE'
       ];
       const dataExcel = data.map((row)=>{
         return [
@@ -205,7 +202,7 @@ const ListReport = () => {
           `S/${row.amount}`,
           row.type,
           (row.createdAt) ? dateFormat(new Date(row.createdAt), "dd-mm-yy HH:MM") : '',
-          (row.statusCompliant) ? 'CONFORME' : 'NO CONFORME'
+          (row.statusMatch) ? 'SUPERVISADO' : 'NO SUPERVISADO'
         ]
       });
       dataExcel.unshift(headers);
@@ -215,24 +212,31 @@ const ListReport = () => {
     }
   }
 
-  const handleApprobeMatch = async (id) => {
+  const handleApprobeMatch = async (id, status, amount) => {
     try {
       blockUI.current.open(true);
       giftcardService.getAccessToken();
-      await giftcardService.approveMatch({id});
+      await giftcardService.approveMatch({id, status: !status});
       const newRows = rows.map((e)=>{
         if(e.id === id){
           return {
             ...e,
-            statusMatch: true
+            statusMatch: !status
           }
         }else{
           return e;
         }
       });
 
+      let newStatus = !status;
+      if(newStatus){
+
+        setAmountTotal(amountTotal+amount);
+      }else{
+        setAmountTotal(amountTotal-amount);
+      }
+
       setRows(newRows);
-      dialogUI.current.open('', '', dlgSettings, 'CUADRADO');
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -395,7 +399,7 @@ const ListReport = () => {
               </Grid>
               <Grid item xs={12} style={{textAlign: 'center', marginTop: '45px'}}>
                 <span style={{marginRight: '20px'}}>{ `MONTO TOTAL: S/${amountTotal}` }</span>
-                {
+                {/* {
                     (state.user.role === 'ADMIN_ROLE')
                         &&
                         <IconButton
@@ -408,7 +412,7 @@ const ListReport = () => {
                                 <DoneAllIcon />
                             </Tooltip>
                         </IconButton>
-                }
+                } */}
               </Grid>
               {
                 (rows.length>0)

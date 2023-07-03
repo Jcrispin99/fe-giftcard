@@ -198,7 +198,7 @@ const CreateGiftcard = (props) => {
     }else{
       setInitialValues(initialValuesGiftcard);
     }
-  }, [dataCard]);
+  }, [dataCard, partnersAvailable]);
 
   const setFieldValueFromExternalFunction = (codeScaned) => {
     if (formikRef && formikRef.current && formikRef.current.setFieldValue) {
@@ -256,18 +256,23 @@ const CreateGiftcard = (props) => {
             return(
               <div>
                 <Grid container spacing={3} className='wrapperForm'>
-                  <Grid item xs={12} style={{textAlign: 'center'}}>
-                    <Tooltip title="LIMPIAR CAMPO" placement="top">
-                      <IconButton
-                        color="primary" 
-                        component="label"
-                        onClick={handleClearCode}
-                        size="large"
-                      >
-                        <RefreshIcon/>
-                      </IconButton>
-                    </Tooltip>
-                  </Grid>
+                  {
+                    (!dataCard.uid)
+                      &&  
+                        <Grid item xs={12} style={{textAlign: 'center'}}>
+                          <Tooltip title="LIMPIAR CAMPO" placement="top">
+                            <IconButton
+                              color="primary" 
+                              component="label"
+                              onClick={handleClearCode}
+                              size="large"
+                            >
+                              <RefreshIcon/>
+                            </IconButton>
+                          </Tooltip>
+                        </Grid>
+                  }
+                  
                   <Grid item xs={4} className={modalStyle.grdItem}>
                     <label>MONTO</label>
                   </Grid>
@@ -405,7 +410,7 @@ const CreateGiftcard = (props) => {
                             className={customerStyle.wrapperCheckbox}
                             control={
                               <Checkbox
-                                checked={checked.filter((e)=>e.id === partner.uid)[0].status}
+                                checked={checked.find((e)=>e.id === partner.uid)?.status}
                                 onChange={handleChangePartner}
                                 value={partner.uid}
                               />

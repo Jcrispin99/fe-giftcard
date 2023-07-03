@@ -120,7 +120,7 @@ const OtherBussinessManager = (props) => {
     setRequestFailed(false);
     if(dataEmployee.id){
       const birthdate = new Date(dataEmployee.birthdate).toISOString().split("T")[0];
-      setInitialValues({...dataEmployee, birthdate, partner: dataEmployee.partner._id});
+      setInitialValues({...dataEmployee, birthdate, partner: dataEmployee.partner?._id });
     }else{
       setInitialValues(baseValues);
       

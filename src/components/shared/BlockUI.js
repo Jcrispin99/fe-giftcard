@@ -5,7 +5,7 @@ import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles((theme) => ({
   backdrop: {
-    zIndex: theme.zIndex.drawer + 1,
+    zIndex: 9999,
     color: '#fff',
     margin: 0,
   },

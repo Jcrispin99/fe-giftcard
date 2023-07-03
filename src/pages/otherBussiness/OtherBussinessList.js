@@ -76,8 +76,11 @@ const OtherBussinessList = () => {
       flex: 0.4,
       minWidth: 200,
       renderCell: (params) => {
+        const regex = /@(.*?)\./;
+        const match = regex.exec(params.row.email);
+        const partnerDeletedPrev = match && match[1];
         return (
-          <div>{ params.row.partner.name }</div>
+          <div>{ params.row.partner?.name || partnerDeletedPrev.toUpperCase()}</div>
         )
       }
     },

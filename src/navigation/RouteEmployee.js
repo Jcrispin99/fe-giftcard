@@ -1,9 +1,11 @@
 import Dashboard from "../pages/Dashboard";
 import Login from "../pages/auth/LoginPage";
+import ListCustomer from "../pages/customer/ListCustomer";
+import ListGiftcard from "../pages/giftcards/ListGiftcard";
 import ListTicket from "../pages/tickets/ListTicket";
 import ListReport from "../pages/reports/ListReport";
 
-const RoutePartner = [
+const RouteEmployee = [
   {
     path: "/",
     name: "login",
@@ -17,6 +19,20 @@ const RoutePartner = [
     exact: true,
     pageTitle: "",
     component: Dashboard,
+  },
+  {
+    path: "/customer",
+    name: "",
+    exact: true,
+    pageTitle: "",
+    component: ListCustomer,
+  },
+  {
+    path: "/giftcard",
+    name: "",
+    exact: true,
+    pageTitle: "",
+    component: ListGiftcard,
   },
   {
     path: "/ticket",
@@ -34,4 +50,4 @@ const RoutePartner = [
   }
 ];
 
-export default RoutePartner;
+export default RouteEmployee;
