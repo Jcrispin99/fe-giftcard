@@ -142,7 +142,7 @@ const ListTicket = () => {
     },
     { 
       field: 'statusPaid', 
-      headerName: 'ESTADO DE PAGO', 
+      headerName: 'TARJETA CANJEADA', 
       width: 250,
       renderCell: (params) => {
         return (

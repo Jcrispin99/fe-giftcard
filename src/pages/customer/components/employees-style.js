@@ -33,5 +33,26 @@ export const EmployeeStyles = makeStyles((theme) => ({
     fontFamily: 'Barlow Condensed',
     fontSize: '31px',
     fontWeight: 'bold',
-  }
+  },
+  giftcardGreen: {
+    backgroundColor: '#519c51',
+    padding: '4px 16px',
+    marginRight: '4px',
+    borderRadius: '9px',
+    color: 'white',
+  },
+  giftcardOrange: {
+    backgroundColor: 'orange',
+    padding: '4px 16px',
+    marginRight: '4px',
+    borderRadius: '9px',
+    color: 'white',
+  },
+  giftcardRed: {
+    backgroundColor: '#c32424',
+    padding: '4px 16px',
+    marginRight: '4px',
+    borderRadius: '9px',
+    color: 'white',
+  },
 }));

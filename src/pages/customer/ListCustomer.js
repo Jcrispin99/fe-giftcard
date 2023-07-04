@@ -3,7 +3,7 @@ import { useUI } from '../../app/context/ui';
 import { ListStyles } from '../../assets/css';
 import { CategorieService, UserService } from '../../services';
 import { EmployeeStyles } from './components/employees-style';
-import { Button, IconButton, Tooltip, Typography, Switch, Grid, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Button, IconButton, Tooltip, Typography, Switch, Grid, FormControl, InputLabel, Select, MenuItem, Box } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { DataGrid } from '@mui/x-data-grid';
@@ -75,8 +75,8 @@ const ListCustomer = () => {
     { 
       field: 'name', 
       headerName: 'NOMBRE COMPLETO',
-      width: 450,
-      minWidth: 450,
+      width: 300,
+      minWidth: 300,
     },
     { 
       field: 'dni', 
@@ -93,11 +93,33 @@ const ListCustomer = () => {
     { 
       field: 'categorie', 
       headerName: 'CATEGORÍA', 
-      width: 150,
-      minWidth: 150,
+      width: 200,
+      minWidth: 200,
       renderCell: (params) => {
         return (
           <div>{ params.row.categorie?.name || '' }</div>
+        )
+      }
+    },
+    { 
+      field: 'giftcards', 
+      headerName: 'GIFTCARDS (monto disponible)', 
+      width: 300,
+      minWidth: 300,
+      renderCell: (params) => {
+        let giftcards = params.row.giftcards;
+        return (
+          <div style={{display: 'contents'}}>
+            {
+              giftcards.map((giftcard, index)=>(
+                <Tooltip key={`giftcard_${index}`} title={`MONTO INICIAL= S/${giftcard.amount}`} placement="top-start">
+                  <div className={(giftcard.amountAvailable === giftcard.amount) ? classes.giftcardGreen : (giftcard.amountAvailable > 0) ? classes.giftcardOrange  : classes.giftcardRed}>
+                    <span style={{fontSize: '8px'}}>S/.</span>{giftcard.amountAvailable}
+                  </div>
+                </Tooltip>
+              ))
+            }
+          </div>
         )
       }
     },
@@ -227,8 +249,7 @@ const ListCustomer = () => {
       blockUI.current.open(true);
       userService.getAccessToken();
       const r1 = await userService.listCustomers('status=1,2');
-      const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
-      setRows(newData);
+      setRows(r1.data.users);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
@@ -396,6 +417,18 @@ const ListCustomer = () => {
       >
         PAPELERA
       </Button>
+
+      <Box style={{marginTop: '33px', fontSize: '11px'}}>
+        <div style={{marginBottom: '8px'}}>
+          <span className={classes.giftcardGreen}>S/.XX</span> TARJETA NO CONSUMIDA
+        </div>
+        <div style={{marginBottom: '8px'}}>
+          <span className={classes.giftcardOrange}>S/.XX</span> TARJETA CONSUMIDA CON SALDO DISPONIBLE
+        </div>
+        <div>
+          <span className={classes.giftcardRed}>S/.XX</span> TARJETA SIN SALDO
+        </div>
+      </Box>
 
       <Grid container style={{ height: 560, width: '100%', marginTop: '50px' }}>
         <DataGrid
