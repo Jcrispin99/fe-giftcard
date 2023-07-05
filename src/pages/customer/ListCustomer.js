@@ -104,8 +104,8 @@ const ListCustomer = () => {
     { 
       field: 'giftcards', 
       headerName: 'GIFTCARDS (monto disponible)', 
-      width: 300,
-      minWidth: 300,
+      width: 220,
+      minWidth: 220,
       renderCell: (params) => {
         let giftcards = params.row.giftcards;
         return (
@@ -312,8 +312,7 @@ const ListCustomer = () => {
         .join("&");
       userService.getAccessToken();
       const r1 = await userService.listCustomers(`${queryString}&status=1,2`);
-      const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
-      setRows(newData);
+      setRows(r1.data.users);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
