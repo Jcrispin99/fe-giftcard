@@ -1,5 +1,6 @@
 import Dashboard from "../pages/Dashboard";
 import Login from "../pages/auth/LoginPage";
+import ManagerTickets from "../pages/tickets/ManagerTickets";
 
 const RouteDefault = [
   {
@@ -15,7 +16,14 @@ const RouteDefault = [
     exact: true,
     pageTitle: "",
     component: Dashboard,
-  }
+  },
+  {
+    path: '/tickets/:id',
+    name: "",
+    exact: true,
+    pageTitle: "",
+    component: ManagerTickets,
+  },
 ];
 
 export default RouteDefault;
