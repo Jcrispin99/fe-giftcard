@@ -4,6 +4,7 @@ import ListCustomer from "../pages/customer/ListCustomer";
 import ListGiftcard from "../pages/giftcards/ListGiftcard";
 import ListTicket from "../pages/tickets/ListTicket";
 import ListReport from "../pages/reports/ListReport";
+import ManagerTickets from "../pages/tickets/ManagerTickets";
 
 const RouteEmployee = [
   {
