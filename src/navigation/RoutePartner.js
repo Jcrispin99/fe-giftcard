@@ -2,6 +2,7 @@ import Dashboard from "../pages/Dashboard";
 import Login from "../pages/auth/LoginPage";
 import ListTicket from "../pages/tickets/ListTicket";
 import ListReport from "../pages/reports/ListReport";
+import ManagerTickets from "../pages/tickets/ManagerTickets";
 
 const RoutePartner = [
   {
