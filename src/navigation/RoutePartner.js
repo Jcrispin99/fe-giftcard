@@ -31,7 +31,14 @@ const RoutePartner = [
     exact: true,
     pageTitle: "",
     component: ListReport,
-  }
+  },
+  {
+    path: '/tickets/:id',
+    name: "",
+    exact: true,
+    pageTitle: "",
+    component: ManagerTickets,
+  },
 ];
 
 export default RoutePartner;
