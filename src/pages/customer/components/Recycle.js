@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { IconButton, Modal, Tooltip } from '@mui/material';
 import 'animate.css';
 import _ from 'lodash';
-import { CategorieService, UserService } from '../../../services';
+import { UserService } from '../../../services';
 import { useUI } from '../../../app/context/ui';
 import { ListStyles, ModalCustomStyles } from '../../../assets/css';
 import RestoreIcon from '@mui/icons-material/Restore';
@@ -60,9 +60,8 @@ const Recycle = (props) => {
     try {
       blockUI.current.open(true);
       userService.getAccessToken();
-      const r1 = await userService.listCustomers('status=3');
-      const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
-      setRows(newData);
+      const r1 = await userService.listCustomers('status=3');;
+      setRows(r1.data.users);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);

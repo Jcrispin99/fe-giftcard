@@ -16,6 +16,7 @@ import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
 
 const userService = new UserService();
 const giftcardService = new GiftCardService();
@@ -39,11 +40,13 @@ const ListReport = () => {
   const [amountTotal, setAmountTotal] = useState(0);
   const [idsGiftcardsCompliant, setIdsGiftcardsCompliant] = useState([]);
   const [dataExport, setDataExport] = useState([]);
+  const [page, setPage] = useState(0);
 
   const { blockUI, dialogUI } = useUI();
 
   const baseValues = {
-    date: dateFormat(new Date(), 'yyyy-mm-dd'),
+    startDate: dateFormat(new Date(), 'yyyy-mm-dd'),
+    endDate: dateFormat(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'yyyy-mm-dd'),
     creator: ''
   };
 
@@ -63,6 +66,7 @@ const ListReport = () => {
               <IconButton
                 aria-label="delete" 
                 color="primary" 
+                disabled={params.row.statusMatch}
                 onClick={()=>{handleApprobeMatch(params.id, params.row.statusMatch, params.row.amount)}}
               >
                 <Tooltip title="APROBAR CUADRE" placement="top">
@@ -195,17 +199,28 @@ const ListReport = () => {
         'FECHA DE CREACIÓN',
         'ESTADO DE CUADRE'
       ];
-      const dataExcel = data.map((row)=>{
-        return [
-          row.user?.name,
-          row.code,
-          `S/${row.amount}`,
-          row.type,
-          (row.createdAt) ? dateFormat(new Date(row.createdAt), "dd-mm-yy HH:MM") : '',
-          (row.statusMatch) ? 'SUPERVISADO' : 'NO SUPERVISADO'
-        ]
+
+      let dataExcel = [];
+      let amountTotal = 0;
+      data.map((row)=>{
+        if(row.statusMatch){
+          amountTotal = amountTotal + row.amount;
+          dataExcel.push([
+            row.user?.name,
+            row.code,
+            `S/${row.amount}`,
+            row.type,
+            (row.createdAt) ? dateFormat(new Date(row.createdAt), "dd-mm-yy HH:MM") : '',
+            (row.statusMatch) ? 'SUPERVISADO' : 'NO SUPERVISADO'
+          ]);
+        }
       });
       dataExcel.unshift(headers);
+      dataExcel.push([
+        '',
+        'MONTO TOTAL',
+        `S/${amountTotal}`
+      ]);
       setDataExport(dataExcel);
     } catch (error) {
       setDataExport([]);
@@ -317,6 +332,10 @@ const ListReport = () => {
     });
   };
 
+  const handleCheckAll = (page) => {
+    
+  }
+
   useEffect(() => {
     (async function init() {
       await getListCreators();
@@ -343,13 +362,13 @@ const ListReport = () => {
             <Grid container>
               <Grid item xs={2}>
               </Grid>
-              <Grid item xs={3}>
+              <Grid item xs={2}>
                 <TextField
                   type="date"
-                  id="date"
-                  name="date"
+                  id="startDate"
+                  name="startDate"
                   autoComplete="date"
-                  value={values.date || ''}
+                  value={values.startDate || ''}
                   className={modalStyle.texfield}
                   placeholder="Escriba aqui ..."
                   margin="normal"
@@ -357,15 +376,37 @@ const ListReport = () => {
                   fullWidth
                   variant="outlined"
                   helpertext={
-                    errors.date && touched.date ? errors.date : ""
+                    errors.startDate && touched.startDate ? errors.startDate : ""
                   }
-                  error={!!(errors.date && touched.date)}
+                  error={!!(errors.startDate && touched.startDate)}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   style={{paddingRight: '7px'}}
                 />
               </Grid>
-              <Grid item xs={3}>
+              <Grid item xs={2}>
+                <TextField
+                  type="date"
+                  id="endDate"
+                  name="endDate"
+                  autoComplete="date"
+                  value={values.endDate || ''}
+                  className={modalStyle.texfield}
+                  placeholder="Escriba aqui ..."
+                  margin="normal"
+                  required
+                  fullWidth
+                  variant="outlined"
+                  helpertext={
+                    errors.endDate && touched.endDate ? errors.endDate : ""
+                  }
+                  error={!!(errors.endDate && touched.endDate)}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  style={{paddingRight: '7px'}}
+                />
+              </Grid>
+              <Grid item xs={2}>
                 <FormControl style={{width: '100%', paddingRight: '7px'}}>
                   <InputLabel id="creatorLabel">Creador</InputLabel>
                   <Select
@@ -418,15 +459,28 @@ const ListReport = () => {
                 (rows.length>0)
                   &&
                     <Grid item xs={12} style={{textAlign: 'center', marginTop: '45px'}}>
-                      <IconButton
-                        component="label"
-                        onClick={()=>{exportToExcel()}}
-                        style={{backgroundColor: '#57c115', color: 'white'}}
-                      >
-                        <Tooltip title='DESCARGAR' placement="bottom">
-                          <SaveAltIcon />
-                        </Tooltip>
-                      </IconButton>
+                      <div>
+                        <IconButton
+                          component="label"
+                          onClick={()=>{exportToExcel()}}
+                          style={{backgroundColor: '#57c115', color: 'white'}}
+                        >
+                          <Tooltip title='DESCARGAR' placement="bottom">
+                            <SaveAltIcon />
+                          </Tooltip>
+                        </IconButton>
+                      </div>
+                      <div style={{marginTop: '30px'}}>
+                        <IconButton
+                          component="label"
+                          onClick={()=>{handleCheckAll(page)}}
+                          style={{backgroundColor: '#57c115', color: 'white'}}
+                        >
+                          <Tooltip title='SELECCIONAR TODA LA PÁGINA' placement="bottom">
+                            <LibraryAddCheckIcon />
+                          </Tooltip>
+                        </IconButton>
+                      </div>
                     </Grid>
               }
             </Grid>
@@ -440,7 +494,10 @@ const ListReport = () => {
             rows={rows}
             columns={columns}
             pageSize={20}
-            pageSizeOptions={[20,50,100]}
+            // pageSizeOptions={[20,50,100]}
+            onPageChange={(e)=>{
+              setPage(e);
+            }}
           />
       </Grid>
       

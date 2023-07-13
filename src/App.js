@@ -37,8 +37,6 @@ function App() {
     routesAvailables = RouteDefault;
   }
 
-  console.log('routesAvailables',routesAvailables);
-
   return (
     <>
       <Router>

@@ -91,17 +91,6 @@ const ListCustomer = () => {
       minWidth: 120
     },
     { 
-      field: 'categorie', 
-      headerName: 'CATEGORÍA', 
-      width: 200,
-      minWidth: 200,
-      renderCell: (params) => {
-        return (
-          <div>{ params.row.categorie?.name || '' }</div>
-        )
-      }
-    },
-    { 
       field: 'giftcards', 
       headerName: 'GIFTCARDS (monto disponible)', 
       width: 220,

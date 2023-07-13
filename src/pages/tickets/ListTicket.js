@@ -4,18 +4,17 @@ import { Formik } from 'formik';
 import { useUI } from '../../app/context/ui';
 import { ListStyles, ModalCustomStyles } from '../../assets/css';
 import SearchIcon from '@mui/icons-material/Search';
-import * as Yup from 'yup';
 import { GiftCardService, PartnerService, UserService } from '../../services';
 import { EmployeeStyles } from '../employee/components/employees-style';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { DataGrid } from '@mui/x-data-grid';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import clsx from 'clsx';
 import dateFormat from 'dateformat';
 import store from '../../redux/store';
-import * as XLSX from 'xlsx';
 import ExcelJS from 'exceljs';
-
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
 
 const partnerService = new PartnerService();
 const userService = new UserService();
@@ -38,11 +37,13 @@ const ListTicket = () => {
   const state = store.getState();
   const isMobile = /mobile|android/i.test(navigator.userAgent);
   const [dataExport, setDataExport] = useState([]);
+  const [page, setPage] = useState(0);
 
   const { blockUI, dialogUI } = useUI();
 
   const baseValues = {
-    date: dateFormat(new Date(), 'yyyy-mm-dd'),
+    startDate: dateFormat(new Date(), 'yyyy-mm-dd'),
+    endDate: dateFormat(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'yyyy-mm-dd'),
     partner: '',
     authorizer: ''
   };
@@ -79,10 +80,38 @@ const ListTicket = () => {
 
   const columns = [
     { 
+      field: 'createdAtD', 
+      headerName: '_', 
+      width: 60,
+      renderCell: (params) => {
+        if (state.user.role === 'ADMIN_ROLE') {
+          return (
+            <div>
+              <IconButton 
+                aria-label="delete" 
+                color="primary" 
+                onClick={()=>{handleApprobePaid(params.id)}}
+                disabled={(params.row.statusPaid)}
+              >
+                <Tooltip title="APROBAR PAGO" placement="top">
+                  {
+                    (params.row.statusPaid)
+                      ? <CheckBoxIcon />
+                      : <CheckBoxOutlineBlankIcon />
+                  }
+                </Tooltip>
+              </IconButton>
+            </div>
+          )
+        }
+        return null;
+      }
+    },
+    { 
       field: '_id', 
       headerName: 'PARTNER', 
       flex: 0.4,
-      minWidth: 200,
+      minWidth: 150,
       renderCell: (params) => {
         return (
           <div>
@@ -116,18 +145,18 @@ const ListTicket = () => {
         )
       }
     },
-    { 
-      field: 'qrImage', 
-      headerName: 'AUTORIZADOR', 
-      width: 250,
-      renderCell: (params) => {
-        return (
-          <div>
-            {(params.row.authorizer) ? params.row.authorizer.name : '____'}
-          </div>
-        )
-      }
-    },
+    // { 
+    //   field: 'qrImage', 
+    //   headerName: 'AUTORIZADOR', 
+    //   width: 250,
+    //   renderCell: (params) => {
+    //     return (
+    //       <div>
+    //         {(params.row.authorizer) ? params.row.authorizer.name : '____'}
+    //       </div>
+    //     )
+    //   }
+    // },
     { 
       field: 'dateScann', 
       headerName: 'FECHA DE ESCANEO', 
@@ -150,30 +179,6 @@ const ListTicket = () => {
             {(params.value) ? 'PAGADO' : 'FALTA PAGAR'}
           </div>
         )
-      }
-    },
-    { 
-      field: 'createdAtD', 
-      headerName: 'ACCIONES', 
-      width: 250,
-      renderCell: (params) => {
-        if (state.user.role === 'ADMIN_ROLE') {
-          return (
-            <div>
-              <IconButton 
-                aria-label="delete" 
-                color="primary" 
-                onClick={()=>{handleApprobePaid(params.id)}}
-                disabled={(params.row.statusPaid)}
-              >
-                <Tooltip title="APROBAR PAGO" placement="top">
-                  <ThumbUpIcon />
-                </Tooltip>
-              </IconButton>
-            </div>
-          )
-        }
-        return null;
       }
     }
   ];
@@ -220,6 +225,10 @@ const ListTicket = () => {
     } catch (error) {
       setDataExport([]);
     }
+  }
+
+  const handleCheckAll = (page) => {
+    
   }
 
   const getListPartner = async () => {
@@ -339,13 +348,13 @@ const ListTicket = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={2}>
                 <TextField
                   type="date"
-                  id="date"
-                  name="date"
+                  id="startDate"
+                  name="startDate"
                   autoComplete="date"
-                  value={values.date || ''}
+                  value={values.startDate || ''}
                   className={modalStyle.texfield}
                   placeholder="Escriba aqui ..."
                   margin="normal"
@@ -353,9 +362,31 @@ const ListTicket = () => {
                   fullWidth
                   variant="outlined"
                   helpertext={
-                    errors.date && touched.date ? errors.date : ""
+                    errors.startDate && touched.startDate ? errors.startDate : ""
                   }
-                  error={!!(errors.date && touched.date)}
+                  error={!!(errors.startDate && touched.startDate)}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  style={{paddingRight: '7px'}}
+                />
+              </Grid>
+              <Grid item xs={2}>
+                <TextField
+                  type="date"
+                  id="endDate"
+                  name="endDate"
+                  autoComplete="date"
+                  value={values.endDate || ''}
+                  className={modalStyle.texfield}
+                  placeholder="Escriba aqui ..."
+                  margin="normal"
+                  required
+                  fullWidth
+                  variant="outlined"
+                  helpertext={
+                    errors.endDate && touched.endDate ? errors.endDate : ""
+                  }
+                  error={!!(errors.endDate && touched.endDate)}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   style={{paddingRight: '7px'}}
@@ -400,15 +431,28 @@ const ListTicket = () => {
                 (rows.length>0)
                   &&
                     <Grid item xs={12} style={{textAlign: 'center', marginTop: '45px'}}>
-                      <IconButton
-                        component="label"
-                        onClick={()=>{exportToExcel()}}
-                        style={{backgroundColor: '#57c115', color: 'white'}}
-                      >
-                        <Tooltip title='DESCARGAR' placement="bottom">
-                          <SaveAltIcon />
-                        </Tooltip>
-                      </IconButton>
+                      <div>
+                        <IconButton
+                          component="label"
+                          onClick={()=>{exportToExcel()}}
+                          style={{backgroundColor: '#57c115', color: 'white'}}
+                        >
+                          <Tooltip title='DESCARGAR' placement="bottom">
+                            <SaveAltIcon />
+                          </Tooltip>
+                        </IconButton>
+                      </div>
+                      <div style={{marginTop: '30px'}}>
+                        <IconButton
+                          component="label"
+                          onClick={()=>{handleCheckAll(page)}}
+                          style={{backgroundColor: '#57c115', color: 'white'}}
+                        >
+                          <Tooltip title='SELECCIONAR TODA LA PÁGINA' placement="bottom">
+                            <LibraryAddCheckIcon />
+                          </Tooltip>
+                        </IconButton>
+                      </div>
                     </Grid>
               }
             </Grid>
@@ -422,7 +466,10 @@ const ListTicket = () => {
             rows={rows}
             columns={columns}
             pageSize={20}
-            pageSizeOptions={[20,50,100]}
+            // pageSizeOptions={[20,50,100]}
+            onPageChange={(e)=>{
+              setPage(e);
+            }}
           />
       </Grid>
       

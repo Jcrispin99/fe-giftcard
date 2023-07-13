@@ -13,6 +13,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ModalManager from './components/ModalManager';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import Recycle from './components/Recycle';
+import PaidIcon from '@mui/icons-material/Paid';
 
 let dlgSettings = {
   confirm: true,
@@ -45,10 +46,15 @@ const ListPartner = () => {
     {
       field: '_id',
       headerName: 'ACCIONES',
-      minWidth: 100,
+      minWidth: 200,
       renderCell: (params) => {
         return (
           <div>
+            <Tooltip title="DEUDAS" placement="top">
+              <IconButton aria-label="edit" onClick={()=>{}}>
+                <PaidIcon />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Editar" placement="top">
               <IconButton aria-label="edit" color="success" onClick={()=>{handleEdit(params)}}>
                 <EditIcon />
