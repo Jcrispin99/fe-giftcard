@@ -50,21 +50,33 @@ const ListPartner = () => {
       renderCell: (params) => {
         return (
           <div>
-            <Tooltip title="DEUDAS" placement="top">
-              <IconButton aria-label="edit" onClick={()=>{}}>
+            <IconButton 
+              aria-label="edit" 
+              onClick={()=>{}}
+            >
+              <Tooltip title="DEUDAS" placement="top">
                 <PaidIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Editar" placement="top">
-              <IconButton aria-label="edit" color="success" onClick={()=>{handleEdit(params)}}>
+              </Tooltip>
+            </IconButton>
+            <IconButton 
+              aria-label="edit" 
+              color="success" 
+              onClick={()=>{handleEdit(params)}}
+            >
+              <Tooltip title="Editar" placement="top">
                 <EditIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Eliminar" placement="top">
-              <IconButton aria-label="delete" color="primary" onClick={()=>{handleDelete(params)}}>
+              </Tooltip>
+            </IconButton>
+            <IconButton 
+              aria-label="delete" 
+              color="primary"
+              disabled={(params.row.name === 'OLYMPO')}
+              onClick={()=>{handleDelete(params)}}
+            >
+              <Tooltip title="Eliminar" placement="top">
                 <DeleteForeverIcon />
-              </IconButton>
-            </Tooltip>
+              </Tooltip>
+            </IconButton>
           </div>
         )
       }

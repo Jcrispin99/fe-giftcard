@@ -32,8 +32,8 @@ class GiftCardService extends AppService {
   getReportGiftcard(search = '') {
     return this.http.get(`${this.path}/report?${search}`);
   }
-  approveGiftcardCompliant(data) {
-    return this.http.post(`${this.path}/approve-giftcard-compliant`, data);
+  approveGiftcardMatch(data) {
+    return this.http.post(`${this.path}/approve-giftcard-match`, data);
   }
   approveQR(data) {
     return this.http.post(`${this.path}/approve-qr`, data);
@@ -47,7 +47,9 @@ class GiftCardService extends AppService {
   approveMatch(data) {
     return this.http.post(`${this.path}/approve-match`, data);
   }
-
+  activeLost(data) {
+    return this.http.post(`${this.path}/active-lost`, data);
+  }
   //customer
 
   reloadDataMyGiftcard(formData = {}) {

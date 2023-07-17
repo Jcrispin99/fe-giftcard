@@ -31,8 +31,12 @@ export const EmployeeStyles = makeStyles((theme) => ({
   title: {
     textAlign: "center",
     fontFamily: 'Barlow Condensed',
-    fontSize: '31px',
-    fontWeight: 'bold',
+    fontSize: '26px !important',
+    fontWeight: 'bold !important',
+    backgroundColor: '#0080002e',
+    borderRadius: '13px',
+    padding: '7px',
+    marginBottom: '26px'
   },
   giftcardGreen: {
     backgroundColor: '#519c51',

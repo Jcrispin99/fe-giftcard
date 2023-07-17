@@ -28,7 +28,7 @@ const Header = (props) => {
   const classes = useStyles();
   const wizardStyle = WizardStyles();
   const accessToken = props.user.accessToken;
-  const firstName = props.user.firstName;
+  const firstName =  props.user.name.split(" ")[0];
   const appService = new AppService();
   const menuId = 'primary-search-account-menu';
   const state = store.getState();

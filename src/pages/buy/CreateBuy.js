@@ -35,9 +35,11 @@ const CreateBuy = (props) => {
   const state = store.getState();
   const modalStyle = ModalCustomStyles();
   const giftStyle = GiftCardCustomerPublicStyles();
+  const partner = state.user?.partner;
+
   const baseValues = {
     amount: '',
-    partner: '',
+    partner: (partner) ? partner._id : '',
   };
   const [initialValues, setInitialValues] = useState(baseValues);
   const [hasError, setHasError] = useState({});
@@ -94,7 +96,7 @@ const CreateBuy = (props) => {
       if(state.user.role === 'ADMIN_ROLE'){
         newr1 = r1.data.partners.filter((e)=>(e.name === 'KDOSH' ||e.name === 'OLYMPO'));
       }else{
-        newr1 = r1.data.partners.filter((partner)=>partner.uid === state.user.partner);
+        newr1 = r1.data.partners.filter((partner)=>partner.uid === state.user.partner._id);
       }
 
       setPartnersAvailable(newr1);

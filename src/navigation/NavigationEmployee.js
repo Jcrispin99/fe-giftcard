@@ -6,20 +6,14 @@ const NavigationEmployee = [
     url: 'customer'
   },
   {
-    id: 'Gift cards',
-    title: 'Gift cards',
-    type: 'item',
-    url: 'giftcard'
-  },
-  {
     id: 'Tickets',
-    title: 'Tickets',
+    title: 'Tickets (canje)',
     type: 'item',
     url: 'ticket'
   },
   {
     id: 'Reportes',
-    title: 'Reportes',
+    title: 'Reportes (venta)',
     type: 'item',
     url: 'report'
   }

@@ -3,6 +3,7 @@ import Login from "../pages/auth/LoginPage";
 import ListTicket from "../pages/tickets/ListTicket";
 import ListReport from "../pages/reports/ListReport";
 import ManagerTickets from "../pages/tickets/ManagerTickets";
+import ListCustomer from "../pages/customer/ListCustomer";
 
 const RoutePartner = [
   {
@@ -18,6 +19,13 @@ const RoutePartner = [
     exact: true,
     pageTitle: "",
     component: Dashboard,
+  },
+  {
+    path: "/customer",
+    name: "",
+    exact: true,
+    pageTitle: "",
+    component: ListCustomer,
   },
   {
     path: "/ticket",

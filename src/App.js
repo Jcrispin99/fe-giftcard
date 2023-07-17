@@ -21,7 +21,7 @@ function App() {
 
   if(state && ('role' in state.user) && state.user.role !== ''){
     if(state.user?.role === 'PARTNER_ROLE'){
-      if(state.user.partner === '643cc88d275ca4adfd709dfc'){
+      if(state.user.partner.name === 'OLYMPO'){
         routesAvailables = [...RouteEmployee];
       }else{
         routesAvailables = [...RoutePartner];

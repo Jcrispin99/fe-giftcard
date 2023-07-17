@@ -220,7 +220,7 @@ const CreateGiftcard = (props) => {
   useEffect(() => {
     setCodeScaned('');
   }, []);
-
+  
   return (
     <Modal
       open={open}
@@ -410,7 +410,7 @@ const CreateGiftcard = (props) => {
                             className={customerStyle.wrapperCheckbox}
                             control={
                               <Checkbox
-                                checked={checked.find((e)=>e.id === partner.uid)?.status}
+                                checked={checked[index]?.status || false}
                                 onChange={handleChangePartner}
                                 value={partner.uid}
                               />

@@ -9,10 +9,12 @@ const MainListItems = () => {
 
   const state = store.getState();
   let nav = [];
+  const isMobile = /mobile|android/i.test(navigator.userAgent);
+
 
   if(state && state.user.role !== ''){
     if(state.user?.role === 'PARTNER_ROLE'){
-      if(state.user.partner === '643cc88d275ca4adfd709dfc'){
+      if(state.user.partner.name === 'OLYMPO'){
         nav = NavigationEmployee;
       }else{
         nav = NavigationPartner;
@@ -27,17 +29,17 @@ const MainListItems = () => {
   }
 
   return (
-    <div>
-      <nav>
-        <ul>
-          {nav.map((nav, i) => {
-            return (
-              <ChildrenItems key={i} menu={nav} />
-            );
-          })}
-        </ul>
-      </nav>
-    </div>
+    !isMobile && (
+      <div>
+        <nav>
+          <ul>
+            {nav.map((navItem, i) => (
+              <ChildrenItems key={i} menu={navItem} />
+            ))}
+          </ul>
+        </nav>
+      </div>
+    )
   );
 }
 

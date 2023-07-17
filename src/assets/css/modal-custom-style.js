@@ -235,11 +235,15 @@ export const ModalCustomStyles = makeStyles((theme) => ({
     marginBottom: '40px',
   },
   wrapperInfoGiftcard: {
-    border: 'solid 0.5px gray',
     borderRadius: '10px',
     marginTop: '20px !important',
-    padding: '33px',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontSize: '14px',
+    border: 'none',
+    backgroundColor: 'black',
+    color: 'white',
+    padding: '2px 0px',
+    fontWeight: 'bold'
   },
   wrapperCreateGiftcard: {
     textAlign: 'center',
@@ -254,9 +258,9 @@ export const ModalCustomStyles = makeStyles((theme) => ({
     },
     '& .gift-card': {
       borderRadius: '10px',
-      background: '#fafafa',
+      // background: '#fafafa',
       width: '430px',
-      color: '#3d3d3d',
+      // color: '#3d3d3d',
       fontFamily: 'sans-serif',
       display: 'flex',
       boxShadow: '0 1px 5px rgba(0, 0, 0, 0.2)', 
@@ -355,5 +359,12 @@ export const ModalCustomStyles = makeStyles((theme) => ({
   },
   inputCustom: {
     textAlign: 'center'
+  },
+  wrapperSearchCustomer: {
+    marginBottom: '15px',
+    paddingTop: '15px',
+    backgroundColor: '#6895a217',
+    paddingBottom: '19px',
+    borderRadius: '14px',
   }
 }));

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField, Tooltip } from '@mui/material';
+import { Button, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField, Tooltip } from '@mui/material';
 import { Formik } from 'formik';
 import { useUI } from '../../app/context/ui';
 import { ListStyles, ModalCustomStyles } from '../../assets/css';
@@ -10,17 +10,15 @@ import { DataGrid } from '@mui/x-data-grid';
 import clsx from 'clsx';
 import dateFormat from 'dateformat';
 import store from '../../redux/store';
-import DoneAllIcon from '@mui/icons-material/DoneAll';
 import ExcelJS from 'exceljs';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
+import { useHistory } from "react-router-dom";
 
 const userService = new UserService();
 const giftcardService = new GiftCardService();
-
 
 let dlgSettings = {
   confirm: false,
@@ -31,22 +29,27 @@ let dlgSettings = {
 };
 
 const ListReport = () => {
+  
+  const history = useHistory();
+  const state = store.getState();
+  const partner = (state.user?.partner) ? state.user.partner : '';
+
+  if(partner && (partner.name !== 'OLYMPO' && partner.name !== 'KDOSH')){
+    history.push("/ticket");
+  }
 
   const modalStyle = ModalCustomStyles();
   const listStyle = ListStyles();
   const classes = EmployeeStyles();
-  const state = store.getState();
   const isMobile = /mobile|android/i.test(navigator.userAgent);
   const [amountTotal, setAmountTotal] = useState(0);
-  const [idsGiftcardsCompliant, setIdsGiftcardsCompliant] = useState([]);
   const [dataExport, setDataExport] = useState([]);
   const [page, setPage] = useState(0);
-
   const { blockUI, dialogUI } = useUI();
 
   const baseValues = {
     startDate: dateFormat(new Date(), 'yyyy-mm-dd'),
-    endDate: dateFormat(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'yyyy-mm-dd'),
+    endDate: dateFormat(new Date(), 'yyyy-mm-dd'),
     creator: ''
   };
 
@@ -56,7 +59,7 @@ const ListReport = () => {
 
   const columns = [
     { 
-      field: 'createdAtD', 
+      field: 'statusTemp', 
       headerName: '_', 
       width: 60,
       renderCell: (params) => {
@@ -67,16 +70,12 @@ const ListReport = () => {
                 aria-label="delete" 
                 color="primary" 
                 disabled={params.row.statusMatch}
-                onClick={()=>{handleApprobeMatch(params.id, params.row.statusMatch, params.row.amount)}}
               >
-                <Tooltip title="APROBAR CUADRE" placement="top">
-                  {
-                    (params.row.statusMatch)
-                      ? <CheckBoxIcon />
-                      : <CheckBoxOutlineBlankIcon />
-                  }
-                  
-                </Tooltip>
+                {
+                  (params.row.statusTemp)
+                    ? <CheckBoxIcon />
+                    : <CheckBoxOutlineBlankIcon />
+                }
               </IconButton>
             </div>
           )
@@ -171,72 +170,31 @@ const ListReport = () => {
         .join("&");
       giftcardService.getAccessToken();
       const r1 = await giftcardService.getReportGiftcard(queryString);
-      let giftcardsCompliant = [];
-      const rows = r1.data.giftcards.map((e)=>{
-        giftcardsCompliant.push(e.uid);
-        return{
-            ...e,
-            id: e.uid
-        }
+      const rows = r1.data.giftcards.map((e) => {
+        const statusTemp = e.statusMatch ? true : false;
+        return {
+          ...e,
+          id: e.uid,
+          statusTemp
+        };
       });
       setRows(rows);
-      customizeExport(r1.data.giftcards);
+      // customizeExport(r1.data.giftcards);
       setAmountTotal(r1.data.totalAmount);
-      setIdsGiftcardsCompliant(giftcardsCompliant);
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
     }
   };
 
-  const customizeExport = (data) => {
-    try {
-      const headers = [
-        'CLIENTE',
-        'GIFTCARD',
-        'MONTO',
-        'MÉTODO DE PAGO',
-        'FECHA DE CREACIÓN',
-        'ESTADO DE CUADRE'
-      ];
-
-      let dataExcel = [];
-      let amountTotal = 0;
-      data.map((row)=>{
-        if(row.statusMatch){
-          amountTotal = amountTotal + row.amount;
-          dataExcel.push([
-            row.user?.name,
-            row.code,
-            `S/${row.amount}`,
-            row.type,
-            (row.createdAt) ? dateFormat(new Date(row.createdAt), "dd-mm-yy HH:MM") : '',
-            (row.statusMatch) ? 'SUPERVISADO' : 'NO SUPERVISADO'
-          ]);
-        }
-      });
-      dataExcel.unshift(headers);
-      dataExcel.push([
-        '',
-        'MONTO TOTAL',
-        `S/${amountTotal}`
-      ]);
-      setDataExport(dataExcel);
-    } catch (error) {
-      setDataExport([]);
-    }
-  }
-
-  const handleApprobeMatch = async (id, status, amount) => {
+  const handleApprobeMatchTemp = async (id, status, amount) => {
     try {
       blockUI.current.open(true);
-      giftcardService.getAccessToken();
-      await giftcardService.approveMatch({id, status: !status});
       const newRows = rows.map((e)=>{
         if(e.id === id){
           return {
             ...e,
-            statusMatch: !status
+            statusTemp: !status
           }
         }else{
           return e;
@@ -245,12 +203,10 @@ const ListReport = () => {
 
       let newStatus = !status;
       if(newStatus){
-
         setAmountTotal(amountTotal+amount);
       }else{
         setAmountTotal(amountTotal-amount);
       }
-
       setRows(newRows);
       blockUI.current.open(false);
     } catch (e) {
@@ -281,59 +237,165 @@ const ListReport = () => {
     }
   };
 
-  const handleCompliantApprove = async () => {
+  const handleManageApproveMatch = (id, status, amount) => {
+    dlgSettings = {
+      ...dlgSettings,
+      confirm: true,
+      onConfirm: () => {
+        handleApproveMatch();
+      },
+    };
+    dialogUI.current.open(
+      'Espera!',
+      'Estás seguro de aprobar?',
+      dlgSettings
+    );
+  }
+
+  const handleApproveMatch = async () => {
     try {
-        blockUI.current.open(true);
-        giftcardService.getAccessToken();
-        await giftcardService.approveGiftcardCompliant({idsGiftcardsCompliant});
-        dialogUI.current.open('', '', dlgSettings, 'CONFORME');
-        const newStatus = rows.map((e)=>({
+      blockUI.current.open(true);
+      let rowsTempActive = rows.filter((r)=>r.statusTemp);
+      if(rowsTempActive.length > 0){
+        const idsGiftcardsMatch = rowsTempActive.map((e) => e.id);
+        await giftcardService.approveGiftcardMatch({idsGiftcardsMatch});
+        dlgSettings = {
+          ...dlgSettings,
+          confirm: false,
+          onConfirm: () => {},
+        };
+        dialogUI.current.open('', '', dlgSettings, 'APROBADOS');
+
+        const newRows = rows.map((e) => {
+          const statusTemp = (idsGiftcardsMatch.includes(e.id)) ? true : false;
+          return {
             ...e,
-            statusCompliant: true
-        }));
-        setRows(newStatus);
-        blockUI.current.open(false);
-      } catch (e) {
-        blockUI.current.open(false);
+            id: e.uid,
+            statusTemp,
+            statusMatch: statusTemp
+          };
+        });
+        setRows(newRows);
+      }else{
+        dlgSettings = {
+          ...dlgSettings,
+          confirm: false,
+          onConfirm: () => {},
+        };
+        dialogUI.current.open('', '', dlgSettings, 'SELECCIONE AL MENOS UNO');
       }
-  };
+
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  }
 
   const exportToExcel = () => {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Giftcards');
-    worksheet.addRows(dataExport);
+    try {
+      const headers = [
+        'CLIENTE',
+        'GIFTCARD',
+        'MONTO',
+        'MÉTODO DE PAGO',
+        'FECHA DE CREACIÓN',
+        'ESTADO DE CUADRE'
+      ];
 
-    worksheet.columns.forEach((column, index) => {
-      if (index === 0) {
-        column.width = 40;
-      } else {
-        column.width = 25;
-      }
-    });
-    
-    const nameFile = new Date().toLocaleTimeString();
-    const password = 'admin_48483845';
+      let dataExcel = [];
+      let amountTotal = 0;
+      rows.map((row)=>{
+        if(row.statusMatch){
+          amountTotal = amountTotal + row.amount;
+          dataExcel.push([
+            row.user?.name,
+            row.code,
+            `S/${row.amount}`,
+            row.type,
+            (row.createdAt) ? dateFormat(new Date(row.createdAt), "dd-mm-yy HH:MM") : '',
+            (row.statusMatch) ? 'SUPERVISADO' : 'NO SUPERVISADO'
+          ]);
+        }
+      });
+      dataExcel.unshift(headers);
 
-    worksheet.protect('', {
-      password: password,
-      sheet: true,
-      objects: true,
-      scenarios: true,
-    });
+      dataExcel.push([
+        ''
+      ]);
 
-    workbook.xlsx.writeBuffer().then((buffer) => {
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `giftcards_${nameFile}.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
-    });
+      dataExcel.push([
+        'MONTO TOTAL:',
+        `S/${amountTotal}`
+      ]);
+
+      dataExcel.push([
+        'RESPONSABLE:',
+        `${state.user?.name}`
+      ]);
+
+      dataExcel.push([
+        'CAJERO:'
+      ]);
+      dataExcel.push([
+        'FIRMA:'
+      ]);
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Reportes (ventas)');
+      worksheet.addRows(dataExcel);
+
+      worksheet.columns.forEach((column, index) => {
+        if (index === 0) {
+          column.width = 40;
+        } else {
+          column.width = 25;
+        }
+      });
+      
+      const nameFile = new Date().toLocaleTimeString();
+      const password = 'admin_48483845';
+
+      worksheet.protect('', {
+        password: password,
+        sheet: true,
+        objects: true,
+        scenarios: true,
+      });
+
+      workbook.xlsx.writeBuffer().then((buffer) => {
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `reportes(venta)_${nameFile}.xlsx`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    } catch (error) {
+    }
   };
 
-  const handleCheckAll = (page) => {
-    
+  const handleCheckAll = () => {
+    let toCheck = (page + 1) * 20;
+    let atCheck = toCheck - 19;
+    let total = amountTotal;
+    let newRows = rows.map((r, index)=>{
+      if(index >= (atCheck-1) && index <= (toCheck-1)){
+        if(!r.statusTemp){
+          total = total + r.amount;
+          return {
+            ...r,
+            statusTemp: true
+          }
+        }else{
+          return r;
+        }
+      }else{
+        return r;
+      }
+    });
+    setRows(newRows);
+    setAmountTotal(total);
   }
 
   useEffect(() => {
@@ -440,20 +502,6 @@ const ListReport = () => {
               </Grid>
               <Grid item xs={12} style={{textAlign: 'center', marginTop: '45px'}}>
                 <span style={{marginRight: '20px'}}>{ `MONTO TOTAL: S/${amountTotal}` }</span>
-                {/* {
-                    (state.user.role === 'ADMIN_ROLE')
-                        &&
-                        <IconButton
-                            component="label"
-                            onClick={()=>{handleCompliantApprove()}}
-                            style={{backgroundColor: '#00beff2b'}}
-                            disabled={(idsGiftcardsCompliant.length === 0) && true}
-                        >
-                            <Tooltip title='APROBAR TODO' placement="bottom">
-                                <DoneAllIcon />
-                            </Tooltip>
-                        </IconButton>
-                } */}
               </Grid>
               {
                 (rows.length>0)
@@ -470,17 +518,31 @@ const ListReport = () => {
                           </Tooltip>
                         </IconButton>
                       </div>
-                      <div style={{marginTop: '30px'}}>
-                        <IconButton
-                          component="label"
-                          onClick={()=>{handleCheckAll(page)}}
-                          style={{backgroundColor: '#57c115', color: 'white'}}
-                        >
-                          <Tooltip title='SELECCIONAR TODA LA PÁGINA' placement="bottom">
-                            <LibraryAddCheckIcon />
-                          </Tooltip>
-                        </IconButton>
-                      </div>
+                      {
+                        (state.user.role === 'ADMIN_ROLE')
+                          &&
+                            <Grid container style={{marginTop: '30px'}}>
+                              <Grid item xs={6} style={{textAlign: 'left', paddingLeft: '30px'}}>
+                                <IconButton
+                                  component="label"
+                                  onClick={()=>{handleCheckAll()}}
+                                  style={{backgroundColor: 'rgb(68 40 142)', color: 'white'}}
+                                >
+                                  <Tooltip title='SELECCIONAR TODA LA PÁGINA' placement="bottom">
+                                    <LibraryAddCheckIcon />
+                                  </Tooltip>
+                                </IconButton>
+                              </Grid>
+                              <Grid item xs={6} style={{textAlign:'right'}}>
+                                <Button
+                                  variant="contained"
+                                  onClick={handleManageApproveMatch}
+                                >
+                                  APROBAR
+                                </Button>
+                              </Grid>
+                            </Grid>
+                      }
                     </Grid>
               }
             </Grid>
@@ -488,15 +550,19 @@ const ListReport = () => {
         }}
       </Formik>
         
-      <Grid container style={{ height: 540, width: '100%', marginTop: '50px' }}>
+      <Grid container style={{ height: 1156, width: '100%', marginTop: '50px' }}>
           <DataGrid
             className={clsx(listStyle.dataGrid, classes.root)} 
             rows={rows}
             columns={columns}
             pageSize={20}
-            // pageSizeOptions={[20,50,100]}
             onPageChange={(e)=>{
               setPage(e);
+            }}
+            onRowClick={({row})=>{
+              if(!row.statusMatch){
+                handleApprobeMatchTemp(row.id, row.statusTemp, row.amount)
+              }
             }}
           />
       </Grid>

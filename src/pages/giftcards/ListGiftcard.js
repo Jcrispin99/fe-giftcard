@@ -15,8 +15,10 @@ import CreateBuy from '../buy/CreateBuy';
 import YoutubeSearchedForIcon from '@mui/icons-material/YoutubeSearchedFor';
 import MyShopping from '../buy/MyShopping';
 import store from '../../redux/store';
-import { useLocation } from 'react-router-dom';
 import LockClockIcon from '@mui/icons-material/LockClock';
+import CreditCardOffIcon from '@mui/icons-material/CreditCardOff';
+import SellIcon from '@mui/icons-material/Sell';
+import Brightness1Icon from '@mui/icons-material/Brightness1';
 
 const userService = new UserService();
 const giftCardService = new GiftCardService();
@@ -29,8 +31,9 @@ let dlgSettings = {
   onConfirm: () => {},
 };
 
-const ListGiftcard = () => {
+const ListGiftcard = (props) => {
 
+  const { dni } = props;
   const modalStyle = ModalCustomStyles();
   const { blockUI, dialogUI } = useUI();
   const [dataUser, setDataUser] = useState({});
@@ -43,7 +46,6 @@ const ListGiftcard = () => {
   const [idGiftcardShopping, setIdGiftcardShopping] = useState('');
   const [newRequest, setNewRequest] = useState('');
   const state = store.getState();
-  const location = useLocation();
 
   const baseValues = {
     type: 2,
@@ -99,12 +101,38 @@ const ListGiftcard = () => {
     }
   };
 
+  const handleActiveLost = async(gifcard) => {
+    try {
+      blockUI.current.open(true);
+      giftCardService.getAccessToken();
+      await giftCardService.activeLost({id:gifcard.uid});
+      blockUI.current.open(false);
+      dlgSettings = {
+        confirm: false,
+        btn: {
+          close: 'CERRAR',
+        },
+        onConfirm: () => {},
+      };
+      dialogUI.current.open('', '', dlgSettings, 'ACTIVADO');
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  }
+
   const handleSenCard = async(gifcard) => {
     try {
       blockUI.current.open(true);
       giftCardService.getAccessToken();
       await giftCardService.sendUrlToMessage({code:gifcard.code});
       blockUI.current.open(false);
+      dlgSettings = {
+        confirm: false,
+        btn: {
+          close: 'CERRAR',
+        },
+        onConfirm: () => {},
+      };
       dialogUI.current.open('', '', dlgSettings, 'Mensaje enviado');
     } catch (e) {
       blockUI.current.open(false);
@@ -125,21 +153,6 @@ const ListGiftcard = () => {
   const handleEditGiftcard = (giftcard) => {
     setGiftCardReview(giftcard);
     setOpen(true);
-  }
-
-  const handleDeleteGiftcard = (giftcard) => {
-    dlgSettings = {
-      ...dlgSettings,
-      confirm: true,
-      onConfirm: () => {
-        onDeleteGiftcard(giftcard);
-      },
-    };
-    dialogUI.current.open(
-      'Espera!',
-      'Estás seguro de eliminar la giftcard?',
-      dlgSettings
-    );
   }
 
   const onDeleteGiftcard = async(giftcard) => {
@@ -203,8 +216,7 @@ const ListGiftcard = () => {
   };
 
   useEffect(() => {
-    if (location.state) {
-      const { dni } = location.state;
+    if (dni) {
       const dataSearch = {
         type: "1", 
         dato: dni
@@ -212,10 +224,10 @@ const ListGiftcard = () => {
       setInitialValues(dataSearch)
       onSubmit(dataSearch)
     }
-  }, [location]);
+  }, [dni]);
 
   return (
-    <div style={{marginTop: '40px'}}>
+    <div className={`gift-card animate__animated animate__fadeInUp ${modalStyle.wrapperSearchCustomer}`}>
       <Grid container>
         <Grid item xs={4}></Grid>
           <Formik
@@ -311,7 +323,7 @@ const ListGiftcard = () => {
                 <Grid item xs={6} className={modalStyle.wrapperInfoGiftcard}>
                   <Grid container>
                     <Grid item xs={4} style={{paddingTop: '8px'}}>{dataUser?.name}</Grid>
-                    <Grid item xs={4} style={{paddingTop: '8px'}}>{`Total: ${giftCards?.length}`}</Grid>
+                    <Grid item xs={4} style={{paddingTop: '8px'}}>{`TOTAL: ${giftCards?.length}`}</Grid>
                     <Grid item xs={4}>
                       <IconButton
                         aria-label="delete" 
@@ -365,10 +377,29 @@ const ListGiftcard = () => {
                     <Grid item xs={1}></Grid>
                     <Grid item xs={7} className='card3 gift-card animate__animated animate__rotateInDownRight'>
                       <Grid container>
-                        <Grid item xs={6} className='btnViewBuys'>
-                          <Button variant="outlined" color="error" onClick={()=>{handleViewShopping(e.uid)}}>
-                            VER COMPRAS
-                          </Button>
+                        <Grid item xs={2}>
+                          <IconButton
+                            component="label"
+                            onClick={()=>{handleViewShopping(e.uid)}}
+                            size="large"
+                            style={{color:'orange'}}
+                          >
+                            <Tooltip title="VER COMPRAS" placement="top">
+                              <SellIcon/>
+                            </Tooltip>
+                          </IconButton>
+                        </Grid>
+                        <Grid item xs={2}>
+                          <IconButton
+                            component="label"
+                            onClick={()=>{handleActiveLost(e)}}
+                            size="large"
+                            style={{color:'red'}}
+                          >
+                            <Tooltip title="MARCAR COMO PERDIDO" placement="top">
+                              <CreditCardOffIcon/>
+                            </Tooltip>
+                          </IconButton>
                         </Grid>
                         <Grid item xs={2}>
                           <IconButton 
@@ -378,7 +409,7 @@ const ListGiftcard = () => {
                             size="large"
                             style={{color:'green'}}
                           >
-                            <Tooltip title="Enviar url de acceso" placement="bottom">
+                            <Tooltip title="ENVIAR PÁGINA" placement="top">
                               <QuestionAnswerIcon/>
                             </Tooltip>
                           </IconButton>
@@ -390,27 +421,20 @@ const ListGiftcard = () => {
                             onClick={()=>{handleEditGiftcard(e)}}
                             size="large"
                             style={{color:'orange'}}
-                            disabled={state.user.role === 'EMPLOYEE_ROLE'}
+                            disabled={state.user.role === 'EMPLOYEE_ROLE' || state.user.role === 'PARTNER_ROLE'}
                           >
-                            <Tooltip title="Editar" placement="bottom">
+                            <Tooltip title="EDITAR" placement="top">
                               <EditIcon/>
                             </Tooltip>
                           </IconButton>
                         </Grid>
-                        <Grid item xs={2}>
-                          <IconButton 
-                            color="primary" 
-                            component="label"
-                            onClick={()=>{handleDeleteGiftcard(e)}}
-                            size="large"
-                            style={{color:'red'}}
-                            disabled={state.user.role === 'EMPLOYEE_ROLE'}
-                          >
-                            <Tooltip title="Eliminar" placement="bottom">
-                              <DeleteForeverIcon/>
-                            </Tooltip>
-                          </IconButton>
-                        </Grid>
+                        {/* <Grid item xs={2}>
+                          {
+                            (e.statusLost) 
+                              ? <Brightness1Icon style={{color:'red', marginTop: '12px'}}/>
+                              : <Brightness1Icon style={{color:'#18af18', marginTop: '12px'}}/>
+                          }
+                        </Grid> */}
                       </Grid>
                     </Grid>
                     <Grid item xs={1} className='card2 animate__animated animate__rotateInDownRight'>
@@ -429,7 +453,7 @@ const ListGiftcard = () => {
                         </IconButton>
                     </Grid>
                     <Grid item xs={12}>
-                      <article className="gift-card animate__animated animate__rotateInDownLeft">
+                      <article className="gift-card animate__animated animate__rotateInDownLeft" style={(e.statusLost) ? {backgroundColor: 'red', color: 'white'} : {}}>
                         <div className="gift-card__image">
                         </div>
                         <section className="gift-card__content">

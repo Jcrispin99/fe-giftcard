@@ -3,7 +3,7 @@ import { useUI } from '../../app/context/ui';
 import { ListStyles } from '../../assets/css';
 import { CategorieService, UserService } from '../../services';
 import { EmployeeStyles } from './components/employees-style';
-import { Button, IconButton, Tooltip, Typography, Switch, Grid, FormControl, InputLabel, Select, MenuItem, Box } from '@mui/material';
+import { Button, IconButton, Typography, Switch, Grid, FormControl, InputLabel, Select, MenuItem, Box } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { DataGrid } from '@mui/x-data-grid';
@@ -12,12 +12,17 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CustomerManager from './components/CustomerManager';
 import store from '../../redux/store';
 import { Formik } from 'formik';
-import SearchIcon from '@mui/icons-material/Search';
 import LockClockIcon from '@mui/icons-material/LockClock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useHistory } from 'react-router-dom';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import Recycle from './components/Recycle';
+import { styled } from '@mui/material/styles';
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import ListGiftcard from '../giftcards/ListGiftcard';
+import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 
 let dlgSettings = {
   confirm: true,
@@ -28,6 +33,16 @@ let dlgSettings = {
   onConfirm: () => {},
 };
 
+const CustomWidthTooltip = styled(({ className, ...props }) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))({
+  [`& .${tooltipClasses.tooltip}`]: {
+    maxWidth: '500px !important',
+    fontSize: '15px',
+    fontWeight: 'bold '
+  },
+});
+
 const userService = new UserService();
 const categorieService = new CategorieService();
 
@@ -37,16 +52,24 @@ const ListCustomer = () => {
     categorie: '',
   };
   const history = useHistory();
+  const state = store.getState();
+  const partner = (state.user?.partner) ? state.user.partner : '';
+
+  if(partner && (partner.name !== 'OLYMPO' && partner.name !== 'KDOSH' )){
+    history.push("/ticket");
+  }
+
   const listStyle = ListStyles();
   const classes = EmployeeStyles();
   const { blockUI, dialogUI } = useUI();
   const [rows, setRows] = useState([]);
   const [openModalEmployee, setOpenModalEmployee] = useState(false);
   const [dataEmployee, setDataEmployee] = useState({});
-  const state = store.getState();
   const [initialValues, setInitialValues] = useState(baseValues);
   const [categorieAvailable, setCategorieAvailable] = useState([]);
   const [ openModalRecycle, setOpenModalRecycle ] = useState(false);
+  const [openSearchCustomerAndGiftcard, setOpenSearchCustomerAndGiftcard] = useState(false);
+  const [dniSearch, setDniSearch] = useState('');
 
   const handleChangeStatus = async (e,employee) => {
     try {
@@ -98,16 +121,18 @@ const ListCustomer = () => {
       renderCell: (params) => {
         let giftcards = params.row.giftcards;
         return (
-          <div style={{display: 'contents'}}>
-            {
-              giftcards.map((giftcard, index)=>(
-                <Tooltip key={`giftcard_${index}`} title={`MONTO INICIAL= S/${giftcard.amount}`} placement="top-start">
-                  <div className={(giftcard.amountAvailable === giftcard.amount) ? classes.giftcardGreen : (giftcard.amountAvailable > 0) ? classes.giftcardOrange  : classes.giftcardRed}>
-                    <span style={{fontSize: '8px'}}>S/.</span>{giftcard.amountAvailable}
-                  </div>
-                </Tooltip>
-              ))
-            }
+          <div style={{width: '100%', overflowX: 'scroll', whiteSpace: 'nowrap'}}>
+            <div style={{display: 'inlineBlock'}}>
+              {
+                giftcards.map((giftcard, index)=>(
+                  <CustomWidthTooltip key={`giftcard_${index}`} title={`MONTO INICIAL= S/${giftcard.amount} ----- ${giftcard.code}`} placement="top-start">
+                    <div style={{display: 'inline-block', width: '60px', height: '25px', marginRight: '10px'}} className={(giftcard.amountAvailable === giftcard.amount) ? classes.giftcardGreen : (giftcard.amountAvailable > 0) ? classes.giftcardOrange  : classes.giftcardRed}>
+                      <span style={{fontSize: '8px'}}>S/.</span>{giftcard.amountAvailable}
+                    </div>
+                  </CustomWidthTooltip>
+                ))
+              }
+            </div>
           </div>
         )
       }
@@ -139,8 +164,8 @@ const ListCustomer = () => {
             <IconButton 
               aria-label="edit" 
               color="success" 
-              onClick={()=>{handleViewDetail(params.row.dni)}}
-              disabled={state.user.role === 'EMPLOYEE_ROLE' || state.user.role === 'PARTNER_ROLE'}
+              onClick={()=>{handleViewCustomerInSearchByDni(params.row.dni)}}
+              // disabled={state.user.role === 'PARTNER_ROLE'}
             >
               <Tooltip title="Ver detalles" placement="top">
                 <VisibilityIcon sx={{color:'orange'}}/>
@@ -181,22 +206,16 @@ const ListCustomer = () => {
     },
   ];
 
+  const handleViewCustomerInSearchByDni = (dni) => {
+    setDniSearch(dni);
+    setOpenSearchCustomerAndGiftcard(true);
+    const divElement = document.getElementById("focusSearch");
+      divElement.scrollIntoView({ behavior: "smooth" });
+    }
+
   const handleEditEmployee = (employee) => {
     setDataEmployee(employee.row);
     setOpenModalEmployee(true);
-  }
-
-  const handleViewDetail = (dni) => {
-    try {
-      blockUI.current.open(true);
-      history.push({
-        pathname: '/giftcard',
-        state: { dni }
-      });
-      blockUI.current.open(false);
-    } catch (error) {
-      blockUI.current.open(false);
-    }
   }
 
   const handleReinitializePassword = (employee) => {
@@ -296,6 +315,7 @@ const ListCustomer = () => {
   const onSubmit = async(values) => {
     try {
       blockUI.current.open(true);
+      setOpenSearchCustomerAndGiftcard(false);
       const queryString = Object.entries(values)
         .map(([key, value]) => `${key}=${value}`)
         .join("&");
@@ -307,6 +327,11 @@ const ListCustomer = () => {
       blockUI.current.open(false);
     }
   };
+
+  const handleOpenManagerSearchCustomer = () => {
+    setDniSearch('');
+    setOpenSearchCustomerAndGiftcard(true);
+  }
 
   const getListCategorie = async () => {
     try {
@@ -328,7 +353,7 @@ const ListCustomer = () => {
   }, []);
 
   return (
-    <div style={{ height: 540, width: '100%', marginTop: '50px' }}>
+    <div style={{ height: 540, width: '100%', marginTop: '15px' }}>
       <Typography className={classes.title}>CLIENTES</Typography>
 
       <Formik
@@ -347,10 +372,10 @@ const ListCustomer = () => {
           } = props;
           return(
             <Grid container style={{marginTop: '20px'}}>
-              <Grid item xs={4}></Grid>
-              <Grid item xs={4}>
+              <Grid item xs={5}></Grid>
+              <Grid item xs={2}>
                 <FormControl style={{width: '100%', paddingRight: '7px'}}>
-                  <InputLabel id="categoriaLabel">CATEGORÍA</InputLabel>
+                  <InputLabel id="categoriaLabel" style={{textAlign: 'center'}}>CATEGORÍA</InputLabel>
                   <Select
                     labelId="categoriaLabel"
                     id="categorie"
@@ -370,22 +395,56 @@ const ListCustomer = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={4}></Grid>
-              <Grid item xs={12} style={{textAlign: 'center', paddingTop: '17px'}}>
-                <Tooltip title='BUSCAR' placement="bottom">
+              <Grid item xs={2} style={{paddingTop: '8px'}}>
+                <Tooltip title='FILTRAR' placement="bottom">
                   <IconButton
                     component="label"
                     onClick={()=>{handleSubmit()}}
                     style={{backgroundColor: '#00beff2b'}}
                   >
-                    <SearchIcon />
+                    <FilterListIcon />
                   </IconButton>
                 </Tooltip>
               </Grid>
+              <Grid item xs={3}></Grid>
             </Grid>
           );
         }}
       </Formik>
+
+      <Grid container>
+        <Grid item xs={12} style={{textAlign: 'center', padding: '25px 0px'}} id="focusSearch">
+          <Button 
+            variant="outlined" 
+            onClick={handleOpenManagerSearchCustomer} 
+            startIcon={<PersonSearchIcon />} 
+            style={{fontWeight: 'bold', fontSize: '13px'}}
+          >
+            BUSCAR CLIENTE / GIFTCARD
+          </Button>
+          {
+            (openSearchCustomerAndGiftcard)
+              &&
+                <Tooltip title='MINIMIZAR' placement="bottom">
+                  <IconButton 
+                    aria-label="delete"
+                    onClick={()=>{setOpenSearchCustomerAndGiftcard(false)}}
+                    style={{color: 'red', marginLeft: '5px'}}
+                  >
+                    <CloseFullscreenIcon />
+                  </IconButton>
+                </Tooltip>
+          }
+        </Grid>
+      </Grid>
+
+      {
+        (openSearchCustomerAndGiftcard)
+          &&
+            <ListGiftcard 
+              dni={dniSearch}
+            />
+      }
 
       <Button
         onClick={handleCreateEmployee} 

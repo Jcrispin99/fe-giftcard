@@ -1,7 +1,6 @@
 import Dashboard from "../pages/Dashboard";
 import Login from "../pages/auth/LoginPage";
 import ListCustomer from "../pages/customer/ListCustomer";
-import ListGiftcard from "../pages/giftcards/ListGiftcard";
 import ListTicket from "../pages/tickets/ListTicket";
 import ListReport from "../pages/reports/ListReport";
 import ManagerTickets from "../pages/tickets/ManagerTickets";
@@ -27,13 +26,6 @@ const RouteEmployee = [
     exact: true,
     pageTitle: "",
     component: ListCustomer,
-  },
-  {
-    path: "/giftcard",
-    name: "",
-    exact: true,
-    pageTitle: "",
-    component: ListGiftcard,
   },
   {
     path: "/ticket",

@@ -160,8 +160,7 @@ const CustomerManager = (props) => {
           );
       }
       const r1 = await userService.listCustomers("status=1,2");
-      const newData = r1.data.users.map((e)=>({...e, id: e.uid}));
-      setRows(newData);
+      setRows(r1.data.users);
 
       blockUI.current.open(false);
 

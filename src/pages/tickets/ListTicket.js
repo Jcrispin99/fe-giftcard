@@ -40,11 +40,12 @@ const ListTicket = () => {
   const [page, setPage] = useState(0);
 
   const { blockUI, dialogUI } = useUI();
+  const partner = state.user?.partner;
 
   const baseValues = {
     startDate: dateFormat(new Date(), 'yyyy-mm-dd'),
-    endDate: dateFormat(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'yyyy-mm-dd'),
-    partner: '',
+    endDate: dateFormat(new Date(), 'yyyy-mm-dd'),
+    partner: (partner) ? partner._id : '',
     authorizer: ''
   };
 
@@ -108,19 +109,6 @@ const ListTicket = () => {
       }
     },
     { 
-      field: '_id', 
-      headerName: 'PARTNER', 
-      flex: 0.4,
-      minWidth: 150,
-      renderCell: (params) => {
-        return (
-          <div>
-            {params.row.partner.name}
-          </div>
-        )
-      }
-    },
-    { 
       field: 'amount', 
       headerName: 'MONTO', 
       flex: 0.4,
@@ -171,7 +159,7 @@ const ListTicket = () => {
     },
     { 
       field: 'statusPaid', 
-      headerName: 'TARJETA CANJEADA', 
+      headerName: 'PARTNER PAGADO', 
       width: 250,
       renderCell: (params) => {
         return (
@@ -228,7 +216,6 @@ const ListTicket = () => {
   }
 
   const handleCheckAll = (page) => {
-    
   }
 
   const getListPartner = async () => {
@@ -238,7 +225,7 @@ const ListTicket = () => {
       const r1 = await partnerService.listSearch("status=1,2");
 
       if(state.user.role === "EMPLOYEE_ROLE"){
-        const newR1 = r1.data.partners.filter((e) => e.uid === state.user.partner);
+        const newR1 = r1.data.partners.filter((e) => e.uid === state.user.partner._id);
         setPartnersAvailable(newR1);
         setInitialValues(prevValues => ({
           ...prevValues,
@@ -327,28 +314,34 @@ const ListTicket = () => {
           } = props;
           return(
             <Grid container>
-              <Grid item xs={4}>
-                <FormControl style={{width: '100%', paddingRight: '7px'}}>
-                  <InputLabel id="partnerLabel">Partner</InputLabel>
-                  <Select
-                    labelId="partnerLabel"
-                    id="partner"
-                    label="Socio"
-                    name="partner"
-                    onChange={handleChange}
-                    value={values.partner}
-                    fullWidth
-                  >
-                    <MenuItem value={''} key={`partner${0}`}>LIMPIAR</MenuItem>
-                    {
-                      partnerAvailable.map((partner, index)=>(
-                        <MenuItem value={partner.uid} key={`partner${index}`}>{partner.name}</MenuItem>
-                      ))
-                    }
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={2}>
+              {
+                (!partner)
+                  ?
+                    <Grid item md={4}>
+                      <FormControl style={{width: '100%', paddingRight: '7px'}}>
+                        <InputLabel id="partnerLabel">Partner</InputLabel>
+                        <Select
+                          labelId="partnerLabel"
+                          id="partner"
+                          label="Socio"
+                          name="partner"
+                          onChange={handleChange}
+                          value={values.partner}
+                          fullWidth
+                        >
+                          <MenuItem value={''} key={`partner${0}`}>LIMPIAR</MenuItem>
+                          {
+                            partnerAvailable.map((partner, index)=>(
+                              <MenuItem value={partner.uid} key={`partner${index}`}>{partner.name}</MenuItem>
+                            ))
+                          }
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  :
+                    <Grid item md={2}></Grid>
+              }
+              <Grid item xs={12} md={2}>
                 <TextField
                   type="date"
                   id="startDate"
@@ -370,7 +363,7 @@ const ListTicket = () => {
                   style={{paddingRight: '7px'}}
                 />
               </Grid>
-              <Grid item xs={2}>
+              <Grid item xs={12} md={2}>
                 <TextField
                   type="date"
                   id="endDate"
@@ -392,7 +385,7 @@ const ListTicket = () => {
                   style={{paddingRight: '7px'}}
                 />
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={12} md={4}>
                 <FormControl style={{width: '100%', paddingRight: '7px'}}>
                   <InputLabel id="authorizerLabel">Autorizador</InputLabel>
                   <Select
@@ -442,17 +435,21 @@ const ListTicket = () => {
                           </Tooltip>
                         </IconButton>
                       </div>
-                      <div style={{marginTop: '30px'}}>
-                        <IconButton
-                          component="label"
-                          onClick={()=>{handleCheckAll(page)}}
-                          style={{backgroundColor: '#57c115', color: 'white'}}
-                        >
-                          <Tooltip title='SELECCIONAR TODA LA PÁGINA' placement="bottom">
-                            <LibraryAddCheckIcon />
-                          </Tooltip>
-                        </IconButton>
-                      </div>
+                      {
+                        (!partner)
+                          &&
+                            <div style={{marginTop: '30px'}}>
+                              <IconButton
+                                component="label"
+                                onClick={()=>{handleCheckAll()}}
+                                style={{backgroundColor: '#57c115', color: 'white'}}
+                              >
+                                <Tooltip title='SELECCIONAR TODA LA PÁGINA' placement="bottom">
+                                  <LibraryAddCheckIcon />
+                                </Tooltip>
+                              </IconButton>
+                            </div>
+                      }
                     </Grid>
               }
             </Grid>
@@ -466,7 +463,6 @@ const ListTicket = () => {
             rows={rows}
             columns={columns}
             pageSize={20}
-            // pageSizeOptions={[20,50,100]}
             onPageChange={(e)=>{
               setPage(e);
             }}
