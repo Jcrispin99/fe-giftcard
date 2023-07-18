@@ -77,14 +77,14 @@ const LoginPage = (props) => {
       setRequestFailed(false);
       // authentication
       const r1 = await authService.login(values);
-      if(r1.data.user.role === 'ADMIN_ROLE' || r1.data.user.role === 'EMPLOYEE_ROLE' || r1.data.user.role === 'PARTNER_ROLE'){
-        setCodeSmsAdmin(true);
-      }else{
-        const accessToken = r1.data.token;
-        let payload = { ...r1.data.user, accessToken };
-        props.dispatch(addUser(payload));
-        history.push("/dashboard");
-      }
+      // if(r1.data.user.role === 'ADMIN_ROLE' || r1.data.user.role === 'EMPLOYEE_ROLE' || r1.data.user.role === 'PARTNER_ROLE'){
+      //   setCodeSmsAdmin(true);
+      // }else{
+      const accessToken = r1.data.token;
+      let payload = { ...r1.data.user, accessToken };
+      props.dispatch(addUser(payload));
+      history.push("/dashboard");
+      // }
       blockUI.current.open(false);
     } catch (e) {
       blockUI.current.open(false);
