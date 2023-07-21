@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField, Tooltip } from '@mui/material';
+import { Button, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField, Tooltip } from '@mui/material';
 import { Formik } from 'formik';
 import { useUI } from '../../app/context/ui';
 import { ListStyles, ModalCustomStyles } from '../../assets/css';
@@ -29,8 +29,9 @@ let dlgSettings = {
   onConfirm: () => {},
 };
 
-const ListTicket = () => {
+const ListTicket = (props) => {
 
+  const { type, idPartnerDetail } = props;
   const modalStyle = ModalCustomStyles();
   const listStyle = ListStyles();
   const classes = EmployeeStyles();
@@ -38,14 +39,13 @@ const ListTicket = () => {
   const isMobile = /mobile|android/i.test(navigator.userAgent);
   const [dataExport, setDataExport] = useState([]);
   const [page, setPage] = useState(0);
-
   const { blockUI, dialogUI } = useUI();
   const partner = state.user?.partner;
 
   const baseValues = {
     startDate: dateFormat(new Date(), 'yyyy-mm-dd'),
     endDate: dateFormat(new Date(), 'yyyy-mm-dd'),
-    partner: (partner) ? partner._id : '',
+    partner: (partner) ? partner._id : (type) ? idPartnerDetail  : '',
     authorizer: ''
   };
 
@@ -55,33 +55,9 @@ const ListTicket = () => {
   const [rows, setRows] = useState([]);
   const [amountTotal, setAmountTotal] = useState(0);
 
- 
-  const handleApprobePaid = async (id) => {
-    try {
-      blockUI.current.open(true);
-      giftcardService.getAccessToken();
-      await giftcardService.approveQR({id});
-      const newRows = rows.map((e)=>{
-        if(e.id === id){
-          return {
-            ...e,
-            statusPaid: true
-          }
-        }else{
-          return e;
-        }
-      });
-      setRows(newRows);
-      dialogUI.current.open('', '', dlgSettings, 'PAGADO');
-      blockUI.current.open(false);
-    } catch (e) {
-      blockUI.current.open(false);
-    }
-  }
-
   const columns = [
     { 
-      field: 'createdAtD', 
+      field: 'statusTemp', 
       headerName: '_', 
       width: 60,
       renderCell: (params) => {
@@ -90,17 +66,14 @@ const ListTicket = () => {
             <div>
               <IconButton 
                 aria-label="delete" 
-                color="primary" 
-                onClick={()=>{handleApprobePaid(params.id)}}
+                color="primary"
                 disabled={(params.row.statusPaid)}
               >
-                <Tooltip title="APROBAR PAGO" placement="top">
-                  {
-                    (params.row.statusPaid)
-                      ? <CheckBoxIcon />
-                      : <CheckBoxOutlineBlankIcon />
-                  }
-                </Tooltip>
+                {
+                  (params.row.statusTemp)
+                    ? <CheckBoxIcon />
+                    : <CheckBoxOutlineBlankIcon />
+                }
               </IconButton>
             </div>
           )
@@ -133,18 +106,6 @@ const ListTicket = () => {
         )
       }
     },
-    // { 
-    //   field: 'qrImage', 
-    //   headerName: 'AUTORIZADOR', 
-    //   width: 250,
-    //   renderCell: (params) => {
-    //     return (
-    //       <div>
-    //         {(params.row.authorizer) ? params.row.authorizer.name : '____'}
-    //       </div>
-    //     )
-    //   }
-    // },
     { 
       field: 'dateScann', 
       headerName: 'FECHA DE ESCANEO', 
@@ -179,8 +140,15 @@ const ListTicket = () => {
         .join("&");
       giftcardService.getAccessToken();
       const r1 = await giftcardService.getTickets(queryString);
-      customizeExport(r1.data.tickets);      
-      setRows(r1.data.tickets);
+      const rows = r1.data.tickets.map((e) => {
+        const statusTemp = e.statusPaid ? true : false;
+        return {
+          ...e,
+          id: e.id,
+          statusTemp
+        };
+      });
+      setRows(rows);
       setAmountTotal(r1.data.totalAmount);
       blockUI.current.open(false);
     } catch (e) {
@@ -188,34 +156,108 @@ const ListTicket = () => {
     }
   };
 
-  const customizeExport = (tickets) => {
+  const handleManageApproveMatch = (id, status, amount) => {
+    dlgSettings = {
+      ...dlgSettings,
+      confirm: true,
+      onConfirm: () => {
+        handleApproveMatch();
+      },
+    };
+    dialogUI.current.open(
+      'Espera!',
+      'Estás seguro de aprobar?',
+      dlgSettings
+    );
+  }
+
+
+  const handleApproveMatch = async () => {
     try {
-      const headers = [
-        'PARTNER',
-        'MONTO',
-        'ESTADO DE VERIFICACIÓN',
-        'AUTORIZADOR',
-        'FECHA DE ESCANEO',
-        'ESTADO DE PAGO'
-      ];
-      const dataExcel = tickets.map((ticket)=>{
-        return [
-          ticket.partner.name,
-          `S/${ticket.amount}`,
-          (ticket.status) ? 'DISPONIBLE' : 'CANJEADO',
-          (ticket.authorizer?.name) ? ticket.authorizer?.name : '____',
-          (ticket.dateScan) ? dateFormat(new Date(ticket.dateScan), "dd-mm-yy HH:MM") : '',
-          (ticket.statusPaid) ? 'PAGADO' : 'FALTA PAGAR'
-        ]
-      });
-      dataExcel.unshift(headers);
-      setDataExport(dataExcel);
-    } catch (error) {
-      setDataExport([]);
+      blockUI.current.open(true);
+      let rowsTempActive = rows.filter((r)=>r.statusTemp);
+      if(rowsTempActive.length > 0){
+        const idsTicketMatch = rowsTempActive.map((e) => e.id);
+        giftcardService.getAccessToken();
+        await giftcardService.approveTicketMatch({idsTicketMatch});
+        dlgSettings = {
+          ...dlgSettings,
+          confirm: false,
+          onConfirm: () => {},
+        };
+        dialogUI.current.open('', '', dlgSettings, 'APROBADOS');
+
+        const newRows = rows.map((e) => {
+          const statusTemp = (idsTicketMatch.includes(e.id)) ? true : false;
+          return {
+            ...e,
+            id: e.id,
+            statusTemp,
+            statusPaid: statusTemp
+          };
+        });
+        setRows(newRows);
+      }else{
+        dlgSettings = {
+          ...dlgSettings,
+          confirm: false,
+          onConfirm: () => {},
+        };
+        dialogUI.current.open('', '', dlgSettings, 'SELECCIONE AL MENOS UNO');
+      }
+
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
     }
   }
 
-  const handleCheckAll = (page) => {
+
+  const handleApprobePaid = async (id) => {
+    try {
+      blockUI.current.open(true);
+      giftcardService.getAccessToken();
+      await giftcardService.approveQR({id});
+      const newRows = rows.map((e)=>{
+        if(e.id === id){
+          return {
+            ...e,
+            statusPaid: true
+          }
+        }else{
+          return e;
+        }
+      });
+      setRows(newRows);
+      dialogUI.current.open('', '', dlgSettings, 'PAGADO');
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  }
+
+
+  const handleCheckAll = () => {
+    let toCheck = (page + 1) * 20;
+    let atCheck = toCheck - 19;
+    let total = amountTotal;
+    let newRows = rows.map((r, index)=>{
+      if(index >= (atCheck-1) && index <= (toCheck-1)){
+        if(!r.statusTemp){
+          total = total + r.amount;
+          return {
+            ...r,
+            statusTemp: true
+          }
+        }else{
+          return r;
+        }
+      }else{
+        return r;
+      }
+    });
+    setRows(newRows);
+    setAmountTotal(total);
   }
 
   const getListPartner = async () => {
@@ -264,31 +306,115 @@ const ListTicket = () => {
   };
 
   const exportToExcel = () => {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Tickets');
-    worksheet.addRows(dataExport);
+    try {
+      const headers = [
+        'PARTNER',
+        'MONTO',
+        'ESTADO DE VERIFICACIÓN',
+        'AUTORIZADOR',
+        'FECHA DE ESCANEO',
+        'ESTADO DE PAGO'
+      ];
 
-    const nameFile = new Date().toLocaleTimeString();
-    const password = 'admin_48483845';
+      let dataExcel = [];
+      let amountTotal = 0;
+      rows.map((ticket)=>{
+        if(ticket.statusPaid){
+          amountTotal = amountTotal + ticket.amount;
+          dataExcel.push([
+            ticket.partner.name,
+            `S/${ticket.amount}`,
+            (ticket.status) ? 'DISPONIBLE' : 'CANJEADO',
+            (ticket.authorizer?.name) ? ticket.authorizer?.name : '____',
+            (ticket.dateScan) ? dateFormat(new Date(ticket.dateScan), "dd-mm-yy HH:MM") : '',
+            (ticket.statusPaid) ? 'PAGADO' : 'FALTA PAGAR'
+          ]);
+        }
+      });
+      dataExcel.unshift(headers);
+      dataExcel.push([
+        ''
+      ]);
 
-    worksheet.protect('', {
-      password: password,
-      sheet: true,
-      objects: true,
-      scenarios: true,
-    });
+      dataExcel.push([
+        'MONTO TOTAL:',
+        `S/${amountTotal}`
+      ]);
 
-    workbook.xlsx.writeBuffer().then((buffer) => {
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `tickets_${nameFile}.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
-    });
-    
+      dataExcel.push([
+        'RESPONSABLE:',
+        `${state.user?.name}`
+      ]);
+
+      dataExcel.push([
+        'CAJERO:'
+      ]);
+      dataExcel.push([
+        'FIRMA:'
+      ]);
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Tickets (canje)');
+      worksheet.addRows(dataExcel);
+
+      worksheet.columns.forEach((column, index) => {
+        if (index === 0) {
+          column.width = 40;
+        } else {
+          column.width = 25;
+        }
+      });
+
+      const nameFile = new Date().toLocaleTimeString();
+      const password = 'admin_48483845';
+
+      worksheet.protect('', {
+        password: password,
+        sheet: true,
+        objects: true,
+        scenarios: true,
+      });
+
+      workbook.xlsx.writeBuffer().then((buffer) => {
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tickets(canje)_${nameFile}.xlsx`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+    } catch (error) {
+    }    
   };
+
+  const handleApprobeMatchTemp = async (id, status, amount) => {
+    try {
+      blockUI.current.open(true);
+      const newRows = rows.map((e)=>{
+        if(e.id === id){
+          return {
+            ...e,
+            statusTemp: !status
+          }
+        }else{
+          return e;
+        }
+      });
+
+      let newStatus = !status;
+      if(newStatus){
+        setAmountTotal(amountTotal+amount);
+      }else{
+        setAmountTotal(amountTotal-amount);
+      }
+      setRows(newRows);
+      blockUI.current.open(false);
+    } catch (e) {
+      blockUI.current.open(false);
+    }
+  }
 
   useEffect(() => {
     (async function init() {
@@ -318,25 +444,29 @@ const ListTicket = () => {
                 (!partner)
                   ?
                     <Grid item md={4}>
-                      <FormControl style={{width: '100%', paddingRight: '7px'}}>
-                        <InputLabel id="partnerLabel">Partner</InputLabel>
-                        <Select
-                          labelId="partnerLabel"
-                          id="partner"
-                          label="Socio"
-                          name="partner"
-                          onChange={handleChange}
-                          value={values.partner}
-                          fullWidth
-                        >
-                          <MenuItem value={''} key={`partner${0}`}>LIMPIAR</MenuItem>
-                          {
-                            partnerAvailable.map((partner, index)=>(
-                              <MenuItem value={partner.uid} key={`partner${index}`}>{partner.name}</MenuItem>
-                            ))
-                          }
-                        </Select>
-                      </FormControl>
+                      {
+                        (!type)
+                          &&
+                            <FormControl style={{width: '100%', paddingRight: '7px'}}>
+                              <InputLabel id="partnerLabel">Partner</InputLabel>
+                              <Select
+                                labelId="partnerLabel"
+                                id="partner"
+                                label="Socio"
+                                name="partner"
+                                onChange={handleChange}
+                                value={values.partner}
+                                fullWidth
+                              >
+                                <MenuItem value={''} key={`partner${0}`}>LIMPIAR</MenuItem>
+                                {
+                                  partnerAvailable.map((partner, index)=>(
+                                    <MenuItem value={partner.uid} key={`partner${index}`}>{partner.name}</MenuItem>
+                                  ))
+                                }
+                              </Select>
+                            </FormControl>  
+                      }
                     </Grid>
                   :
                     <Grid item md={2}></Grid>
@@ -386,25 +516,29 @@ const ListTicket = () => {
                 />
               </Grid>
               <Grid item xs={12} md={4}>
-                <FormControl style={{width: '100%', paddingRight: '7px'}}>
-                  <InputLabel id="authorizerLabel">Autorizador</InputLabel>
-                  <Select
-                    labelId="authorizerLabel"
-                    id="authorizer"
-                    label="Autorizador"
-                    name="authorizer"
-                    value={values.authorizer}
-                    onChange={handleChange}
-                    fullWidth
-                  >
-                      <MenuItem value={''} key={`authorizer${0}`}>LIMPIAR</MenuItem>
-                    {
-                      authorizerAvailable.map((authorizer, index)=>(
-                        <MenuItem value={authorizer.uid} key={`authorizer${index}`}>{authorizer.name}</MenuItem>
-                      ))
-                    }
-                  </Select>
-                </FormControl>
+                {
+                  (!type)
+                    &&
+                      <FormControl style={{width: '100%', paddingRight: '7px'}}>
+                        <InputLabel id="authorizerLabel">Autorizador</InputLabel>
+                        <Select
+                          labelId="authorizerLabel"
+                          id="authorizer"
+                          label="Autorizador"
+                          name="authorizer"
+                          value={values.authorizer}
+                          onChange={handleChange}
+                          fullWidth
+                        >
+                            <MenuItem value={''} key={`authorizer${0}`}>LIMPIAR</MenuItem>
+                          {
+                            authorizerAvailable.map((authorizer, index)=>(
+                              <MenuItem value={authorizer.uid} key={`authorizer${index}`}>{authorizer.name}</MenuItem>
+                            ))
+                          }
+                        </Select>
+                      </FormControl>
+                }
               </Grid>
               <Grid item xs={12} style={{textAlign: 'center', paddingTop: '17px'}}>
                 <IconButton
@@ -436,19 +570,29 @@ const ListTicket = () => {
                         </IconButton>
                       </div>
                       {
-                        (!partner)
+                        (state.user.role === 'ADMIN_ROLE')
                           &&
-                            <div style={{marginTop: '30px'}}>
-                              <IconButton
-                                component="label"
-                                onClick={()=>{handleCheckAll()}}
-                                style={{backgroundColor: '#57c115', color: 'white'}}
-                              >
-                                <Tooltip title='SELECCIONAR TODA LA PÁGINA' placement="bottom">
-                                  <LibraryAddCheckIcon />
-                                </Tooltip>
-                              </IconButton>
-                            </div>
+                            <Grid container style={{marginTop: '30px'}}>
+                              <Grid item xs={6} style={{textAlign: 'left', paddingLeft: '30px'}}>
+                                <IconButton
+                                  component="label"
+                                  onClick={()=>{handleCheckAll()}}
+                                  style={{backgroundColor: 'rgb(68 40 142)', color: 'white'}}
+                                >
+                                  <Tooltip title='SELECCIONAR TODA LA PÁGINA' placement="bottom">
+                                    <LibraryAddCheckIcon />
+                                  </Tooltip>
+                                </IconButton>
+                              </Grid>
+                              <Grid item xs={6} style={{textAlign:'right'}}>
+                                <Button
+                                  variant="contained"
+                                  onClick={handleManageApproveMatch}
+                                >
+                                  APROBAR
+                                </Button>
+                              </Grid>
+                            </Grid>
                       }
                     </Grid>
               }
@@ -465,6 +609,11 @@ const ListTicket = () => {
             pageSize={20}
             onPageChange={(e)=>{
               setPage(e);
+            }}
+            onRowClick={({row})=>{
+              if(!row.statusPaid){
+                handleApprobeMatchTemp(row.id, row.statusTemp, row.amount)
+              }
             }}
           />
       </Grid>

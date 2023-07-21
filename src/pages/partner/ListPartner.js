@@ -14,6 +14,7 @@ import ModalManager from './components/ModalManager';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import Recycle from './components/Recycle';
 import PaidIcon from '@mui/icons-material/Paid';
+import { useHistory } from 'react-router-dom';
 
 let dlgSettings = {
   confirm: true,
@@ -35,6 +36,17 @@ const ListPartner = () => {
   const [ openModal, setOpenModal ] = useState(false);
   const [ openModalRecycle, setOpenModalRecycle ] = useState(false);
   const [ data, setData ] = useState({});
+  const history = useHistory();
+
+  const handleViewDetail = (id, name) => {
+    history.push({
+      pathname: '/partner-detail',
+      state: { 
+        id,
+        name
+      }
+    });
+  }
 
   const columns = [
     { 
@@ -52,7 +64,7 @@ const ListPartner = () => {
           <div>
             <IconButton 
               aria-label="edit" 
-              onClick={()=>{}}
+              onClick={()=>{handleViewDetail(params.row.id, params.row.name)}}
             >
               <Tooltip title="DEUDAS" placement="top">
                 <PaidIcon />

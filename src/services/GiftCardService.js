@@ -35,6 +35,9 @@ class GiftCardService extends AppService {
   approveGiftcardMatch(data) {
     return this.http.post(`${this.path}/approve-giftcard-match`, data);
   }
+  approveTicketMatch(data) {
+    return this.http.post(`${this.path}/approve-ticket-match`, data);
+  }
   approveQR(data) {
     return this.http.post(`${this.path}/approve-qr`, data);
   }

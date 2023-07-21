@@ -8,6 +8,7 @@ import ManagerTickets from "../pages/tickets/ManagerTickets";
 import OtherBussinessList from "../pages/otherBussiness/OtherBussinessList";
 import ListReport from "../pages/reports/ListReport";
 import ListPartner from "../pages/partner/ListPartner";
+import ListPartnerDetail from "../pages/partner/ListPartnerDetail";
 
 const Routes = [
   {
@@ -79,6 +80,13 @@ const Routes = [
     exact: true,
     pageTitle: "",
     component: ListPartner,
+  },
+  {
+    path: "/partner-detail",
+    name: "",
+    exact: true,
+    pageTitle: "",
+    component: ListPartnerDetail,
   },
 ];
 
