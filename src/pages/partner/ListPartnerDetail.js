@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import ListTicket from '../tickets/ListTicket';
 import { Box } from '@mui/material';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -7,6 +7,13 @@ const ListPartnerDetail = () => {
 
   const location = useLocation();
   const history = useHistory();
+
+  useEffect(() => {
+    if(!location.state){
+      history.push('/partner');
+    }
+  }, []);
+  
 
   return (
     <div>
