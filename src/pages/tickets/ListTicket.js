@@ -37,7 +37,6 @@ const ListTicket = (props) => {
   const classes = EmployeeStyles();
   const state = store.getState();
   const isMobile = /mobile|android/i.test(navigator.userAgent);
-  const [dataExport, setDataExport] = useState([]);
   const [page, setPage] = useState(0);
   const { blockUI, dialogUI } = useUI();
   const partner = state.user?.partner;
@@ -67,7 +66,7 @@ const ListTicket = (props) => {
               <IconButton 
                 aria-label="delete" 
                 color="primary"
-                disabled={(params.row.statusPaid)}
+                disabled={ type ? params.row.statusPaid : params.row.statusCheck}
               >
                 {
                   (params.row.statusTemp)
@@ -119,13 +118,18 @@ const ListTicket = (props) => {
       }
     },
     { 
-      field: 'statusPaid', 
-      headerName: 'PARTNER PAGADO', 
+      field: (type) ? 'statusPaid' : 'statusCheck', 
+      headerName: (type) ? 'ESTADO DE PAGO' : 'ESTADO DE CUADRE', 
       width: 250,
       renderCell: (params) => {
         return (
           <div className={params.value ? listStyle.containerPay : listStyle.containerNotPay}>
-            {(params.value) ? 'PAGADO' : 'FALTA PAGAR'}
+            {
+              (type)
+                ? (params.value) ? 'PAGADO' : 'NO PAGADO'
+                : (params.value) ? 'CUADRADO' : 'NO CUADRADO'
+            
+            }
           </div>
         )
       }
@@ -139,15 +143,34 @@ const ListTicket = (props) => {
         .map(([key, value]) => `${key}=${value}`)
         .join("&");
       giftcardService.getAccessToken();
-      const r1 = await giftcardService.getTickets(queryString);
-      const rows = r1.data.tickets.map((e) => {
-        const statusTemp = e.statusPaid ? true : false;
-        return {
-          ...e,
-          id: e.id,
-          statusTemp
-        };
-      });
+      let r1;
+      if(type){
+        r1 = await giftcardService.getTickets(queryString);
+      }else{
+        r1 = await giftcardService.getTicketsCheck(queryString);
+      }
+
+      let rows;
+      if(type){
+        rows = r1.data.tickets.map((e) => {
+          const statusTemp = e.statusPaid ? true : false;
+          return {
+            ...e,
+            id: e.id,
+            statusTemp
+          };
+        });
+      }else{
+        rows = r1.data.tickets.map((e) => {
+          const statusTemp = e.statusCheck ? true : false;
+          return {
+            ...e,
+            id: e.id,
+            statusTemp
+          };
+        });
+      }
+
       setRows(rows);
       setAmountTotal(r1.data.totalAmount);
       blockUI.current.open(false);
@@ -156,7 +179,7 @@ const ListTicket = (props) => {
     }
   };
 
-  const handleManageApproveMatch = (id, status, amount) => {
+  const handleManageApproveMatch = () => {
     dlgSettings = {
       ...dlgSettings,
       confirm: true,
@@ -171,7 +194,6 @@ const ListTicket = (props) => {
     );
   }
 
-
   const handleApproveMatch = async () => {
     try {
       blockUI.current.open(true);
@@ -179,23 +201,41 @@ const ListTicket = (props) => {
       if(rowsTempActive.length > 0){
         const idsTicketMatch = rowsTempActive.map((e) => e.id);
         giftcardService.getAccessToken();
-        await giftcardService.approveTicketMatch({idsTicketMatch});
+
+        if(type){
+          await giftcardService.approveTicketMatch({idsTicketMatch});
+        }else{
+          await giftcardService.approveTicketCheck({idsTicketMatch});
+        }
         dlgSettings = {
           ...dlgSettings,
           confirm: false,
           onConfirm: () => {},
         };
         dialogUI.current.open('', '', dlgSettings, 'APROBADOS');
+        let newRows;
 
-        const newRows = rows.map((e) => {
-          const statusTemp = (idsTicketMatch.includes(e.id)) ? true : false;
-          return {
-            ...e,
-            id: e.id,
-            statusTemp,
-            statusPaid: statusTemp
-          };
-        });
+        if(type){
+          newRows = rows.map((e) => {
+            const statusTemp = (idsTicketMatch.includes(e.id)) ? true : false;
+            return {
+              ...e,
+              id: e.id,
+              statusTemp,
+              statusPaid: statusTemp
+            };
+          });
+        }else{
+          newRows = rows.map((e) => {
+            const statusTemp = (idsTicketMatch.includes(e.id)) ? true : false;
+            return {
+              ...e,
+              id: e.id,
+              statusTemp,
+              statusCheck: statusTemp
+            };
+          });
+        }
         setRows(newRows);
       }else{
         dlgSettings = {
@@ -211,31 +251,6 @@ const ListTicket = (props) => {
       blockUI.current.open(false);
     }
   }
-
-
-  const handleApprobePaid = async (id) => {
-    try {
-      blockUI.current.open(true);
-      giftcardService.getAccessToken();
-      await giftcardService.approveQR({id});
-      const newRows = rows.map((e)=>{
-        if(e.id === id){
-          return {
-            ...e,
-            statusPaid: true
-          }
-        }else{
-          return e;
-        }
-      });
-      setRows(newRows);
-      dialogUI.current.open('', '', dlgSettings, 'PAGADO');
-      blockUI.current.open(false);
-    } catch (e) {
-      blockUI.current.open(false);
-    }
-  }
-
 
   const handleCheckAll = () => {
     let toCheck = (page + 1) * 20;
@@ -313,23 +328,38 @@ const ListTicket = (props) => {
         'ESTADO DE VERIFICACIÓN',
         'AUTORIZADOR',
         'FECHA DE ESCANEO',
-        'ESTADO DE PAGO'
+        'ESTADO DE CUADRE'
       ];
 
       let dataExcel = [];
       let amountTotal = 0;
       rows.map((ticket)=>{
-        if(ticket.statusPaid){
-          amountTotal = amountTotal + ticket.amount;
-          dataExcel.push([
-            ticket.partner.name,
-            `S/${ticket.amount}`,
-            (ticket.status) ? 'DISPONIBLE' : 'CANJEADO',
-            (ticket.authorizer?.name) ? ticket.authorizer?.name : '____',
-            (ticket.dateScan) ? dateFormat(new Date(ticket.dateScan), "dd-mm-yy HH:MM") : '',
-            (ticket.statusPaid) ? 'PAGADO' : 'FALTA PAGAR'
-          ]);
+        if(type){
+          if(ticket.statusPaid){
+            amountTotal = amountTotal + ticket.amount;
+            dataExcel.push([
+              ticket.partner.name,
+              `S/${ticket.amount}`,
+              (ticket.status) ? 'DISPONIBLE' : 'CANJEADO',
+              (ticket.authorizer?.name) ? ticket.authorizer?.name : '____',
+              (ticket.dateScan) ? dateFormat(new Date(ticket.dateScan), "dd-mm-yy HH:MM") : '',
+              (ticket.statusPaid) ? 'PAGADO' : 'NO PAGADO'
+            ]);
+          }
+        }else{
+          if(ticket.statusCheck){
+            amountTotal = amountTotal + ticket.amount;
+            dataExcel.push([
+              ticket.partner.name,
+              `S/${ticket.amount}`,
+              (ticket.status) ? 'DISPONIBLE' : 'CANJEADO',
+              (ticket.authorizer?.name) ? ticket.authorizer?.name : '____',
+              (ticket.dateScan) ? dateFormat(new Date(ticket.dateScan), "dd-mm-yy HH:MM") : '',
+              (ticket.statusCheck) ? 'CUADRADO' : 'NO CUADRADO'
+            ]);
+          }
         }
+        
       });
       dataExcel.unshift(headers);
       dataExcel.push([
@@ -611,8 +641,14 @@ const ListTicket = (props) => {
               setPage(e);
             }}
             onRowClick={({row})=>{
-              if(!row.statusPaid){
-                handleApprobeMatchTemp(row.id, row.statusTemp, row.amount)
+              if(type){
+                if(!row.statusPaid){
+                  handleApprobeMatchTemp(row.id, row.statusTemp, row.amount)
+                }
+              }else{
+                if(!row.statusCheck){
+                  handleApprobeMatchTemp(row.id, row.statusTemp, row.amount)
+                }
               }
             }}
           />

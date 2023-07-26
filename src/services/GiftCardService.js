@@ -29,6 +29,9 @@ class GiftCardService extends AppService {
   getTickets(search = '') {
     return this.http.get(`${this.path}/tickets?${search}`);
   }
+  getTicketsCheck(search = '') {
+    return this.http.get(`${this.path}/tickets-check?${search}`);
+  }
   getReportGiftcard(search = '') {
     return this.http.get(`${this.path}/report?${search}`);
   }
@@ -37,6 +40,9 @@ class GiftCardService extends AppService {
   }
   approveTicketMatch(data) {
     return this.http.post(`${this.path}/approve-ticket-match`, data);
+  }
+  approveTicketCheck(data) {
+    return this.http.post(`${this.path}/approve-ticket-check`, data);
   }
   approveQR(data) {
     return this.http.post(`${this.path}/approve-qr`, data);
