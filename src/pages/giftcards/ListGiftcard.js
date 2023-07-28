@@ -19,6 +19,7 @@ import LockClockIcon from '@mui/icons-material/LockClock';
 import CreditCardOffIcon from '@mui/icons-material/CreditCardOff';
 import SellIcon from '@mui/icons-material/Sell';
 import Brightness1Icon from '@mui/icons-material/Brightness1';
+import PaperBinGiftcard from './PaperBinGiftcard';
 
 const userService = new UserService();
 const giftCardService = new GiftCardService();
@@ -46,7 +47,8 @@ const ListGiftcard = (props) => {
   const [idGiftcardShopping, setIdGiftcardShopping] = useState('');
   const [newRequest, setNewRequest] = useState('');
   const state = store.getState();
-
+  const [openPaperBin, setOpenPaperBin] = useState(false);
+  const [idCustomerPaperBin, setIdCustomerPaperBin] = useState(0);
   const baseValues = {
     type: 2,
     dato: ''
@@ -352,6 +354,17 @@ const ListGiftcard = (props) => {
                   }}>
                   CREAR GIFT CARD
                 </Button>
+
+                <Button 
+                  variant="contained" 
+                  color="primary"
+                  style={{marginLeft: '20px', width: '150px', backgroundColor: 'red'}}
+                  onClick={()=>{
+                    setIdCustomerPaperBin(dataUser.uid);
+                    setOpenPaperBin(true);
+                  }}>
+                  PAPELERA
+                </Button>
               </Grid>
         }
         {
@@ -490,6 +503,17 @@ const ListGiftcard = (props) => {
               newRequest={newRequest}
             />
       }
+
+      {
+        (openPaperBin)
+          &&
+            <PaperBinGiftcard
+              openPaperBin={openPaperBin}
+              setOpenPaperBin={setOpenPaperBin}
+              idCustomer={idCustomerPaperBin}
+            />
+      }
+
     </div>
   )
 }

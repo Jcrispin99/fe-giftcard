@@ -17,6 +17,9 @@ class GiftCardService extends AppService {
   mygiftcards(search = '') {
     return this.http.get(`${this.path}/mygiftcards?${search}`);
   }
+  mygiftcardsPaperBin(search = '') {
+    return this.http.get(`${this.path}/mygiftcards-paper-bin?${search}`);
+  }
   sendUrlToMessage(data) {
     return this.http.post(`${this.path}/send-url-to-message`, data);
   }
