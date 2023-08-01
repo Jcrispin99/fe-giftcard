@@ -142,12 +142,12 @@ const MyShopping = (props) => {
                               marginTop: '7px',
                               padding: '2px',
                             }}>
-                              { ticket.authorizer.name || '' }
+                              { ticket.authorizer?.name || 'CAJA' }
                             </div>
 
                       }
 
-                      <div>
+                      {/* <div>
                         <IconButton
                           color="primary" 
                           component="label"
@@ -157,7 +157,7 @@ const MyShopping = (props) => {
                             <DeleteForeverIcon style={{color: 'red'}}/>
                           </Tooltip>
                         </IconButton>
-                      </div>
+                      </div> */}
 
                     </div>
                   </Grid>
