@@ -70,6 +70,7 @@ const ListCustomer = () => {
   const [ openModalRecycle, setOpenModalRecycle ] = useState(false);
   const [openSearchCustomerAndGiftcard, setOpenSearchCustomerAndGiftcard] = useState(false);
   const [dniSearch, setDniSearch] = useState('');
+  const [typeSearch, setTypeSearch] = useState('');
 
   const handleChangeStatus = async (e,employee) => {
     try {
@@ -208,6 +209,7 @@ const ListCustomer = () => {
 
   const handleViewCustomerInSearchByDni = (dni) => {
     setDniSearch(dni);
+    setTypeSearch('view_detail');
     setOpenSearchCustomerAndGiftcard(true);
     const divElement = document.getElementById("focusSearch");
       divElement.scrollIntoView({ behavior: "smooth" });
@@ -330,6 +332,7 @@ const ListCustomer = () => {
 
   const handleOpenManagerSearchCustomer = () => {
     setDniSearch('');
+    setTypeSearch('search_all')
     setOpenSearchCustomerAndGiftcard(true);
   }
 
@@ -443,6 +446,7 @@ const ListCustomer = () => {
           &&
             <ListGiftcard 
               dni={dniSearch}
+              type={typeSearch}
             />
       }
 

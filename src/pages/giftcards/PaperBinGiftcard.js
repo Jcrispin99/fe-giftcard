@@ -171,19 +171,19 @@ const PaperBinGiftcard = (props) => {
                 ))
           }
         </Grid>
-      </div>
 
-      {/* {
-        (idGiftcardShopping)
-          &&
-            <MyShopping
-              openShopping={openShopping}
-              setOpenShopping={setOpenShopping}
-              idGiftcardShopping={idGiftcardShopping}
-              newRequest={newRequest}
-            />
-      } */}
-      
+        {
+          (openShopping)
+            &&
+              <MyShopping
+                openShopping={openShopping}
+                setOpenShopping={setOpenShopping}
+                idGiftcardShopping={idGiftcardShopping}
+                newRequest={newRequest}
+              />
+        }
+
+      </div>      
     </Modal>
   )
 }

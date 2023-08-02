@@ -34,7 +34,7 @@ let dlgSettings = {
 
 const ListGiftcard = (props) => {
 
-  const { dni } = props;
+  const { dni, type } = props;
   const modalStyle = ModalCustomStyles();
   const { blockUI, dialogUI } = useUI();
   const [dataUser, setDataUser] = useState({});
@@ -75,12 +75,13 @@ const ListGiftcard = (props) => {
         const r1 = await userService.listSearch(`dni=${values.dato}`);
         if(r1.data.total > 0){
           setDataUser(r1.data.users[0]);
-          const r2 = await giftCardService.mygiftcards(`user_id=${r1.data.users[0].uid}`);
+          const r2 = await giftCardService.mygiftcards(`user_id=${r1.data.users[0].uid}&type=${type}`);
           if(r2.data.total > 0){
             setGiftCards(r2.data.giftcard);
-          }else{
-            dialogUI.current.open('', '', dlgSettings, 'El usuario no tiene gift cards');
           }
+          // else{
+          //   dialogUI.current.open('', '', dlgSettings, 'El usuario no tiene gift cards');
+          // }
         }else{
           dialogUI.current.open('', '', dlgSettings, 'No hay un registro con ese DNI');
         }

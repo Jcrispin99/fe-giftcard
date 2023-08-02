@@ -49,7 +49,7 @@ const MyShopping = (props) => {
     try {
       blockUI.current.open(true);
       giftCardService.getAccessToken();
-      await giftCardService.deleteQr(ticket);
+      await giftCardService.deleteQr({ticket: ticket.id});
       dlgSettings = {
         ...dlgSettings,
         confirm: false,
@@ -57,9 +57,9 @@ const MyShopping = (props) => {
           close: 'Cerrar',
         },
       };
-      setOpenShopping(false);
       dialogUI.current.open('', '', dlgSettings, 'Eliminado correctamente');
       blockUI.current.open(false);
+      setOpenShopping(false);
     } catch (e) {
       blockUI.current.open(false);
     }
@@ -147,17 +147,22 @@ const MyShopping = (props) => {
 
                       }
 
-                      {/* <div>
-                        <IconButton
-                          color="primary" 
-                          component="label"
-                          onClick={()=>{handleDeleteQr(ticket)}}
-                        >
-                          <Tooltip title="Eliminar QR" placement="bottom">
-                            <DeleteForeverIcon style={{color: 'red'}}/>
-                          </Tooltip>
-                        </IconButton>
-                      </div> */}
+                      {
+                        (ticket.status)
+                          &&
+                            <div style={{height:'28px'}}>
+                              <IconButton
+                                color="primary" 
+                                component="label"
+                                onClick={()=>{handleDeleteQr(ticket)}}
+                                style={{padding:'0px'}}
+                              >
+                                <Tooltip title="Eliminar QR" placement="bottom">
+                                  <DeleteForeverIcon style={{color: 'red'}}/>
+                                </Tooltip>
+                              </IconButton>
+                            </div>
+                      }
 
                     </div>
                   </Grid>
