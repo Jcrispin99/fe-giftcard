@@ -476,9 +476,6 @@ const ListCustomer = () => {
         <div style={{marginBottom: '8px'}}>
           <span className={classes.giftcardOrange}>S/.XX</span> TARJETA CONSUMIDA CON SALDO DISPONIBLE
         </div>
-        <div>
-          <span className={classes.giftcardRed}>S/.XX</span> TARJETA SIN SALDO
-        </div>
       </Box>
 
       <Grid container style={{ height: 560, width: '100%', marginTop: '50px' }}>
