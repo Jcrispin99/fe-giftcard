@@ -50,7 +50,7 @@ const ListGiftcard = (props) => {
   const [openPaperBin, setOpenPaperBin] = useState(false);
   const [idCustomerPaperBin, setIdCustomerPaperBin] = useState(0);
   const baseValues = {
-    type: 2,
+    type: "1",
     dato: ''
   };
 
@@ -64,42 +64,55 @@ const ListGiftcard = (props) => {
       .required('Obligatorio')
   });
 
-  const onSubmit = async(values) => {
+  const onSubmit = async (values) => {
     try {
       blockUI.current.open(true);
       setDataUser({});
       setGiftCards([]);
       userService.getAccessToken();
       giftCardService.getAccessToken();
-      if(values.type === "1"){
-        const r1 = await userService.listSearch(`dni=${values.dato}`);
-        if(r1.data.total > 0){
-          setDataUser(r1.data.users[0]);
-          const r2 = await giftCardService.mygiftcards(`user_id=${r1.data.users[0].uid}&type=${type}`);
-          if(r2.data.total > 0){
-            setGiftCards(r2.data.giftcard);
+
+      switch (values.type) {
+        case "1":
+          const userResponse = await userService.listSearch(`dni=${values.dato}`);
+          if (userResponse.data.total > 0) {
+            const user = userResponse.data.users[0];
+            setDataUser(user);
+
+            const giftCardResponse = await giftCardService.mygiftcards(`user_id=${user.uid}`);
+            if (giftCardResponse.data.total > 0) {
+              setGiftCards(giftCardResponse.data.giftcard);
+            } else {
+              dialogUI.current.open('', '', dlgSettings, 'El usuario no tiene gift cards');
+            }
+          } else {
+            dialogUI.current.open('', '', dlgSettings, 'No hay un registro con ese DNI');
           }
-          // else{
-          //   dialogUI.current.open('', '', dlgSettings, 'El usuario no tiene gift cards');
-          // }
-        }else{
-          dialogUI.current.open('', '', dlgSettings, 'No hay un registro con ese DNI');
-        }
-      }else{
-        const r1 = await giftCardService.mygiftcards(`code=${values.dato}`);
-        if(r1.data.total > 0){
-          setGiftCards(r1.data.giftcard);
-          setDataUser({
-            uid: r1.data.giftcard[0].user._id,
-            id: r1.data.giftcard[0].user._id,
-            name: r1.data.giftcard[0].user.name,
-          });
-        }else{
-          dialogUI.current.open('', '', dlgSettings, 'No hay un registro con ese número de gift card');
-        }
+          break;
+
+        case "2":
+          const giftCardResponse = await giftCardService.mygiftcards(`code=${values.dato}`);
+          if (giftCardResponse.data.total > 0) {
+            const giftCard = giftCardResponse.data.giftcard[0];
+            setGiftCards(giftCardResponse.data.giftcard);
+            setDataUser({
+              uid: giftCard.user._id,
+              id: giftCard.user._id,
+              name: giftCard.user.name,
+            });
+          } else {
+            dialogUI.current.open('', '', dlgSettings, 'No hay un registro con ese número de gift card');
+          }
+          break;
+
+        default:
+          dialogUI.current.open('', '', dlgSettings, 'Tipo de búsqueda no válido');
+          break;
       }
+
       blockUI.current.open(false);
     } catch (e) {
+      console.error("Error in onSubmit:", e);
       blockUI.current.open(false);
     }
   };
@@ -267,8 +280,8 @@ const ListGiftcard = (props) => {
                           }
                           error={!!(errors.type && touched.type)}
                         >
-                          <MenuItem value={1}>DNI</MenuItem>
-                          <MenuItem value={2} ># GIFT CARD</MenuItem>
+                          <MenuItem value={"1"}>DNI</MenuItem>
+                          <MenuItem value={"2"} ># GIFT CARD</MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>
